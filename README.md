@@ -258,7 +258,7 @@ npm run build
 
 **JustinBIBBERR**
 
-- GitHub: [@JustinBIBBERRR](https://github.com/JustinBIBBERRR)
+- GitHub: [@JustinBIBERRR](https://github.com/JustinBIBERRR)
 
 ---
 
