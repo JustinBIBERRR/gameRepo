@@ -1,8 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
 
+// 获取 base URL，开发环境为 /，生产环境为 /gameRepo/
+const base = import.meta.env.MODE === 'production' ? '/gameRepo/' : '/'
+
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(base),
   routes: [
     {
       path: '/',
