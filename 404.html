@@ -6,8 +6,10 @@
     <script>
       // 获取当前路径
       const path = window.location.pathname;
+      // 移除 /gameRepo 前缀（如果存在），然后重定向
+      const cleanPath = path.replace(/^\/gameRepo/, '') || '/';
       // 重定向到 index.html，保留路径和查询参数
-      window.location.replace('/gameRepo/index.html' + path + window.location.search);
+      window.location.replace('/gameRepo/index.html' + cleanPath + window.location.search);
     </script>
   </head>
   <body>
