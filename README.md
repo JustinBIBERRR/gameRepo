@@ -9,7 +9,7 @@
 
 **一个现代化的在线游戏平台，集合了多种有趣的小游戏，挑战你的知识和推理能力！**
 
-[🎯 立即游玩](https://justinbiberr.github.io/gameRepo/) | [📖 文档](#功能特性) | [🚀 开始开发](#开发)
+[🎯 立即游玩](https://justinbiberrr.github.io/gameRepo/) | [📖 文档](#功能特性) | [🚀 开始开发](#开发)
 
 </div>
 
@@ -43,7 +43,7 @@
 
 ### 在线游玩
 
-**👉 [点击这里立即游玩](https://justinbiberr.github.io/gameRepo/)**
+**👉 [点击这里立即游玩](https://justinbiberrr.github.io/gameRepo/)**
 
 无需安装，直接在浏览器中体验！
 
@@ -203,7 +203,7 @@ gameRepo/
 
 项目已配置 GitHub Actions，推送到 `main` 分支后会自动构建并部署到 GitHub Pages。
 
-**访问地址：** https://justinbiberr.github.io/gameRepo/
+**访问地址：** https://justinbiberrr.github.io/gameRepo/
 
 ### 手动部署
 
@@ -258,7 +258,7 @@ npm run build
 
 **JustinBIBBERR**
 
-- GitHub: [@JustinBIBBERR](https://github.com/JustinBIBBERR)
+- GitHub: [@JustinBIBBERRR](https://github.com/JustinBIBBERRR)
 
 ---
 
