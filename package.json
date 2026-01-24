@@ -1,0 +1,40 @@
+{
+  "name": "game-platform",
+  "version": "1.0.0",
+  "description": "一个现代化的在线游戏平台，集合了多种有趣的小游戏",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JustinBIBBERR/gameRepo.git"
+  },
+  "homepage": "https://justinbiberr.github.io/gameRepo/",
+  "keywords": [
+    "vue",
+    "typescript",
+    "vite",
+    "tailwindcss",
+    "game",
+    "puzzle",
+    "github-pages"
+  ],
+  "author": "JustinBIBBERR",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "vue": "^3.4.21",
+    "vue-router": "^4.3.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.4",
+    "autoprefixer": "^10.4.18",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.4.2",
+    "vite": "^5.1.6",
+    "vue-tsc": "^2.0.6"
+  }
+}
