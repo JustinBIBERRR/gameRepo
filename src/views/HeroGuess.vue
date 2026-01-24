@@ -31,7 +31,7 @@
             <div>
               <div class="font-semibold text-blue-900 mb-1">初始提示</div>
               <div class="text-blue-800">
-                <span class="font-bold">{{ initialHint.label }}：{{ initialHint.value }}</span>
+                <span class="font-bold">{{ initialHint.value }}</span>
               </div>
             </div>
           </div>
@@ -87,6 +87,7 @@
               :game-won="gameWon"
               :attributes="attributes"
               :attribute-labels="attributeLabels"
+              :heroes-data="allHeroesData"
             />
           </div>
         </div>
@@ -122,6 +123,7 @@
                 :game-won="gameWon"
                 :attributes="attributes"
                 :attribute-labels="attributeLabels"
+                :heroes-data="guessHistory.map(g => g.hero)"
               />
             </div>
             <button
@@ -150,6 +152,7 @@
                 :game-won="gameWon"
                 :attributes="attributes"
                 :attribute-labels="attributeLabels"
+                :heroes-data="guessHistory.map(g => g.hero)"
               />
             </div>
             <button
@@ -262,6 +265,15 @@ const guessedHeroesForGrid = computed(() => {
       matchedCount
     }
   })
+})
+
+// 所有英雄数据（包括已猜和目标英雄）
+const allHeroesData = computed(() => {
+  const heroes = guessHistory.value.map(g => g.hero)
+  if (targetHero.value) {
+    heroes.push(targetHero.value)
+  }
+  return heroes
 })
 
 function handleSelect(heroName: string) {

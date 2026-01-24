@@ -16,15 +16,16 @@
         </div>
         
         <!-- 属性匹配状态 -->
-        <div class="grid grid-cols-5 gap-1">
+        <div class="space-y-1">
           <div
             v-for="attr in attributes"
             :key="attr"
-            class="aspect-square rounded flex items-center justify-center text-xs"
+            class="flex items-center gap-2 p-1 rounded text-xs"
             :class="hero.matches[attr] ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-600'"
-            :title="getAttributeLabel(attr)"
           >
-            {{ getAttributeIcon(attr) }}
+            <span class="font-medium">{{ getAttributeLabel(attr) }}:</span>
+            <span class="font-semibold">{{ getAttributeValue(hero.name, attr) }}</span>
+            <span v-if="hero.matches[attr]" class="ml-auto">✓</span>
           </div>
         </div>
         
@@ -44,14 +45,14 @@
         <div class="font-bold text-lg text-gray-900 mb-2 text-center">
           {{ targetHero.name }}
         </div>
-        <div class="grid grid-cols-5 gap-1">
+        <div class="space-y-1">
           <div
             v-for="attr in attributes"
             :key="attr"
-            class="aspect-square rounded flex items-center justify-center text-xs bg-green-500 text-white"
-            :title="getAttributeLabel(attr)"
+            class="flex items-center gap-2 p-1 rounded text-xs bg-green-500 text-white"
           >
-            {{ getAttributeIcon(attr) }}
+            <span class="font-medium">{{ getAttributeLabel(attr) }}:</span>
+            <span class="font-semibold">{{ getAttributeValue(targetHero.name, attr) }}</span>
           </div>
         </div>
       </div>
@@ -84,11 +85,16 @@ const props = defineProps<{
   guessedHeroes: GuessedHero[]
   targetHero?: {
     name: string
+    [key: string]: any
   } | null
   gameOver?: boolean
   gameWon?: boolean
   attributes?: readonly string[]
   attributeLabels?: Record<string, string>
+  heroesData?: Array<{
+    name: string
+    [key: string]: any
+  }>
 }>()
 
 const attributes = computed(() => props.attributes || ['role', 'era', 'nationality', 'human', 'gender'])
@@ -117,14 +123,16 @@ function getAttributeLabel(attr: string): string {
   return attributeLabels.value[attr] || attr
 }
 
-function getAttributeIcon(attr: string): string {
-  const icons: Record<string, string> = {
-    role: '⚔️',
-    era: '📜',
-    nationality: '🌍',
-    human: '👤',
-    gender: '⚧️'
+function getAttributeValue(heroName: string, attr: string): string {
+  // 优先从 heroesData 中查找
+  if (props.heroesData) {
+    const hero = props.heroesData.find(h => h.name === heroName)
+    if (hero && hero[attr]) return hero[attr]
   }
-  return icons[attr] || '?'
+  // 如果目标英雄直接包含属性，使用目标英雄的属性
+  if (props.targetHero && props.targetHero.name === heroName && props.targetHero[attr]) {
+    return props.targetHero[attr]
+  }
+  return '?'
 }
 </script>
