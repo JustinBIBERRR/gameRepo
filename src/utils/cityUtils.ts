@@ -1,4 +1,5 @@
 import citiesData from '../data/cities.json'
+import { matchByPinyin } from './pinyinUtils'
 
 export interface City {
   name: string
@@ -73,30 +74,34 @@ export function bearingToDirection(bearing: number): string {
 }
 
 /**
- * 智能匹配城市名称
+ * 智能匹配城市名称（支持中文、拼音、首字母）
  */
 export function matchCity(input: string): City | null {
-  const normalizedInput = input.trim().toLowerCase()
+  const normalizedInput = input.trim()
   
   for (const city of cities) {
     // 精确匹配主名称
-    if (city.name.toLowerCase() === normalizedInput) {
+    if (city.name === normalizedInput) {
       return city
     }
     
-    // 匹配别名
+    // 匹配别名（精确匹配）
     for (const alias of city.aliases) {
-      if (alias.toLowerCase() === normalizedInput) {
+      if (alias.toLowerCase() === normalizedInput.toLowerCase()) {
         return city
       }
     }
     
-    // 模糊匹配（包含关系）
-    if (
-      city.name.toLowerCase().includes(normalizedInput) ||
-      normalizedInput.includes(city.name.toLowerCase())
-    ) {
+    // 使用拼音匹配主名称
+    if (matchByPinyin(normalizedInput, city.name)) {
       return city
+    }
+    
+    // 使用拼音匹配别名
+    for (const alias of city.aliases) {
+      if (matchByPinyin(normalizedInput, alias)) {
+        return city
+      }
     }
   }
   
@@ -111,7 +116,7 @@ export function getAllCityNames(): string[] {
 }
 
 /**
- * 根据输入搜索城市（用于 autocomplete）
+ * 根据输入搜索城市（用于 autocomplete，支持中文、拼音、首字母）
  */
 export function searchCities(query: string): string[] {
   if (!query.trim()) {
@@ -120,18 +125,26 @@ export function searchCities(query: string): string[] {
   
   const normalizedQuery = query.trim().toLowerCase()
   const results: string[] = []
+  const addedCities = new Set<string>()
   
   for (const city of cities) {
-    // 检查主名称
-    if (city.name.toLowerCase().includes(normalizedQuery)) {
-      results.push(city.name)
+    // 如果已经添加过，跳过
+    if (addedCities.has(city.name)) {
       continue
     }
     
-    // 检查别名
+    // 检查主名称（使用拼音匹配）
+    if (matchByPinyin(normalizedQuery, city.name)) {
+      results.push(city.name)
+      addedCities.add(city.name)
+      continue
+    }
+    
+    // 检查别名（使用拼音匹配）
     for (const alias of city.aliases) {
-      if (alias.toLowerCase().includes(normalizedQuery)) {
+      if (matchByPinyin(normalizedQuery, alias)) {
         results.push(city.name)
+        addedCities.add(city.name)
         break
       }
     }

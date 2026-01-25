@@ -25,7 +25,7 @@
         </div>
 
         <!-- 初始提示 -->
-        <div v-if="initialHint && !gameOver && !gameWon" class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div v-if="initialHint && showInitialHint && !gameOver && !gameWon" class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div class="flex items-start">
             <span class="text-2xl mr-2">💡</span>
             <div>
@@ -36,6 +36,20 @@
             </div>
           </div>
         </div>
+
+        <!-- 倒计时显示 -->
+        <div v-if="!gameOver && !gameWon" class="mb-4">
+          <GameTimer
+            :formatted-time="timer.formattedTime.value"
+            :is-warning="timer.isWarning.value"
+          />
+        </div>
+
+        <!-- 倒计时恢复提示 -->
+        <TimerRestoreTip
+          v-if="showRestoreTip"
+          :message="restoreTipMessage"
+        />
 
         <!-- 进度条 -->
         <div v-if="!gameOver && !gameWon" class="mb-6">
@@ -179,34 +193,50 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import Navigation from '../components/Navigation.vue'
 import Autocomplete from '../components/Autocomplete.vue'
 import ProgressBar from '../components/ProgressBar.vue'
 import HeroGrid from '../components/HeroGrid.vue'
 import Celebration from '../components/Celebration.vue'
+import GameTimer from '../components/GameTimer.vue'
+import TimerRestoreTip from '../components/TimerRestoreTip.vue'
 import { useModal } from '../composables/useModal'
+import { useTimer } from '../composables/useTimer'
 import {
   getRandomHero,
   matchHero,
   searchHeroes,
   compareAttributes,
+  compareRoles,
   getAllHeroNames,
   attributes,
   attributeLabels,
   type Hero
 } from '../utils/heroUtils'
-import { updateGameStats, saveGameState as saveToStorage, loadGameState as loadFromStorage } from '../utils/storageUtils'
+import { 
+  updateGameStats, 
+  saveGameState as saveToStorage, 
+  loadGameState as loadFromStorage,
+  getGameConfig,
+  clearTimerState
+} from '../utils/storageUtils'
 import { checkAndUpdateAchievements } from '../utils/achievementUtils'
 
+const router = useRouter()
 const { confirm: showConfirm } = useModal()
 
 interface GuessRecord {
   heroName: string
   hero: Hero
-  matches: Record<string, boolean>
+  matches: Record<string, 'full' | 'partial' | 'none'>
 }
 
-const maxAttempts = 5
+// 读取游戏配置
+const gameConfig = getGameConfig('hero')
+const maxAttempts = ref(gameConfig.maxAttempts)
+const showInitialHint = ref(gameConfig.showInitialHint)
+const timerDuration = gameConfig.timerDuration * 60 // 转换为秒
 const targetHero = ref<Hero | null>(null)
 const attempts = ref(0)
 const inputValue = ref('')
@@ -221,6 +251,32 @@ const celebrationTitle = ref('')
 const celebrationMessage = ref('')
 const smartHint = ref<string | null>(null)
 const gameStartTime = ref<number>(0)
+const showRestoreTip = ref(false)
+const restoreTipMessage = ref('')
+
+// 倒计时超时处理
+function handleTimerTimeout() {
+  if (!gameWon.value) {
+    gameOver.value = true
+    updateGameStats('hero', false, attempts.value)
+    
+    showConfirm({
+      title: '时间到',
+      message: '倒计时已结束，游戏失败！',
+      confirmText: '再来一局',
+      cancelText: '回到首页'
+    }).then((result) => {
+      if (result) {
+        restartGame()
+      } else {
+        router.push('/')
+      }
+    })
+  }
+}
+
+// 初始化倒计时
+const timer = useTimer(timerDuration, 'hero', handleTimerTimeout)
 
 const suggestions = computed(() => {
   if (!inputValue.value.trim()) {
@@ -239,12 +295,16 @@ const canSubmit = computed(() => {
   return matched !== null
 })
 
-// 计算接近度百分比（基于匹配属性数量）
+// 计算接近度百分比（基于匹配属性数量，部分匹配算0.5）
 const closenessPercentage = computed(() => {
   if (guessHistory.value.length === 0) return null
   const lastMatch = guessHistory.value[guessHistory.value.length - 1]
-  const matchedCount = Object.values(lastMatch.matches).filter(Boolean).length
-  return (matchedCount / attributes.length) * 100
+  let score = 0
+  Object.values(lastMatch.matches).forEach(match => {
+    if (match === 'full') score += 1
+    else if (match === 'partial') score += 0.5
+  })
+  return (score / attributes.length) * 100
 })
 
 const closenessText = computed(() => {
@@ -258,11 +318,16 @@ const closenessText = computed(() => {
 // 为网格组件准备数据
 const guessedHeroesForGrid = computed(() => {
   return guessHistory.value.map(guess => {
-    const matchedCount = Object.values(guess.matches).filter(Boolean).length
+    // 计算匹配数量：完全匹配=1，部分匹配=0.5
+    let matchedCount = 0
+    Object.values(guess.matches).forEach(match => {
+      if (match === 'full') matchedCount += 1
+      else if (match === 'partial') matchedCount += 0.5
+    })
     return {
       name: guess.heroName,
       matches: guess.matches,
-      matchedCount
+      matchedCount: Math.round(matchedCount * 10) / 10 // 保留一位小数
     }
   })
 })
@@ -293,18 +358,29 @@ function handleGuess() {
     return
   }
 
+  // 先增加尝试次数
+  attempts.value++
+
   // 比较属性
   const matches = compareAttributes(targetHero.value, guessedHero)
   
-  // 如果初始提示的属性已匹配，确保在matches中标记为true
+  // 如果初始提示的属性已匹配，确保在matches中标记为full
   if (initialHint.value) {
-    matches[initialHint.value.attr] = true
+    if (initialHint.value.attr === 'role') {
+      // 角色需要检查部分匹配
+      const roleMatch = compareRoles(targetHero.value.role, guessedHero.role)
+      matches[initialHint.value.attr] = roleMatch
+    } else {
+      matches[initialHint.value.attr] = 'full'
+    }
   }
 
   // 检查是否猜中
   if (guessedHero.name === targetHero.value.name) {
     gameWon.value = true
-    const stats = updateGameStats('hero', true, attempts.value + 1)
+    timer.pause()
+    clearTimerState()
+    const stats = updateGameStats('hero', true, attempts.value)
     
     // 检查成就
     const newlyUnlocked = checkAndUpdateAchievements('hero', stats)
@@ -312,7 +388,7 @@ function handleGuess() {
     // 显示庆祝动画
     celebrationType.value = 'success'
     celebrationTitle.value = '恭喜！'
-    celebrationMessage.value = `你用了 ${attempts.value + 1} 次猜测就找到了答案！`
+    celebrationMessage.value = `你用了 ${attempts.value} 次猜测就找到了答案！`
     showCelebration.value = true
     
     // 如果有新成就解锁，显示成就动画
@@ -332,15 +408,23 @@ function handleGuess() {
   // 生成智能提示
   if (guessHistory.value.length > 0) {
     const lastMatch = guessHistory.value[guessHistory.value.length - 1]
-    const lastMatchedCount = Object.values(lastMatch.matches).filter(Boolean).length
-    const currentMatchedCount = Object.values(matches).filter(Boolean).length
+    let lastScore = 0
+    Object.values(lastMatch.matches).forEach(m => {
+      if (m === 'full') lastScore += 1
+      else if (m === 'partial') lastScore += 0.5
+    })
+    let currentScore = 0
+    Object.values(matches).forEach(m => {
+      if (m === 'full') currentScore += 1
+      else if (m === 'partial') currentScore += 0.5
+    })
     
-    if (currentMatchedCount > lastMatchedCount) {
-      smartHint.value = `很好！这次比上次多匹配了 ${currentMatchedCount - lastMatchedCount} 个属性！`
-    } else if (currentMatchedCount < lastMatchedCount) {
-      smartHint.value = `这次匹配的属性比上次少了，试试其他英雄？`
+    if (currentScore > lastScore) {
+      smartHint.value = `很好！这次比上次更接近了！`
+    } else if (currentScore < lastScore) {
+      smartHint.value = `这次匹配度比上次低了，试试其他英雄？`
     } else {
-      smartHint.value = '匹配的属性数量和上次一样，试试其他方向的英雄？'
+      smartHint.value = '匹配度和上次一样，试试其他方向的英雄？'
     }
   } else {
     smartHint.value = null
@@ -353,12 +437,13 @@ function handleGuess() {
     matches
   })
 
-  attempts.value++
   inputValue.value = ''
 
   // 检查是否用尽机会
-  if (attempts.value >= maxAttempts) {
+  if (attempts.value >= maxAttempts.value) {
     gameOver.value = true
+    timer.pause()
+    clearTimerState()
     updateGameStats('hero', false, attempts.value)
     
     // 显示失败鼓励动画
@@ -388,6 +473,11 @@ function clearAndRestart() {
 }
 
 function restartGame() {
+  // 重新读取配置（可能已更改）
+  const config = getGameConfig('hero')
+  maxAttempts.value = config.maxAttempts
+  showInitialHint.value = config.showInitialHint
+  
   const hero = getRandomHero()
   if (!hero) {
     console.error('Failed to get random hero')
@@ -401,12 +491,20 @@ function restartGame() {
   gameWon.value = false
   showInputError.value = false
   
+  // 重置倒计时
+  timer.reset(config.timerDuration * 60)
+  timer.start()
+  
   // 随机选择一个属性作为初始提示
-  const randomAttr = attributes[Math.floor(Math.random() * attributes.length)]
-  initialHint.value = {
-    label: attributeLabels[randomAttr],
-    value: hero[randomAttr],
-    attr: randomAttr
+  if (showInitialHint.value) {
+    const randomAttr = attributes[Math.floor(Math.random() * attributes.length)]
+    initialHint.value = {
+      label: attributeLabels[randomAttr],
+      value: hero[randomAttr],
+      attr: randomAttr
+    }
+  } else {
+    initialHint.value = null
   }
   
   saveGameState()
@@ -445,7 +543,7 @@ function loadGameState() {
           gameStartTime.value = state.gameStartTime || Date.now()
           
           // 如果加载的状态没有初始提示，但游戏还没开始，则设置初始提示
-          if (!initialHint.value && attempts.value === 0 && !gameOver.value && !gameWon.value) {
+          if (showInitialHint.value && !initialHint.value && attempts.value === 0 && !gameOver.value && !gameWon.value) {
             const randomAttr = attributes[Math.floor(Math.random() * attributes.length)]
             initialHint.value = {
               label: attributeLabels[randomAttr],
@@ -466,6 +564,13 @@ function loadGameState() {
 }
 
 onMounted(() => {
+  // 尝试恢复倒计时状态
+  const restored = timer.restoreState()
+  if (restored) {
+    showRestoreTip.value = true
+    restoreTipMessage.value = `倒计时已恢复，剩余时间：${timer.formattedTime.value}，或者看广告延长时间，QAQ骗你的没广告~`
+  }
+  
   if (!loadGameState()) {
     restartGame()
   } else {
@@ -473,9 +578,16 @@ onMounted(() => {
     if (!gameStartTime.value) {
       gameStartTime.value = Date.now()
     }
+    
+    // 如果游戏还在进行中且倒计时未恢复，启动倒计时
+    if (!gameOver.value && !gameWon.value && !restored) {
+      const config = getGameConfig('hero')
+      timer.reset(config.timerDuration * 60)
+      timer.start()
+    }
   }
   // 调试：确保初始提示已设置
-  if (targetHero.value && !initialHint.value && attempts.value === 0) {
+  if (targetHero.value && showInitialHint.value && !initialHint.value && attempts.value === 0) {
     console.log('警告：游戏已开始但没有初始提示，正在修复...')
     const randomAttr = attributes[Math.floor(Math.random() * attributes.length)]
     initialHint.value = {

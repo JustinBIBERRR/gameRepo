@@ -154,6 +154,25 @@ const games = [
         d: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z'
       })
     ])
+  },
+  {
+    title: '听片段猜电影',
+    description: '系统随机选择一部电影，你有8次机会猜测。通过听15秒音频片段来找到答案。',
+    path: '/movie-guess',
+    iconColor: 'red' as const,
+    icon: () => h('svg', {
+      class: 'w-6 h-6',
+      fill: 'none',
+      stroke: 'currentColor',
+      viewBox: '0 0 24 24'
+    }, [
+      h('path', {
+        'stroke-linecap': 'round',
+        'stroke-linejoin': 'round',
+        'stroke-width': '2',
+        d: 'M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z'
+      })
+    ])
   }
 ]
 
@@ -165,16 +184,26 @@ const stats = ref({
 
 const hasGameData = ref(false)
 
-// 获取总体统计数据
-const cityStats = computed(() => getGameStats('city'))
-const heroStats = computed(() => getGameStats('hero'))
+// 使用 ref 存储统计数据，以便清除后能实时更新
+const cityStats = ref(getGameStats('city'))
+const heroStats = ref(getGameStats('hero'))
+const movieStats = ref(getGameStats('movie'))
+const allAchievements = ref(getAchievements())
+
+// 刷新统计数据
+function refreshStats() {
+  cityStats.value = getGameStats('city')
+  heroStats.value = getGameStats('hero')
+  movieStats.value = getGameStats('movie')
+  allAchievements.value = getAchievements()
+}
 
 const totalStats = computed(() => {
   return {
-    wins: cityStats.value.wins + heroStats.value.wins,
-    losses: cityStats.value.losses + heroStats.value.losses,
-    total: cityStats.value.totalGames + heroStats.value.totalGames,
-    bestStreak: Math.max(cityStats.value.bestStreak, heroStats.value.bestStreak)
+    wins: cityStats.value.wins + heroStats.value.wins + movieStats.value.wins,
+    losses: cityStats.value.losses + heroStats.value.losses + movieStats.value.losses,
+    total: cityStats.value.totalGames + heroStats.value.totalGames + movieStats.value.totalGames,
+    bestStreak: Math.max(cityStats.value.bestStreak, heroStats.value.bestStreak, movieStats.value.bestStreak)
   }
 })
 
@@ -185,9 +214,12 @@ const todayStats = computed(() => {
   const heroToday = heroStats.value.todayStats.date === new Date().toDateString()
     ? heroStats.value.todayStats
     : { games: 0, wins: 0 }
+  const movieToday = movieStats.value.todayStats.date === new Date().toDateString()
+    ? movieStats.value.todayStats
+    : { games: 0, wins: 0 }
   
-  const games = cityToday.games + heroToday.games
-  const wins = cityToday.wins + heroToday.wins
+  const games = cityToday.games + heroToday.games + movieToday.games
+  const wins = cityToday.wins + heroToday.wins + movieToday.wins
   
   return {
     games,
@@ -201,7 +233,6 @@ const hasAnyStats = computed(() => {
 })
 
 // 获取已解锁的成就
-const allAchievements = computed(() => getAchievements())
 const unlockedAchievements = computed(() => {
   return allAchievements.value
     .filter(a => a.unlockedAt !== null)
@@ -213,7 +244,8 @@ function checkGameData() {
   hasGameData.value = !!(
     sessionStorage.getItem('gameStats') ||
     sessionStorage.getItem('cityGuessGame') ||
-    sessionStorage.getItem('heroGuessGame')
+    sessionStorage.getItem('heroGuessGame') ||
+    sessionStorage.getItem('movieGuessGame')
   )
 }
 
@@ -229,6 +261,7 @@ function clearSessionData() {
       clearAllData()
       sessionStorage.removeItem('cityGuessGame')
       sessionStorage.removeItem('heroGuessGame')
+      sessionStorage.removeItem('movieGuessGame')
       
       // 重置统计数据
       stats.value = {
@@ -238,6 +271,9 @@ function clearSessionData() {
       }
       
       hasGameData.value = false
+      
+      // 刷新统计数据（重新从 localStorage 读取，此时应该是空数据）
+      refreshStats()
       
       showSuccess({
         title: '清除成功',
@@ -257,6 +293,9 @@ onMounted(() => {
       console.error('Failed to parse stats:', e)
     }
   }
+  
+  // 初始化统计数据
+  refreshStats()
   
   // 检查是否有游戏数据
   checkGameData()

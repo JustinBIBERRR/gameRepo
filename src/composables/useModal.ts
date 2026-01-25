@@ -51,6 +51,14 @@ function success(options: Omit<ModalOptions, 'type' | 'showCancel'>): Promise<vo
   })
 }
 
+function error(options: Omit<ModalOptions, 'type' | 'showCancel'>): Promise<void> {
+  return new Promise((resolve) => {
+    showModal({ ...options, type: 'danger', showCancel: false }).then(() => {
+      resolve()
+    })
+  })
+}
+
 function handleConfirm() {
   if (modalState.value.resolve) {
     modalState.value.resolve(true)
@@ -80,6 +88,7 @@ export function useModal() {
     confirm,
     alert,
     success,
+    error,
     handleConfirm,
     handleCancel,
     close

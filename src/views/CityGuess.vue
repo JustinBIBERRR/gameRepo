@@ -24,6 +24,20 @@
           </button>
         </div>
 
+        <!-- 倒计时显示 -->
+        <div v-if="!gameOver && !gameWon" class="mb-4">
+          <GameTimer
+            :formatted-time="timer.formattedTime.value"
+            :is-warning="timer.isWarning.value"
+          />
+        </div>
+
+        <!-- 倒计时恢复提示 -->
+        <TimerRestoreTip
+          v-if="showRestoreTip"
+          :message="restoreTipMessage"
+        />
+
         <!-- 进度条 -->
         <div v-if="!gameOver && !gameWon" class="mb-6">
           <ProgressBar
@@ -35,7 +49,7 @@
         </div>
 
         <!-- 初始提示 -->
-        <div v-if="initialHint && !gameOver && !gameWon" class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div v-if="initialHint && showInitialHint && !gameOver && !gameWon" class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div class="flex items-start">
             <span class="text-2xl mr-2">💡</span>
             <div>
@@ -76,17 +90,6 @@
             </button>
           </div>
 
-          <!-- 距离趋势图表 -->
-          <div v-if="guessHistory.length > 0" class="mb-6">
-            <DistanceChart
-              :cities="guessHistory.map(g => g.cityName)"
-              :distances="guessHistory.map(g => g.distance)"
-              :target-distance="0"
-              :game-over="gameOver"
-              :game-won="gameWon"
-            />
-          </div>
-
           <!-- 猜测历史 -->
           <div v-if="guessHistory.length > 0" class="space-y-4">
             <h2 class="text-xl font-semibold text-gray-900">猜测历史</h2>
@@ -97,7 +100,20 @@
             >
               <div class="flex justify-between items-center mb-2">
                 <span class="text-lg font-medium text-gray-900">{{ guess.cityName }}</span>
-                <span class="text-sm text-gray-500">第 {{ index + 1 }} 次猜测</span>
+                <div class="flex items-center gap-2">
+                  <span
+                    class="px-2 py-1 text-xs font-medium rounded-full"
+                    :class="{
+                      'bg-red-100 text-red-700': guess.closenessTag === '非常接近！',
+                      'bg-orange-100 text-orange-700': guess.closenessTag === '比较接近',
+                      'bg-yellow-100 text-yellow-700': guess.closenessTag === '有点接近',
+                      'bg-gray-100 text-gray-700': guess.closenessTag === '继续努力'
+                    }"
+                  >
+                    {{ guess.closenessTag }}
+                  </span>
+                  <span class="text-sm text-gray-500">第 {{ index + 1 }} 次猜测</span>
+                </div>
               </div>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
                 <div>
@@ -139,16 +155,6 @@
                 </div>
               </div>
             </div>
-            <!-- 距离趋势图表 -->
-            <div v-if="guessHistory.length > 0" class="mb-6">
-              <DistanceChart
-                :cities="guessHistory.map(g => g.cityName)"
-                :distances="guessHistory.map(g => g.distance)"
-                :target-distance="0"
-                :game-over="gameOver"
-                :game-won="gameWon"
-              />
-            </div>
             <button
               @click="restartGame"
               class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
@@ -166,16 +172,6 @@
             <p class="text-gray-600 mb-4">
               目标城市是 <span class="font-bold text-blue-600">{{ targetCity?.name }}</span>
             </p>
-            <!-- 距离趋势图表 -->
-            <div v-if="guessHistory.length > 0" class="mb-6">
-              <DistanceChart
-                :cities="guessHistory.map(g => g.cityName)"
-                :distances="guessHistory.map(g => g.distance)"
-                :target-distance="0"
-                :game-over="gameOver"
-                :game-won="gameWon"
-              />
-            </div>
             <button
               @click="restartGame"
               class="mt-6 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
@@ -200,12 +196,15 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import Navigation from '../components/Navigation.vue'
 import Autocomplete from '../components/Autocomplete.vue'
 import ProgressBar from '../components/ProgressBar.vue'
-import DistanceChart from '../components/DistanceChart.vue'
 import Celebration from '../components/Celebration.vue'
+import GameTimer from '../components/GameTimer.vue'
+import TimerRestoreTip from '../components/TimerRestoreTip.vue'
 import { useModal } from '../composables/useModal'
+import { useTimer } from '../composables/useTimer'
 import {
   getRandomCity,
   matchCity,
@@ -217,12 +216,23 @@ import {
   getAllCityNames,
   type City
 } from '../utils/cityUtils'
-import { updateGameStats, saveGameState as saveToStorage, loadGameState as loadFromStorage } from '../utils/storageUtils'
+import { 
+  updateGameStats, 
+  saveGameState as saveToStorage, 
+  loadGameState as loadFromStorage,
+  getGameConfig,
+  clearTimerState
+} from '../utils/storageUtils'
 import { checkAndUpdateAchievements } from '../utils/achievementUtils'
 
+const router = useRouter()
 const { confirm: showConfirm } = useModal()
 
-const maxAttempts = 5
+// 读取游戏配置
+const gameConfig = getGameConfig('city')
+const maxAttempts = ref(gameConfig.maxAttempts)
+const showInitialHint = ref(gameConfig.showInitialHint)
+const timerDuration = gameConfig.timerDuration * 60 // 转换为秒
 const targetCity = ref<City | null>(null)
 const attempts = ref(0)
 const inputValue = ref('')
@@ -232,6 +242,7 @@ const guessHistory = ref<Array<{
   distance: number
   direction: string
   feature: string | null
+  closenessTag: string
 }>>([])
 const usedFeatures = ref<string[]>([])
 const gameOver = ref(false)
@@ -243,6 +254,32 @@ const celebrationTitle = ref('')
 const celebrationMessage = ref('')
 const smartHint = ref<string | null>(null)
 const gameStartTime = ref<number>(0)
+const showRestoreTip = ref(false)
+const restoreTipMessage = ref('')
+
+// 倒计时超时处理
+function handleTimerTimeout() {
+  if (!gameWon.value) {
+    gameOver.value = true
+    updateGameStats('city', false, attempts.value)
+    
+    showConfirm({
+      title: '时间到',
+      message: '倒计时已结束，游戏失败！',
+      confirmText: '再来一局',
+      cancelText: '回到首页'
+    }).then((result) => {
+      if (result) {
+        restartGame()
+      } else {
+        router.push('/')
+      }
+    })
+  }
+}
+
+// 初始化倒计时
+const timer = useTimer(timerDuration, 'city', handleTimerTimeout)
 
 const suggestions = computed(() => {
   if (!inputValue.value.trim()) {
@@ -271,13 +308,101 @@ const closenessPercentage = computed(() => {
   return closeness
 })
 
-const closenessText = computed(() => {
-  if (closenessPercentage.value === null) return ''
-  if (closenessPercentage.value >= 80) return '非常接近！'
-  if (closenessPercentage.value >= 60) return '比较接近'
-  if (closenessPercentage.value >= 40) return '有点接近'
+// 根据距离计算接近程度标签
+function getClosenessTag(distance: number): string {
+  const maxDistance = 3000
+  const closeness = Math.max(0, Math.min(100, ((maxDistance - distance) / maxDistance) * 100))
+  if (closeness >= 80) return '非常接近！'
+  if (closeness >= 60) return '比较接近'
+  if (closeness >= 40) return '有点接近'
   return '继续努力'
+}
+
+const closenessText = computed(() => {
+  if (guessHistory.value.length === 0) return ''
+  const lastDistance = guessHistory.value[guessHistory.value.length - 1].distance
+  return getClosenessTag(lastDistance)
 })
+
+// 生成智能提示
+function generateSmartHint(distance: number, direction: string): string | null {
+  if (guessHistory.value.length === 0) {
+    // 第一次猜测，根据接近程度给出提示
+    const tag = getClosenessTag(distance)
+    if (tag === '非常接近！') {
+      return `太棒了！第一次就非常接近，目标在${direction}方向，继续加油！`
+    } else if (tag === '比较接近') {
+      return `不错！目标在${direction}方向，距离还有 ${distance} 公里，继续缩小范围！`
+    } else if (tag === '有点接近') {
+      return `目标在${direction}方向，距离 ${distance} 公里，可以尝试该方向更近的城市。`
+    } else {
+      return `目标在${direction}方向，距离较远（${distance} 公里），建议尝试${direction}方向的主要城市。`
+    }
+  }
+
+  const lastGuess = guessHistory.value[guessHistory.value.length - 1]
+  const lastDistance = lastGuess.distance
+  const lastDirection = lastGuess.direction
+  const distanceDiff = lastDistance - distance
+  const distanceDiffPercent = Math.abs(distanceDiff) / lastDistance * 100
+  const currentTag = getClosenessTag(distance)
+
+  // 距离变近了
+  if (distance < lastDistance) {
+    const diffKm = Math.round(distanceDiff)
+    
+    // 根据变化幅度给出不同强度的反馈
+    if (distanceDiffPercent >= 50) {
+      // 大幅接近
+      return `🎯 太棒了！比上次近了 ${diffKm} 公里（减少了 ${Math.round(distanceDiffPercent)}%），方向正确！目标在${direction}方向，${currentTag === '非常接近！' ? '你已经非常接近了！' : '继续这个方向！'}`
+    } else if (distanceDiffPercent >= 20) {
+      // 明显接近
+      return `👍 很好！比上次近了 ${diffKm} 公里（减少了 ${Math.round(distanceDiffPercent)}%），目标在${direction}方向，${currentTag === '非常接近！' ? '非常接近了！' : '保持这个方向！'}`
+    } else if (distanceDiffPercent >= 5) {
+      // 小幅接近
+      return `✅ 不错！比上次近了 ${diffKm} 公里，目标在${direction}方向，继续缩小范围。`
+    } else {
+      // 微幅接近
+      return `比上次近了 ${diffKm} 公里，目标在${direction}方向，可以尝试更近的城市。`
+    }
+  } 
+  // 距离变远了
+  else if (distance > lastDistance) {
+    const diffKm = Math.round(-distanceDiff)
+    
+    if (distanceDiffPercent >= 50) {
+      // 大幅远离
+      return `⚠️ 这次比上次远了 ${diffKm} 公里（增加了 ${Math.round(distanceDiffPercent)}%），方向可能不对。建议回到${lastDirection}方向，或尝试其他方向的城市。`
+    } else if (distanceDiffPercent >= 20) {
+      // 明显远离
+      return `这次比上次远了 ${diffKm} 公里，方向可能不太对。建议尝试${lastDirection}方向的城市，或换个方向试试。`
+    } else {
+      // 小幅远离
+      return `这次比上次远了 ${diffKm} 公里，可以尝试${lastDirection}方向更近的城市，或探索其他方向。`
+    }
+  } 
+  // 距离差不多
+  else {
+    // 检查是否连续多次距离相近
+    let similarCount = 1
+    for (let i = guessHistory.value.length - 1; i >= 1; i--) {
+      const prevDistance = guessHistory.value[i - 1].distance
+      const currentDistance = guessHistory.value[i].distance
+      const diff = Math.abs(currentDistance - prevDistance)
+      if (diff / prevDistance < 0.1) { // 距离变化小于10%认为相近
+        similarCount++
+      } else {
+        break
+      }
+    }
+    
+    if (similarCount >= 3) {
+      return `距离和上次差不多，已经连续 ${similarCount} 次距离相近了。建议尝试${direction}方向不同距离的城市，或换个方向探索。`
+    } else {
+      return `距离和上次差不多（${distance} 公里），目标在${direction}方向。建议尝试该方向不同距离的城市，或换个方向试试。`
+    }
+  }
+}
 
 
 function handleSelect(cityName: string) {
@@ -297,10 +422,15 @@ function handleGuess() {
     return
   }
 
+  // 先增加尝试次数
+  attempts.value++
+
   // 检查是否猜中
   if (guessedCity.name === targetCity.value.name) {
     gameWon.value = true
-    const stats = updateGameStats('city', true, attempts.value + 1)
+    timer.pause()
+    clearTimerState()
+    const stats = updateGameStats('city', true, attempts.value)
     
     // 检查成就
     const newlyUnlocked = checkAndUpdateAchievements('city', stats)
@@ -308,7 +438,7 @@ function handleGuess() {
     // 显示庆祝动画
     celebrationType.value = 'success'
     celebrationTitle.value = '恭喜！'
-    celebrationMessage.value = `你用了 ${attempts.value + 1} 次猜测就找到了答案！`
+    celebrationMessage.value = `你用了 ${attempts.value} 次猜测就找到了答案！`
     showCelebration.value = true
     
     // 如果有新成就解锁，显示成就动画
@@ -346,34 +476,25 @@ function handleGuess() {
     usedFeatures.value.push(feature)
   }
 
-  // 生成智能提示
-  if (guessHistory.value.length > 0) {
-    const lastDistance = guessHistory.value[guessHistory.value.length - 1].distance
-    if (distance < lastDistance) {
-      smartHint.value = `很好！这次比上次更近了 ${Math.round(lastDistance - distance)} 公里！`
-    } else if (distance > lastDistance) {
-      smartHint.value = `这次比上次远了 ${Math.round(distance - lastDistance)} 公里，换个方向试试？`
-    } else {
-      smartHint.value = '距离和上次差不多，试试其他方向的城市？'
-    }
-  } else {
-    smartHint.value = null
-  }
+  // 生成智能提示（优化版）
+  smartHint.value = generateSmartHint(distance, direction)
 
   // 添加到历史记录
   guessHistory.value.push({
     cityName: guessedCity.name,
     distance,
     direction,
-    feature
+    feature,
+    closenessTag: getClosenessTag(distance)
   })
 
-  attempts.value++
   inputValue.value = ''
 
   // 检查是否用尽机会
-  if (attempts.value >= maxAttempts) {
+  if (attempts.value >= maxAttempts.value) {
     gameOver.value = true
+    timer.pause()
+    clearTimerState()
     updateGameStats('city', false, attempts.value)
     
     // 显示失败鼓励动画
@@ -396,6 +517,22 @@ function clearAndRestart() {
     if (result) {
       // 清除 sessionStorage
       sessionStorage.removeItem('cityGuessGame')
+      // 清除倒计时状态
+      clearTimerState()
+      // 重置所有状态
+      targetCity.value = null
+      attempts.value = 0
+      inputValue.value = ''
+      guessHistory.value = []
+      usedFeatures.value = []
+      gameOver.value = false
+      gameWon.value = false
+      showInputError.value = false
+      showCelebration.value = false
+      smartHint.value = null
+      initialHint.value = null
+      showRestoreTip.value = false
+      restoreTipMessage.value = ''
       // 重新开始游戏
       restartGame()
     }
@@ -403,6 +540,11 @@ function clearAndRestart() {
 }
 
 function restartGame() {
+  // 重新读取配置（可能已更改）
+  const config = getGameConfig('city')
+  maxAttempts.value = config.maxAttempts
+  showInitialHint.value = config.showInitialHint
+  
   const city = getRandomCity()
   if (!city) {
     console.error('Failed to get random city')
@@ -420,11 +562,19 @@ function restartGame() {
   smartHint.value = null
   gameStartTime.value = Date.now()
   
+  // 重置倒计时
+  timer.reset(config.timerDuration * 60)
+  timer.start()
+  
   // 设置初始提示
-  const initialFeature = getCityFeature(city, [])
-  if (initialFeature) {
-    initialHint.value = initialFeature
-    usedFeatures.value.push(initialFeature)
+  if (showInitialHint.value) {
+    const initialFeature = getCityFeature(city, [])
+    if (initialFeature) {
+      initialHint.value = initialFeature
+      usedFeatures.value.push(initialFeature)
+    } else {
+      initialHint.value = null
+    }
   } else {
     initialHint.value = null
   }
@@ -487,6 +637,13 @@ function loadGameState() {
 }
 
 onMounted(() => {
+  // 尝试恢复倒计时状态
+  const restored = timer.restoreState()
+  if (restored) {
+    showRestoreTip.value = true
+    restoreTipMessage.value = `倒计时已恢复，剩余时间：${timer.formattedTime.value}，或者看广告延长时间，QAQ骗你的没广告~`
+  }
+  
   if (!loadGameState()) {
     restartGame()
   } else {
@@ -494,9 +651,17 @@ onMounted(() => {
     if (!gameStartTime.value) {
       gameStartTime.value = Date.now()
     }
+    
+    // 如果游戏还在进行中且倒计时未恢复，启动倒计时
+    if (!gameOver.value && !gameWon.value && !restored) {
+      const config = getGameConfig('city')
+      timer.reset(config.timerDuration * 60)
+      timer.start()
+    }
   }
+  
   // 调试：确保初始提示已设置
-  if (targetCity.value && !initialHint.value && attempts.value === 0) {
+  if (targetCity.value && showInitialHint.value && !initialHint.value && attempts.value === 0) {
     console.log('警告：游戏已开始但没有初始提示，正在修复...')
     const initialFeature = getCityFeature(targetCity.value, [])
     if (initialFeature) {

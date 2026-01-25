@@ -7,12 +7,17 @@ const STORAGE_KEYS = {
   // 游戏统计数据
   CITY_GAME_STATS: 'cityGameStats',
   HERO_GAME_STATS: 'heroGameStats',
+  MOVIE_GAME_STATS: 'movieGameStats',
   // 成就系统
   ACHIEVEMENTS: 'achievements',
   // 游戏历史记录
   GAME_HISTORY: 'gameHistory',
   // 会话统计（保留兼容性）
-  GAME_STATS: 'gameStats'
+  GAME_STATS: 'gameStats',
+  // 游戏设置
+  GAME_SETTINGS: 'gameSettings',
+  // 倒计时状态
+  GAME_TIMER_STATE: 'gameTimerState'
 } as const
 
 export interface GameStats {
@@ -41,11 +46,52 @@ export interface Achievement {
 }
 
 export interface GameHistoryEntry {
-  gameType: 'city' | 'hero'
+  gameType: 'city' | 'hero' | 'movie'
   date: number
   won: boolean
   attempts: number
   target: string
+}
+
+export interface GameSettings {
+  defaults: {
+    timerDuration: number      // 倒计时时长（分钟），默认5
+    maxAttempts: number         // 最大尝试次数，默认5
+    showInitialHint: boolean     // 是否显示初始提示，默认true
+    maxPlaybackPerSegment?: number  // 每个片段最多播放次数（仅电影游戏），默认3
+  }
+  overrides: {
+    city?: {
+      timerDuration?: number
+      maxAttempts?: number
+      showInitialHint?: boolean
+    }
+    hero?: {
+      timerDuration?: number
+      maxAttempts?: number
+      showInitialHint?: boolean
+    }
+    movie?: {
+      timerDuration?: number
+      maxAttempts?: number
+      showInitialHint?: boolean
+      maxPlaybackPerSegment?: number  // 每个片段最多播放次数
+    }
+  }
+}
+
+export interface GameConfig {
+  timerDuration: number
+  maxAttempts: number
+  showInitialHint: boolean
+  maxPlaybackPerSegment?: number  // 每个片段最多播放次数（仅电影游戏）
+}
+
+export interface TimerState {
+  gameType: 'city' | 'hero' | 'movie'
+  startTime: number        // 倒计时开始时间戳
+  remainingSeconds: number // 剩余秒数
+  isRunning: boolean       // 是否正在运行
 }
 
 /**
@@ -125,8 +171,12 @@ function initGameStats(): GameStats {
 /**
  * 获取游戏统计数据
  */
-export function getGameStats(gameType: 'city' | 'hero'): GameStats {
-  const key = gameType === 'city' ? STORAGE_KEYS.CITY_GAME_STATS : STORAGE_KEYS.HERO_GAME_STATS
+export function getGameStats(gameType: 'city' | 'hero' | 'movie'): GameStats {
+  const key = gameType === 'city' 
+    ? STORAGE_KEYS.CITY_GAME_STATS 
+    : gameType === 'hero'
+    ? STORAGE_KEYS.HERO_GAME_STATS
+    : STORAGE_KEYS.MOVIE_GAME_STATS
   return getLocalStorage(key, initGameStats())
 }
 
@@ -134,7 +184,7 @@ export function getGameStats(gameType: 'city' | 'hero'): GameStats {
  * 更新游戏统计数据
  */
 export function updateGameStats(
-  gameType: 'city' | 'hero',
+  gameType: 'city' | 'hero' | 'movie',
   won: boolean,
   attempts: number
 ): GameStats {
@@ -173,7 +223,11 @@ export function updateGameStats(
   const totalAttempts = stats.averageAttempts * (stats.totalGames - 1) + attempts
   stats.averageAttempts = Math.round((totalAttempts / stats.totalGames) * 10) / 10
   
-  const key = gameType === 'city' ? STORAGE_KEYS.CITY_GAME_STATS : STORAGE_KEYS.HERO_GAME_STATS
+  const key = gameType === 'city' 
+    ? STORAGE_KEYS.CITY_GAME_STATS 
+    : gameType === 'hero'
+    ? STORAGE_KEYS.HERO_GAME_STATS
+    : STORAGE_KEYS.MOVIE_GAME_STATS
   setLocalStorage(key, stats)
   
   // 保存游戏历史
@@ -185,7 +239,7 @@ export function updateGameStats(
 /**
  * 添加游戏历史记录
  */
-function addGameHistory(gameType: 'city' | 'hero', won: boolean, attempts: number): void {
+function addGameHistory(gameType: 'city' | 'hero' | 'movie', won: boolean, attempts: number): void {
   const history = getGameHistory()
   const entry: GameHistoryEntry = {
     gameType,
@@ -310,8 +364,88 @@ export function clearAllData(): void {
 /**
  * 清除特定游戏的数据
  */
-export function clearGameData(gameType: 'city' | 'hero'): void {
-  const key = gameType === 'city' ? STORAGE_KEYS.CITY_GAME_STATS : STORAGE_KEYS.HERO_GAME_STATS
+export function clearGameData(gameType: 'city' | 'hero' | 'movie'): void {
+  const key = gameType === 'city' 
+    ? STORAGE_KEYS.CITY_GAME_STATS 
+    : gameType === 'hero'
+    ? STORAGE_KEYS.HERO_GAME_STATS
+    : STORAGE_KEYS.MOVIE_GAME_STATS
   localStorage.removeItem(key)
-  sessionStorage.removeItem(gameType === 'city' ? 'cityGuessGame' : 'heroGuessGame')
+  const sessionKey = gameType === 'city' 
+    ? 'cityGuessGame' 
+    : gameType === 'hero'
+    ? 'heroGuessGame'
+    : 'movieGuessGame'
+  sessionStorage.removeItem(sessionKey)
+}
+
+/**
+ * 初始化游戏设置
+ */
+function initGameSettings(): GameSettings {
+  return {
+    defaults: {
+      timerDuration: 5,
+      maxAttempts: 5,
+      showInitialHint: true,
+      maxPlaybackPerSegment: 3  // 默认每个片段最多播放3次
+    },
+    overrides: {}
+  }
+}
+
+/**
+ * 获取游戏设置
+ */
+export function getGameSettings(): GameSettings {
+  return getLocalStorage(STORAGE_KEYS.GAME_SETTINGS, initGameSettings())
+}
+
+/**
+ * 保存游戏设置
+ */
+export function saveGameSettings(settings: GameSettings): void {
+  setLocalStorage(STORAGE_KEYS.GAME_SETTINGS, settings)
+}
+
+/**
+ * 获取游戏配置（优先返回游戏类型覆盖，否则返回全局默认值）
+ */
+export function getGameConfig(gameType: 'city' | 'hero' | 'movie'): GameConfig {
+  const settings = getGameSettings()
+  const override = settings.overrides[gameType]
+  
+  const config: GameConfig = {
+    timerDuration: override?.timerDuration ?? settings.defaults.timerDuration,
+    maxAttempts: override?.maxAttempts ?? settings.defaults.maxAttempts,
+    showInitialHint: override?.showInitialHint ?? settings.defaults.showInitialHint
+  }
+  
+  // 电影游戏特有的配置
+  if (gameType === 'movie') {
+    config.maxPlaybackPerSegment = override?.maxPlaybackPerSegment ?? settings.defaults.maxPlaybackPerSegment ?? 3
+  }
+  
+  return config
+}
+
+/**
+ * 保存倒计时状态到 sessionStorage
+ */
+export function saveTimerState(state: TimerState): void {
+  setSessionStorage(STORAGE_KEYS.GAME_TIMER_STATE, state)
+}
+
+/**
+ * 从 sessionStorage 加载倒计时状态
+ */
+export function loadTimerState(): TimerState | null {
+  return getSessionStorage<TimerState | null>(STORAGE_KEYS.GAME_TIMER_STATE, null)
+}
+
+/**
+ * 清除倒计时状态
+ */
+export function clearTimerState(): void {
+  sessionStorage.removeItem(STORAGE_KEYS.GAME_TIMER_STATE)
 }

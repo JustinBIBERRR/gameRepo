@@ -1,946 +1,874 @@
 [
-  {
-    "name": "李白",
-    "role": "打野",
-    "era": "唐朝",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "武则天",
-    "role": "法师",
-    "era": "唐朝",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "女性"
-  },
-  {
-    "name": "狄仁杰",
-    "role": "射手",
-    "era": "唐朝",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "程咬金",
-    "role": "战士",
-    "era": "隋朝",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "妲己",
-    "role": "法师",
-    "era": "商朝",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "女性"
-  },
-  {
-    "name": "孙悟空",
-    "role": "打野",
-    "era": "未知",
-    "nationality": "中国",
-    "human": "虚拟角色",
-    "gender": "男性"
-  },
-  {
-    "name": "后羿",
-    "role": "射手",
-    "era": "未知",
-    "nationality": "中国",
-    "human": "虚拟角色",
-    "gender": "男性"
-  },
-  {
-    "name": "庄周",
-    "role": "辅助",
-    "era": "战国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "花木兰",
-    "role": "战士",
-    "era": "南北朝",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "女性"
-  },
-  {
-    "name": "鲁班七号",
-    "role": "射手",
-    "era": "未知",
-    "nationality": "中国",
-    "human": "虚拟角色",
-    "gender": "未知"
-  },
-  {
-    "name": "亚瑟",
-    "role": "战士",
-    "era": "未知",
-    "nationality": "未知",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "安琪拉",
-    "role": "法师",
-    "era": "现代",
-    "nationality": "未知",
-    "human": "人类",
-    "gender": "女性"
-  },
-  {
-    "name": "项羽",
-    "role": "战士",
-    "era": "秦朝",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "虞姬",
-    "role": "射手",
-    "era": "秦朝",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "女性"
-  },
-  {
-    "name": "张良",
-    "role": "法师",
-    "era": "秦朝",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "娜可露露",
-    "role": "打野",
-    "era": "未知",
-    "nationality": "日本",
-    "human": "人类",
-    "gender": "女性"
-  },
-  {
-    "name": "不知火舞",
-    "role": "法师",
-    "era": "未知",
-    "nationality": "日本",
-    "human": "人类",
-    "gender": "女性"
-  },
-  {
-    "name": "橘右京",
-    "role": "战士",
-    "era": "未知",
-    "nationality": "日本",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "宫本武藏",
-    "role": "战士",
-    "era": "未知",
-    "nationality": "日本",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "蔡文姬",
-    "role": "辅助",
-    "era": "三国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "女性"
-  },
-  {
-    "name": "甄姬",
-    "role": "法师",
-    "era": "三国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "女性"
-  },
-  {
-    "name": "典韦",
-    "role": "战士",
-    "era": "三国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "曹操",
-    "role": "战士",
-    "era": "三国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "达摩",
-    "role": "战士",
-    "era": "未知",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "芈月",
-    "role": "法师",
-    "era": "战国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "女性"
-  },
-  {
-    "name": "白起",
-    "role": "战士",
-    "era": "战国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "扁鹊",
-    "role": "法师",
-    "era": "战国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "钟无艳",
-    "role": "战士",
-    "era": "战国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "女性"
-  },
-  {
-    "name": "东皇太一",
-    "role": "辅助",
-    "era": "未知",
-    "nationality": "中国",
-    "human": "虚拟角色",
-    "gender": "男性"
-  },
-  {
-    "name": "干将莫邪",
-    "role": "法师",
-    "era": "未知",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "未知"
-  },
-  {
-    "name": "鬼谷子",
-    "role": "辅助",
-    "era": "战国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "吕布",
-    "role": "战士",
-    "era": "三国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "貂蝉",
-    "role": "法师",
-    "era": "三国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "女性"
-  },
-  {
-    "name": "赵云",
-    "role": "打野",
-    "era": "三国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "关羽",
-    "role": "战士",
-    "era": "三国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "张飞",
-    "role": "辅助",
-    "era": "三国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "刘备",
-    "role": "战士",
-    "era": "三国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "诸葛亮",
-    "role": "法师",
-    "era": "三国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "周瑜",
-    "role": "法师",
-    "era": "三国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "孙策",
-    "role": "战士",
-    "era": "三国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "大乔",
-    "role": "辅助",
-    "era": "三国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "女性"
-  },
-  {
-    "name": "小乔",
-    "role": "法师",
-    "era": "三国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "女性"
-  },
-  {
-    "name": "孙尚香",
-    "role": "射手",
-    "era": "三国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "女性"
-  },
-  {
-    "name": "黄忠",
-    "role": "射手",
-    "era": "三国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "马超",
-    "role": "战士",
-    "era": "三国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "司马懿",
-    "role": "法师",
-    "era": "三国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "夏侯惇",
-    "role": "战士",
-    "era": "三国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "夏侯渊",
-    "role": "射手",
-    "era": "三国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "张辽",
-    "role": "战士",
-    "era": "三国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "许褚",
-    "role": "战士",
-    "era": "三国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "姜子牙",
-    "role": "辅助",
-    "era": "商朝",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "嬴政",
-    "role": "法师",
-    "era": "秦朝",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "蒙恬",
-    "role": "战士",
-    "era": "秦朝",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "韩信",
-    "role": "打野",
-    "era": "汉朝",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "刘邦",
-    "role": "辅助",
-    "era": "汉朝",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "上官婉儿",
-    "role": "法师",
-    "era": "唐朝",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "女性"
-  },
-  {
-    "name": "公孙离",
-    "role": "射手",
-    "era": "唐朝",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "女性"
-  },
-  {
-    "name": "杨玉环",
-    "role": "法师",
-    "era": "唐朝",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "女性"
-  },
-  {
-    "name": "李元芳",
-    "role": "射手",
-    "era": "唐朝",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "马可波罗",
-    "role": "射手",
-    "era": "现代",
-    "nationality": "未知",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "兰陵王",
-    "role": "打野",
-    "era": "南北朝",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "王昭君",
-    "role": "法师",
-    "era": "汉朝",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "女性"
-  },
-  {
-    "name": "露娜",
-    "role": "打野",
-    "era": "未知",
-    "nationality": "未知",
-    "human": "人类",
-    "gender": "女性"
-  },
-  {
-    "name": "铠",
-    "role": "战士",
-    "era": "未知",
-    "nationality": "未知",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "百里守约",
-    "role": "射手",
-    "era": "未知",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "百里玄策",
-    "role": "打野",
-    "era": "未知",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "苏烈",
-    "role": "战士",
-    "era": "唐朝",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "伽罗",
-    "role": "射手",
-    "era": "未知",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "女性"
-  },
-  {
-    "name": "沈梦溪",
-    "role": "法师",
-    "era": "未知",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "李信",
-    "role": "战士",
-    "era": "未知",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "曜",
-    "role": "战士",
-    "era": "未知",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "西施",
-    "role": "法师",
-    "era": "战国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "女性"
-  },
-  {
-    "name": "蒙犽",
-    "role": "射手",
-    "era": "未知",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "鲁班大师",
-    "role": "辅助",
-    "era": "未知",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "镜",
-    "role": "打野",
-    "era": "未知",
-    "nationality": "未知",
-    "human": "人类",
-    "gender": "女性"
-  },
-  {
-    "name": "澜",
-    "role": "打野",
-    "era": "未知",
-    "nationality": "未知",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "云缨",
-    "role": "打野",
-    "era": "唐朝",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "女性"
-  },
-  {
-    "name": "金蝉",
-    "role": "法师",
-    "era": "未知",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "暃",
-    "role": "打野",
-    "era": "未知",
-    "nationality": "未知",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "桑启",
-    "role": "辅助",
-    "era": "未知",
-    "nationality": "未知",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "戈娅",
-    "role": "射手",
-    "era": "未知",
-    "nationality": "未知",
-    "human": "人类",
-    "gender": "女性"
-  },
-  {
-    "name": "海月",
-    "role": "法师",
-    "era": "未知",
-    "nationality": "未知",
-    "human": "人类",
-    "gender": "女性"
-  },
-  {
-    "name": "赵怀真",
-    "role": "战士",
-    "era": "未知",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "姬小满",
-    "role": "战士",
-    "era": "未知",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "女性"
-  },
-  {
-    "name": "大司命",
-    "role": "打野",
-    "era": "未知",
-    "nationality": "未知",
-    "human": "虚拟角色",
-    "gender": "未知"
-  },
-  {
-    "name": "敖隐",
-    "role": "射手",
-    "era": "未知",
-    "nationality": "未知",
-    "human": "虚拟角色",
-    "gender": "男性"
-  },
-  {
-    "name": "少司命",
-    "role": "法师",
-    "era": "未知",
-    "nationality": "未知",
-    "human": "虚拟角色",
-    "gender": "女性"
-  },
-  {
-    "name": "元流之子",
-    "role": "辅助",
-    "era": "未知",
-    "nationality": "未知",
-    "human": "虚拟角色",
-    "gender": "未知"
-  },
-  {
-    "name": "云中君",
-    "role": "打野",
-    "era": "未知",
-    "nationality": "未知",
-    "human": "虚拟角色",
-    "gender": "男性"
-  },
-  {
-    "name": "瑶",
-    "role": "辅助",
-    "era": "未知",
-    "nationality": "未知",
-    "human": "虚拟角色",
-    "gender": "女性"
-  },
-  {
-    "name": "明世隐",
-    "role": "辅助",
-    "era": "未知",
-    "nationality": "未知",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "裴擒虎",
-    "role": "打野",
-    "era": "未知",
-    "nationality": "未知",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "弈星",
-    "role": "法师",
-    "era": "未知",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "杨戬",
-    "role": "打野",
-    "era": "未知",
-    "nationality": "中国",
-    "human": "虚拟角色",
-    "gender": "男性"
-  },
-  {
-    "name": "哪吒",
-    "role": "战士",
-    "era": "未知",
-    "nationality": "中国",
-    "human": "虚拟角色",
-    "gender": "男性"
-  },
-  {
-    "name": "太乙真人",
-    "role": "辅助",
-    "era": "未知",
-    "nationality": "中国",
-    "human": "虚拟角色",
-    "gender": "男性"
-  },
-  {
-    "name": "牛魔",
-    "role": "辅助",
-    "era": "未知",
-    "nationality": "未知",
-    "human": "虚拟角色",
-    "gender": "男性"
-  },
-  {
-    "name": "廉颇",
-    "role": "辅助",
-    "era": "战国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "刘禅",
-    "role": "辅助",
-    "era": "三国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "孙膑",
-    "role": "辅助",
-    "era": "战国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "墨子",
-    "role": "法师",
-    "era": "战国",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "老夫子",
-    "role": "战士",
-    "era": "未知",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "阿轲",
-    "role": "打野",
-    "era": "未知",
-    "nationality": "未知",
-    "human": "人类",
-    "gender": "女性"
-  },
-  {
-    "name": "高渐离",
-    "role": "法师",
-    "era": "未知",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "钟馗",
-    "role": "辅助",
-    "era": "未知",
-    "nationality": "中国",
-    "human": "虚拟角色",
-    "gender": "男性"
-  },
-  {
-    "name": "成吉思汗",
-    "role": "射手",
-    "era": "未知",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "雅典娜",
-    "role": "打野",
-    "era": "未知",
-    "nationality": "未知",
-    "human": "人类",
-    "gender": "女性"
-  },
-  {
-    "name": "女娲",
-    "role": "法师",
-    "era": "未知",
-    "nationality": "未知",
-    "human": "虚拟角色",
-    "gender": "女性"
-  },
-  {
-    "name": "梦奇",
-    "role": "辅助",
-    "era": "未知",
-    "nationality": "未知",
-    "human": "虚拟角色",
-    "gender": "未知"
-  },
-  {
-    "name": "狂铁",
-    "role": "战士",
-    "era": "未知",
-    "nationality": "未知",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "米莱狄",
-    "role": "法师",
-    "era": "未知",
-    "nationality": "未知",
-    "human": "人类",
-    "gender": "女性"
-  },
-  {
-    "name": "盘古",
-    "role": "战士",
-    "era": "未知",
-    "nationality": "未知",
-    "human": "虚拟角色",
-    "gender": "男性"
-  },
-  {
-    "name": "嫦娥",
-    "role": "法师",
-    "era": "未知",
-    "nationality": "中国",
-    "human": "虚拟角色",
-    "gender": "女性"
-  },
-  {
-    "name": "猪八戒",
-    "role": "辅助",
-    "era": "未知",
-    "nationality": "中国",
-    "human": "虚拟角色",
-    "gender": "男性"
-  },
-  {
-    "name": "阿古朵",
-    "role": "打野",
-    "era": "未知",
-    "nationality": "未知",
-    "human": "人类",
-    "gender": "未知"
-  },
-  {
-    "name": "司空震",
-    "role": "法师",
-    "era": "未知",
-    "nationality": "中国",
-    "human": "人类",
-    "gender": "男性"
-  },
-  {
-    "name": "艾琳",
-    "role": "射手",
-    "era": "未知",
-    "nationality": "未知",
-    "human": "人类",
-    "gender": "女性"
-  },
-  {
-    "name": "夏洛特",
-    "role": "战士",
-    "era": "未知",
-    "nationality": "未知",
-    "human": "人类",
-    "gender": "女性"
-  }
+    {
+        "name": "李白",
+        "role": "打野",
+        "era": "唐朝",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "武则天",
+        "role": "法师",
+        "era": "唐朝",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "女性"
+    },
+    {
+        "name": "狄仁杰",
+        "role": "射手",
+        "era": "唐朝",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "程咬金",
+        "role": "战士/坦克",
+        "era": "隋朝",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "妲己",
+        "role": "法师/打野",
+        "era": "商朝",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "女性"
+    },
+    {
+        "name": "孙悟空",
+        "role": "打野/战士",
+        "era": "未知",
+        "nationality": "中国",
+        "human": "虚拟角色",
+        "gender": "男性"
+    },
+    {
+        "name": "后羿",
+        "role": "射手/持续输出",
+        "era": "未知",
+        "nationality": "中国",
+        "human": "虚拟角色",
+        "gender": "男性"
+    },
+    {
+        "name": "庄周",
+        "role": "辅助/法师",
+        "era": "战国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "花木兰",
+        "role": "战士/打野",
+        "era": "南北朝",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "女性"
+    },
+    {
+        "name": "鲁班七号",
+        "role": "射手",
+        "era": "未知",
+        "nationality": "中国",
+        "human": "虚拟角色",
+        "gender": "男性"
+    },
+    {
+        "name": "安琪拉",
+        "role": "法师",
+        "era": "未知",
+        "nationality": "中国",
+        "human": "虚拟角色",
+        "gender": "女性"
+    },
+    {
+        "name": "亚瑟",
+        "role": "战士/坦克",
+        "era": "中世纪",
+        "nationality": "不列颠",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "项羽",
+        "role": "坦克/战士",
+        "era": "秦朝",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "虞姬",
+        "role": "射手/打野",
+        "era": "秦朝",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "女性"
+    },
+    {
+        "name": "韩信",
+        "role": "打野",
+        "era": "汉朝",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "甄姬",
+        "role": "法师",
+        "era": "三国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "女性"
+    },
+    {
+        "name": "刘备",
+        "role": "射手/打野",
+        "era": "三国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "张飞",
+        "role": "坦克/辅助",
+        "era": "三国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "关羽",
+        "role": "战士/打野",
+        "era": "三国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "赵云",
+        "role": "打野/战士",
+        "era": "三国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "貂蝉",
+        "role": "法师/打野",
+        "era": "三国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "女性"
+    },
+    {
+        "name": "吕布",
+        "role": "战士/坦克",
+        "era": "三国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "蔡文姬",
+        "role": "辅助",
+        "era": "三国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "女性"
+    },
+    {
+        "name": "典韦",
+        "role": "战士/打野",
+        "era": "三国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "夏侯惇",
+        "role": "战士/坦克",
+        "era": "三国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "廉颇",
+        "role": "坦克/战士",
+        "era": "战国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "钟无艳",
+        "role": "战士/坦克",
+        "era": "战国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "女性"
+    },
+    {
+        "name": "孙膑",
+        "role": "辅助/法师",
+        "era": "战国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "扁鹊",
+        "role": "法师/辅助",
+        "era": "战国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "高渐离",
+        "role": "法师",
+        "era": "战国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "阿轲",
+        "role": "打野",
+        "era": "战国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "女性"
+    },
+    {
+        "name": "嬴政",
+        "role": "法师",
+        "era": "秦朝",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "白起",
+        "role": "坦克",
+        "era": "战国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "芈月",
+        "role": "法师/战士",
+        "era": "战国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "女性"
+    },
+    {
+        "name": "张良",
+        "role": "法师",
+        "era": "汉朝",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "兰陵王",
+        "role": "打野",
+        "era": "南北朝",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "王昭君",
+        "role": "法师",
+        "era": "汉朝",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "女性"
+    },
+    {
+        "name": "刘邦",
+        "role": "坦克/辅助",
+        "era": "汉朝",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "露娜",
+        "role": "打野/法师",
+        "era": "未知",
+        "nationality": "中国",
+        "human": "虚拟角色",
+        "gender": "女性"
+    },
+    {
+        "name": "姜子牙",
+        "role": "法师/辅助",
+        "era": "商朝",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "老夫子",
+        "role": "战士",
+        "era": "春秋",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "墨子",
+        "role": "法师/坦克",
+        "era": "战国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "娜可露露",
+        "role": "打野",
+        "era": "未知",
+        "nationality": "日本",
+        "human": "人类",
+        "gender": "女性"
+    },
+    {
+        "name": "橘右京",
+        "role": "战士/打野",
+        "era": "日本江户",
+        "nationality": "日本",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "不知火舞",
+        "role": "法师/打野",
+        "era": "日本江户",
+        "nationality": "日本",
+        "human": "人类",
+        "gender": "女性"
+    },
+    {
+        "name": "马可波罗",
+        "role": "射手",
+        "era": "中世纪",
+        "nationality": "意大利",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "成吉思汗",
+        "role": "射手/打野",
+        "era": "蒙古帝国",
+        "nationality": "蒙古",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "牛魔",
+        "role": "坦克/辅助",
+        "era": "未知",
+        "nationality": "中国",
+        "human": "虚拟角色",
+        "gender": "男性"
+    },
+    {
+        "name": "钟馗",
+        "role": "坦克/辅助",
+        "era": "唐朝",
+        "nationality": "中国",
+        "human": "虚拟角色",
+        "gender": "男性"
+    },
+    {
+        "name": "李元芳",
+        "role": "射手/打野",
+        "era": "唐朝",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "杨戬",
+        "role": "战士/打野",
+        "era": "商朝",
+        "nationality": "中国",
+        "human": "神话角色",
+        "gender": "男性"
+    },
+    {
+        "name": "哪吒",
+        "role": "战士/打野",
+        "era": "商朝",
+        "nationality": "中国",
+        "human": "神话角色",
+        "gender": "男性"
+    },
+    {
+        "name": "太乙真人",
+        "role": "辅助/法师",
+        "era": "商朝",
+        "nationality": "中国",
+        "human": "神话角色",
+        "gender": "男性"
+    },
+    {
+        "name": "东皇太一",
+        "role": "坦克",
+        "era": "未知",
+        "nationality": "中国",
+        "human": "神话角色",
+        "gender": "男性"
+    },
+    {
+        "name": "鬼谷子",
+        "role": "辅助",
+        "era": "春秋",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "干将莫邪",
+        "role": "法师",
+        "era": "春秋",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性/女性"
+    },
+    {
+        "name": "铠",
+        "role": "战士/打野",
+        "era": "未知",
+        "nationality": "西方",
+        "human": "虚拟角色",
+        "gender": "男性"
+    },
+    {
+        "name": "百里守约",
+        "role": "射手",
+        "era": "未知",
+        "nationality": "中国",
+        "human": "虚拟角色",
+        "gender": "男性"
+    },
+    {
+        "name": "百里玄策",
+        "role": "打野",
+        "era": "未知",
+        "nationality": "中国",
+        "human": "虚拟角色",
+        "gender": "男性"
+    },
+    {
+        "name": "苏烈",
+        "role": "坦克/战士",
+        "era": "唐朝",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "梦奇",
+        "role": "坦克/法师",
+        "era": "未知",
+        "nationality": "中国",
+        "human": "虚拟角色",
+        "gender": "中性"
+    },
+    {
+        "name": "女娲",
+        "role": "法师",
+        "era": "上古",
+        "nationality": "中国",
+        "human": "神话角色",
+        "gender": "女性"
+    },
+    {
+        "name": "明世隐",
+        "role": "辅助",
+        "era": "唐朝",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "奕星",
+        "role": "法师",
+        "era": "唐朝",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "裴擒虎",
+        "role": "打野/战士",
+        "era": "唐朝",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "公孙离",
+        "role": "射手",
+        "era": "唐朝",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "女性"
+    },
+    {
+        "name": "杨玉环",
+        "role": "法师/辅助",
+        "era": "唐朝",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "女性"
+    },
+    {
+        "name": "盾山",
+        "role": "坦克/辅助",
+        "era": "未知",
+        "nationality": "中国",
+        "human": "虚拟角色",
+        "gender": "中性"
+    },
+    {
+        "name": "司马懿",
+        "role": "法师/打野",
+        "era": "三国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "元歌",
+        "role": "打野/法师",
+        "era": "三国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "米莱狄",
+        "role": "法师",
+        "era": "西方",
+        "nationality": "未知",
+        "human": "虚拟角色",
+        "gender": "女性"
+    },
+    {
+        "name": "狂铁",
+        "role": "战士",
+        "era": "西方",
+        "nationality": "未知",
+        "human": "虚拟角色",
+        "gender": "男性"
+    },
+    {
+        "name": "云中君",
+        "role": "打野",
+        "era": "上古",
+        "nationality": "中国",
+        "human": "神话角色",
+        "gender": "男性"
+    },
+    {
+        "name": "瑶",
+        "role": "辅助",
+        "era": "上古",
+        "nationality": "中国",
+        "human": "神话角色",
+        "gender": "女性"
+    },
+    {
+        "name": "孙策",
+        "role": "战士/坦克",
+        "era": "三国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "猪八戒",
+        "role": "坦克/打野",
+        "era": "唐朝",
+        "nationality": "中国",
+        "human": "神话角色",
+        "gender": "男性"
+    },
+    {
+        "name": "嫦娥",
+        "role": "法师/坦克",
+        "era": "上古",
+        "nationality": "中国",
+        "human": "神话角色",
+        "gender": "女性"
+    },
+    {
+        "name": "上官婉儿",
+        "role": "法师/打野",
+        "era": "唐朝",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "女性"
+    },
+    {
+        "name": "李信",
+        "role": "战士/法师",
+        "era": "战国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "沈梦溪",
+        "role": "法师",
+        "era": "未知",
+        "nationality": "中国",
+        "human": "虚拟角色",
+        "gender": "男性"
+    },
+    {
+        "name": "伽罗",
+        "role": "射手",
+        "era": "未知",
+        "nationality": "中国",
+        "human": "虚拟角色",
+        "gender": "女性"
+    },
+    {
+        "name": "盘古",
+        "role": "战士/打野",
+        "era": "上古",
+        "nationality": "中国",
+        "human": "神话角色",
+        "gender": "男性"
+    },
+    {
+        "name": "曜",
+        "role": "战士/打野",
+        "era": "未知",
+        "nationality": "中国",
+        "human": "虚拟角色",
+        "gender": "男性"
+    },
+    {
+        "name": "西施",
+        "role": "法师",
+        "era": "春秋",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "女性"
+    },
+    {
+        "name": "鲁班大师",
+        "role": "辅助",
+        "era": "未知",
+        "nationality": "中国",
+        "human": "虚拟角色",
+        "gender": "男性"
+    },
+    {
+        "name": "蒙犽",
+        "role": "射手",
+        "era": "三国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "镜",
+        "role": "打野",
+        "era": "未知",
+        "nationality": "中国",
+        "human": "虚拟角色",
+        "gender": "女性"
+    },
+    {
+        "name": "澜",
+        "role": "打野",
+        "era": "未知",
+        "nationality": "中国",
+        "human": "虚拟角色",
+        "gender": "男性"
+    },
+    {
+        "name": "夏洛特",
+        "role": "战士/打野",
+        "era": "法国",
+        "nationality": "法国",
+        "human": "人类",
+        "gender": "女性"
+    },
+    {
+        "name": "阿古朵",
+        "role": "打野/辅助",
+        "era": "未知",
+        "nationality": "中国",
+        "human": "虚拟角色",
+        "gender": "女性"
+    },
+    {
+        "name": "司空震",
+        "role": "战士/法师",
+        "era": "唐朝",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "金蝉",
+        "role": "法师/辅助",
+        "era": "唐朝",
+        "nationality": "中国",
+        "human": "神话角色",
+        "gender": "男性"
+    },
+    {
+        "name": "云缨",
+        "role": "战士/打野",
+        "era": "宋朝",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "女性"
+    },
+    {
+        "name": "赵怀真",
+        "role": "战士/辅助",
+        "era": "唐朝",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "桑启",
+        "role": "辅助",
+        "era": "未知",
+        "nationality": "中国",
+        "human": "虚拟角色",
+        "gender": "男性"
+    },
+    {
+        "name": "海月",
+        "role": "法师",
+        "era": "未知",
+        "nationality": "中国",
+        "human": "虚拟角色",
+        "gender": "女性"
+    },
+    {
+        "name": "戈娅",
+        "role": "射手",
+        "era": "未知",
+        "nationality": "西域",
+        "human": "虚拟角色",
+        "gender": "女性"
+    },
+    {
+        "name": "姬小满",
+        "role": "战士/辅助",
+        "era": "未知",
+        "nationality": "中国",
+        "human": "虚拟角色",
+        "gender": "女性"
+    },
+    {
+        "name": "莱西奥",
+        "role": "射手",
+        "era": "未知",
+        "nationality": "西方",
+        "human": "虚拟角色",
+        "gender": "男性"
+    },
+    {
+        "name": "敖隐",
+        "role": "射手/打野",
+        "era": "上古",
+        "nationality": "中国",
+        "human": "神话角色",
+        "gender": "男性"
+    },
+    {
+        "name": "少司命",
+        "role": "法师",
+        "era": "战国",
+        "nationality": "中国",
+        "human": "神话角色",
+        "gender": "女性"
+    },
+    {
+        "name": "蒙恬",
+        "role": "战士/坦克",
+        "era": "秦朝",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "黄忠",
+        "role": "射手",
+        "era": "三国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "马超",
+        "role": "战士/打野",
+        "era": "三国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "周瑜",
+        "role": "法师",
+        "era": "三国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "曹操",
+        "role": "战士",
+        "era": "三国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "男性"
+    },
+    {
+        "name": "孙尚香",
+        "role": "射手",
+        "era": "三国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "女性"
+    },
+    {
+        "name": "大乔",
+        "role": "辅助",
+        "era": "三国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "女性"
+    },
+    {
+        "name": "小乔",
+        "role": "法师",
+        "era": "三国",
+        "nationality": "中国",
+        "human": "人类",
+        "gender": "女性"
+    }
 ]

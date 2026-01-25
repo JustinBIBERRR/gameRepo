@@ -21,17 +21,19 @@
             v-for="attr in attributes"
             :key="attr"
             class="flex items-center gap-2 p-1 rounded text-xs"
-            :class="hero.matches[attr] ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-600'"
+            :class="getMatchClass(hero.matches[attr])"
           >
             <span class="font-medium">{{ getAttributeLabel(attr) }}:</span>
-            <span class="font-semibold">{{ getAttributeValue(hero.name, attr) }}</span>
-            <span v-if="hero.matches[attr]" class="ml-auto">✓</span>
+            <span class="font-semibold">{{ getAttributeDisplayValue(hero.name, attr, hero.matches[attr]) }}</span>
+            <span v-if="hero.matches[attr] === 'full'" class="ml-auto">✓</span>
+            <span v-else-if="hero.matches[attr] === 'partial'" class="ml-auto">~</span>
           </div>
         </div>
         
         <!-- 匹配数量 -->
         <div class="mt-2 text-center text-xs text-gray-600">
-          已匹配 {{ hero.matchedCount }}/{{ attributes.length }}
+          已匹配 {{ Math.round(hero.matchedCount) }}/{{ attributes.length }}
+          <span v-if="hero.matchedCount % 1 !== 0" class="text-blue-600">(含部分匹配)</span>
         </div>
       </div>
     </div>
@@ -74,10 +76,11 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { getRoleDisplayString } from '../utils/heroUtils'
 
 interface GuessedHero {
   name: string
-  matches: Record<string, boolean>
+  matches: Record<string, 'full' | 'partial' | 'none'>
   matchedCount: number
 }
 
@@ -109,7 +112,15 @@ const attributeLabels = computed(() => props.attributeLabels || {
 
 const bestMatchCount = computed(() => {
   if (props.guessedHeroes.length === 0) return 0
-  return Math.max(...props.guessedHeroes.map(h => h.matchedCount))
+  return Math.max(...props.guessedHeroes.map(h => {
+    // 计算最佳匹配数量（完全匹配=1，部分匹配=0.5）
+    let count = 0
+    Object.values(h.matches).forEach(m => {
+      if (m === 'full') count += 1
+      else if (m === 'partial') count += 0.5
+    })
+    return count
+  }))
 })
 
 function getHeroCardClass(matchedCount: number): string {
@@ -134,5 +145,33 @@ function getAttributeValue(heroName: string, attr: string): string {
     return props.targetHero[attr]
   }
   return '?'
+}
+
+function getAttributeDisplayValue(
+  heroName: string,
+  attr: string,
+  matchStatus: 'full' | 'partial' | 'none'
+): string {
+  // 对于角色属性，需要特殊处理显示
+  if (attr === 'role' && props.targetHero) {
+    const guessedRole = getAttributeValue(heroName, attr)
+    const targetRole = getAttributeValue(props.targetHero.name, attr)
+    // 确保两个角色值都存在
+    if (guessedRole && targetRole && guessedRole !== '?' && targetRole !== '?') {
+      return getRoleDisplayString(guessedRole, targetRole, matchStatus)
+    }
+  }
+  // 其他属性正常显示
+  return getAttributeValue(heroName, attr)
+}
+
+function getMatchClass(match: 'full' | 'partial' | 'none'): string {
+  if (match === 'full') {
+    return 'bg-green-500 text-white'
+  } else if (match === 'partial') {
+    return 'bg-blue-500 text-white'
+  } else {
+    return 'bg-gray-200 text-gray-600'
+  }
 }
 </script>
