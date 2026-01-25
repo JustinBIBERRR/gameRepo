@@ -21,6 +21,16 @@ const router = createRouter({
       path: '/hero-guess',
       name: 'HeroGuess',
       component: () => import('../views/HeroGuess.vue')
+    },
+    {
+      path: '/settings',
+      name: 'Settings',
+      component: () => import('../views/Settings.vue')
+    },
+    {
+      path: '/movie-guess',
+      name: 'MovieGuess',
+      component: () => import('../views/MovieGuess.vue')
     }
   ]
 })
