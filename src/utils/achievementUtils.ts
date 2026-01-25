@@ -138,7 +138,7 @@ export const ACHIEVEMENT_DEFINITIONS: AchievementDefinition[] = [
  * 检查并更新所有成就
  */
 export function checkAndUpdateAchievements(
-  gameType: 'city' | 'hero',
+  gameType: 'city' | 'hero' | 'movie',
   stats: GameStats
 ): Achievement[] {
   const achievements = getAchievements()

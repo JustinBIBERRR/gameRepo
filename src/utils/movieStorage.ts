@@ -16,6 +16,7 @@ export interface UserMovie {
   name: string
   nameVariants: string[]  // 别名，用于匹配猜测
   duration: number        // 总时长（秒）
+  hint?: string           // 初始提示（可选，如"漫威"、"国产动画"）
   description?: string    // 电影描述（可选）
   year?: number           // 上映年份（可选）
   createdAt: number       // 创建时间戳

@@ -29,3 +29,5 @@
 
 ## External Dependencies
 [Document key external services, APIs, or systems]
+
+git commit use English descriptions 

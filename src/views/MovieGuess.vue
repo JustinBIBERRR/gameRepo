@@ -3,48 +3,25 @@
     <Navigation />
     <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="bg-white rounded-lg shadow-lg p-6 md:p-8">
-        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6">
-          <div>
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">听片段猜电影</h1>
-            <p class="text-gray-600">
-              系统随机选择了一部电影，你有 <span class="font-bold text-blue-600">{{ maxAttempts - attempts }}</span> 次猜测机会！
-            </p>
-          </div>
-          <button
-            @click="clearAndRestart"
-            class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 min-h-[44px] self-start sm:self-auto"
-            aria-label="清除数据并重新开始"
-          >
-            <span class="flex items-center gap-2">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-              清除数据
-            </span>
-          </button>
-        </div>
-
-        <!-- 倒计时显示 -->
-        <div v-if="!gameOver && !gameWon" class="mb-4">
-          <GameTimer
-            :formatted-time="timer.formattedTime.value"
-            :is-warning="timer.isWarning.value"
-          />
-        </div>
-
-        <!-- 倒计时恢复提示 -->
-        <TimerRestoreTip
-          v-if="showRestoreTip"
-          :message="restoreTipMessage"
+        <!-- 游戏头部（标题、倒计时、提示、进度条） -->
+        <GameHeader
+          title="听片段猜电影"
+          description="系统随机选择了一部电影，你有"
+          :attempts="attempts"
+          :max-attempts="maxAttempts"
+          :game-over="gameOver"
+          :game-won="gameWon"
+          :enable-timer="enableTimer"
+          :formatted-time="timer.formattedTime.value"
+          :is-warning="timer.isWarning.value"
+          :show-restore-tip="showRestoreTip"
+          :restore-tip-message="restoreTipMessage"
+          :show-initial-hint="showInitialHint"
+          :initial-hint="initialHint"
+          hint-prefix="这是一部"
+          hint-suffix="电影"
+          @clear="clearAndRestart"
         />
-
-        <!-- 进度条 -->
-        <div v-if="!gameOver && !gameWon" class="mb-6">
-          <ProgressBar
-            :current="attempts"
-            :max="maxAttempts"
-          />
-        </div>
 
         <!-- 游戏进行中 -->
         <div v-if="!gameOver && !gameWon">
@@ -280,11 +257,9 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Navigation from '../components/Navigation.vue'
+import GameHeader from '../components/GameHeader.vue'
 import Autocomplete from '../components/Autocomplete.vue'
-import ProgressBar from '../components/ProgressBar.vue'
 import Celebration from '../components/Celebration.vue'
-import GameTimer from '../components/GameTimer.vue'
-import TimerRestoreTip from '../components/TimerRestoreTip.vue'
 import TimeRangeSelector from '../components/TimeRangeSelector.vue'
 import VideoPlayer from '../components/VideoPlayer.vue'
 import { useModal } from '../composables/useModal'
@@ -322,12 +297,15 @@ interface GuessRecord {
 
 // 读取游戏配置
 const gameConfig = getGameConfig('movie')
+const enableTimer = ref(gameConfig.enableTimer)
 const maxAttempts = ref(gameConfig.maxAttempts)
+const showInitialHint = ref(gameConfig.showInitialHint)
 const maxPlaybackPerSegment = ref(gameConfig.maxPlaybackPerSegment || 3)
 const timerDuration = gameConfig.timerDuration * 60 // 转换为秒
 const targetMovie = ref<Movie | null>(null)
 const attempts = ref(0)
 const inputValue = ref('')
+const initialHint = ref<string | null>(null)
 const selectedTimePoint = ref(0)
 const playedTimePoints = ref<Set<number>>(new Set()) // 已播放的时间点集合（每个时间点只能播放一次）
 const guessHistory = ref<GuessRecord[]>([])
@@ -371,8 +349,8 @@ function handleTimerTimeout() {
   }
 }
 
-// 初始化倒计时
-const timer = useTimer(timerDuration, 'movie', handleTimerTimeout)
+// 初始化倒计时（仅在启用时）
+const timer = useTimer(enableTimer.value ? timerDuration : 0, 'movie', handleTimerTimeout)
 
 const suggestions = computed(() => {
   if (!inputValue.value.trim()) {
@@ -645,7 +623,9 @@ function clearAndRestart() {
 async function restartGame() {
   // 重新读取配置（可能已更改）
   const config = getGameConfig('movie')
+  enableTimer.value = config.enableTimer
   maxAttempts.value = config.maxAttempts
+  showInitialHint.value = config.showInitialHint
   maxPlaybackPerSegment.value = config.maxPlaybackPerSegment || 3
   
   // 检查是否有注册的电影
@@ -682,12 +662,21 @@ async function restartGame() {
   reviewingTimePoint.value = null
   gameStartTime.value = Date.now()
   
+  // 设置初始提示
+  if (showInitialHint.value && movie.hint) {
+    initialHint.value = movie.hint
+  } else {
+    initialHint.value = null
+  }
+  
   // 加载电影文件
   await loadMovieFiles()
   
-  // 重置倒计时
-  timer.reset(config.timerDuration * 60)
-  timer.start()
+  // 重置倒计时（仅在启用时）
+  if (enableTimer.value) {
+    timer.reset(config.timerDuration * 60)
+    timer.start()
+  }
   
   saveGameState()
 }
@@ -736,6 +725,13 @@ async function loadGameState() {
         gameWon.value = state.gameWon || false
         gameStartTime.value = state.gameStartTime || Date.now()
         
+        // 恢复初始提示
+        if (showInitialHint.value && movie.hint) {
+          initialHint.value = movie.hint
+        } else {
+          initialHint.value = null
+        }
+        
         // 加载电影文件
         await loadMovieFiles()
         
@@ -752,11 +748,20 @@ onMounted(async () => {
   // 先加载电影列表到缓存
   await getAllMovies()
   
-  // 尝试恢复倒计时状态
-  const restored = timer.restoreState()
-  if (restored) {
-    showRestoreTip.value = true
-    restoreTipMessage.value = `倒计时已恢复，剩余时间：${timer.formattedTime.value}，或者看广告延长时间，QAQ骗你的没广告~`
+  // 重新读取配置（确保使用最新配置）
+  const config = getGameConfig('movie')
+  enableTimer.value = config.enableTimer
+  showInitialHint.value = config.showInitialHint
+  maxAttempts.value = config.maxAttempts
+  
+  // 尝试恢复倒计时状态（仅在启用时）
+  let restored = false
+  if (enableTimer.value) {
+    restored = timer.restoreState()
+    if (restored) {
+      showRestoreTip.value = true
+      restoreTipMessage.value = `倒计时已恢复，剩余时间：${timer.formattedTime.value}，或者看广告延长时间，QAQ骗你的没广告~`
+    }
   }
   
   const gameStateRestored = await loadGameState()
@@ -768,9 +773,8 @@ onMounted(async () => {
       gameStartTime.value = Date.now()
     }
     
-    // 如果游戏还在进行中且倒计时未恢复，启动倒计时
-    if (!gameOver.value && !gameWon.value && !restored) {
-      const config = getGameConfig('movie')
+    // 如果游戏还在进行中且倒计时未恢复，启动倒计时（仅在启用时）
+    if (!gameOver.value && !gameWon.value && !restored && enableTimer.value) {
       timer.reset(config.timerDuration * 60)
       timer.start()
     }

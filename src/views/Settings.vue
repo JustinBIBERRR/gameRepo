@@ -9,19 +9,29 @@
         <div class="mb-8">
           <h2 class="text-xl font-semibold text-gray-900 mb-4">全局默认设置</h2>
           <div class="space-y-4">
-            <!-- 倒计时时长 -->
+            <!-- 倒计时设置（一行式：开关 + 时长） -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                倒计时时长（分钟）
-              </label>
-              <input
-                v-model.number="localSettings.defaults.timerDuration"
-                type="number"
-                min="1"
-                max="60"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                @input="validateTimerDuration"
-              />
+              <div class="flex items-center gap-2">
+                <input
+                  v-model="localSettings.defaults.enableTimer"
+                  type="checkbox"
+                  id="enableTimer"
+                  class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <label for="enableTimer" class="text-sm font-medium text-gray-700">
+                  启用倒计时
+                </label>
+                <input
+                  v-model.number="localSettings.defaults.timerDuration"
+                  type="number"
+                  min="1"
+                  max="60"
+                  :disabled="!localSettings.defaults.enableTimer"
+                  class="w-20 px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
+                  @input="validateTimerDuration"
+                />
+                <span class="text-sm text-gray-700">分钟</span>
+              </div>
               <p v-if="timerDurationError" class="mt-1 text-sm text-red-600">
                 {{ timerDurationError }}
               </p>
@@ -71,18 +81,32 @@
             <!-- 城市猜测覆盖 -->
             <Collapse title="城市猜测" :default-open="false">
               <div class="space-y-4">
+                <!-- 倒计时设置（一行式） -->
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-2">
-                    倒计时时长（分钟，留空使用全局默认）
+                    倒计时设置（留空使用全局默认）
                   </label>
-                  <input
-                    v-model.number="localSettings.overrides.city!.timerDuration"
-                    type="number"
-                    min="1"
-                    max="60"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    placeholder="使用全局默认"
-                  />
+                  <div class="flex items-center gap-2">
+                    <input
+                      v-model="localSettings.overrides.city!.enableTimer"
+                      type="checkbox"
+                      id="cityEnableTimer"
+                      class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <label for="cityEnableTimer" class="text-sm text-gray-700">
+                      启用倒计时
+                    </label>
+                    <input
+                      v-model.number="localSettings.overrides.city!.timerDuration"
+                      type="number"
+                      min="1"
+                      max="60"
+                      :disabled="localSettings.overrides.city!.enableTimer === false"
+                      class="w-20 px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 disabled:text-gray-500"
+                      placeholder="默认"
+                    />
+                    <span class="text-sm text-gray-700">分钟</span>
+                  </div>
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -114,18 +138,32 @@
             <!-- 英雄猜测覆盖 -->
             <Collapse title="英雄猜测" :default-open="false">
               <div class="space-y-4">
+                <!-- 倒计时设置（一行式） -->
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-2">
-                    倒计时时长（分钟，留空使用全局默认）
+                    倒计时设置（留空使用全局默认）
                   </label>
-                  <input
-                    v-model.number="localSettings.overrides.hero!.timerDuration"
-                    type="number"
-                    min="1"
-                    max="60"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    placeholder="使用全局默认"
-                  />
+                  <div class="flex items-center gap-2">
+                    <input
+                      v-model="localSettings.overrides.hero!.enableTimer"
+                      type="checkbox"
+                      id="heroEnableTimer"
+                      class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <label for="heroEnableTimer" class="text-sm text-gray-700">
+                      启用倒计时
+                    </label>
+                    <input
+                      v-model.number="localSettings.overrides.hero!.timerDuration"
+                      type="number"
+                      min="1"
+                      max="60"
+                      :disabled="localSettings.overrides.hero!.enableTimer === false"
+                      class="w-20 px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 disabled:text-gray-500"
+                      placeholder="默认"
+                    />
+                    <span class="text-sm text-gray-700">分钟</span>
+                  </div>
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -157,18 +195,32 @@
             <!-- 电影猜测覆盖 -->
             <Collapse title="电影猜测" :default-open="false">
               <div class="space-y-4">
+                <!-- 倒计时设置（一行式） -->
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-2">
-                    倒计时时长（分钟，留空使用全局默认）
+                    倒计时设置（留空使用全局默认）
                   </label>
-                  <input
-                    v-model.number="localSettings.overrides.movie!.timerDuration"
-                    type="number"
-                    min="1"
-                    max="60"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    placeholder="使用全局默认"
-                  />
+                  <div class="flex items-center gap-2">
+                    <input
+                      v-model="localSettings.overrides.movie!.enableTimer"
+                      type="checkbox"
+                      id="movieEnableTimer"
+                      class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <label for="movieEnableTimer" class="text-sm text-gray-700">
+                      启用倒计时
+                    </label>
+                    <input
+                      v-model.number="localSettings.overrides.movie!.timerDuration"
+                      type="number"
+                      min="1"
+                      max="60"
+                      :disabled="localSettings.overrides.movie!.enableTimer === false"
+                      class="w-20 px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100 disabled:text-gray-500"
+                      placeholder="默认"
+                    />
+                    <span class="text-sm text-gray-700">分钟</span>
+                  </div>
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -256,6 +308,24 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
+                  初始提示（可选）
+                </label>
+                <input
+                  v-model="newMovie.hint"
+                  type="text"
+                  maxlength="20"
+                  placeholder="例如：漫威、国产动画、香港警匪片"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                />
+                <p class="mt-1 text-xs text-gray-500">
+                  建议10字以内，让提示更精炼
+                  <span v-if="newMovie.hint && newMovie.hint.length > 10" class="text-yellow-600">
+                    （当前 {{ newMovie.hint.length }} 字，建议精简）
+                  </span>
+                </p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
                   视频文件 <span class="text-red-500">*</span>
                 </label>
                 <div class="space-y-2">
@@ -314,6 +384,12 @@
                   <p class="text-sm text-gray-500">
                     时长：{{ formatDuration(movie.duration) }}
                     <span v-if="movie.year"> | 年份：{{ movie.year }}</span>
+                  </p>
+                  <p v-if="movie.hint" class="text-sm text-blue-600 mt-1">
+                    💡 提示：{{ movie.hint }}
+                  </p>
+                  <p v-else class="text-sm text-gray-400 mt-1">
+                    未设置提示
                   </p>
                   <p v-if="movie.description" class="text-sm text-gray-600 mt-1">{{ movie.description }}</p>
                 </div>
@@ -404,6 +480,7 @@ const { showLoading, updateProgress, hideLoading } = useLoading()
 
 const localSettings = ref<GameSettings>({
   defaults: {
+    enableTimer: true,
     timerDuration: 5,
     maxAttempts: 5,
     showInitialHint: true,
@@ -433,6 +510,7 @@ const isProcessing = ref(false)
 const newMovie = ref({
   name: '',
   nameVariantsText: '',
+  hint: '',
   durationMinutes: 0,
   sourceFile: null as File | null
 })
@@ -633,6 +711,7 @@ async function handleAddMovie() {
       name: newMovie.value.name.trim(),
       nameVariants: nameVariants,
       duration: newMovie.value.durationMinutes * 60,
+      hint: newMovie.value.hint.trim() || undefined,  // 如果为空则设为undefined
       createdAt: Date.now()
     }
     
@@ -691,6 +770,7 @@ function cancelAddMovie() {
   newMovie.value = {
     name: '',
     nameVariantsText: '',
+    hint: '',
     durationMinutes: 0,
     sourceFile: null
   }
@@ -762,6 +842,9 @@ function saveSettings() {
   const cleanedOverrides: GameSettings['overrides'] = {}
   if (localSettings.value.overrides.city) {
     const cityOverrides: any = {}
+    if (localSettings.value.overrides.city.enableTimer !== undefined) {
+      cityOverrides.enableTimer = localSettings.value.overrides.city.enableTimer
+    }
     if (localSettings.value.overrides.city.timerDuration !== undefined) {
       cityOverrides.timerDuration = localSettings.value.overrides.city.timerDuration
     }
@@ -777,6 +860,9 @@ function saveSettings() {
   }
   if (localSettings.value.overrides.hero) {
     const heroOverrides: any = {}
+    if (localSettings.value.overrides.hero.enableTimer !== undefined) {
+      heroOverrides.enableTimer = localSettings.value.overrides.hero.enableTimer
+    }
     if (localSettings.value.overrides.hero.timerDuration !== undefined) {
       heroOverrides.timerDuration = localSettings.value.overrides.hero.timerDuration
     }
@@ -792,6 +878,9 @@ function saveSettings() {
   }
   if (localSettings.value.overrides.movie) {
     const movieOverrides: any = {}
+    if (localSettings.value.overrides.movie.enableTimer !== undefined) {
+      movieOverrides.enableTimer = localSettings.value.overrides.movie.enableTimer
+    }
     if (localSettings.value.overrides.movie.timerDuration !== undefined) {
       movieOverrides.timerDuration = localSettings.value.overrides.movie.timerDuration
     }
@@ -824,6 +913,7 @@ function saveSettings() {
 function resetSettings() {
   localSettings.value = {
     defaults: {
+      enableTimer: true,
       timerDuration: 5,
       maxAttempts: 5,
       showInitialHint: true,
@@ -845,6 +935,7 @@ onMounted(async () => {
     localSettings.value = {
       defaults: {
         ...settings.defaults,
+        enableTimer: settings.defaults.enableTimer ?? true,
         maxPlaybackPerSegment: settings.defaults.maxPlaybackPerSegment ?? 3
       },
       overrides: {
@@ -863,11 +954,12 @@ onMounted(async () => {
       const settings = getGameSettings()
       localSettings.value = {
         defaults: {
-          timerDuration: 5,
-          maxAttempts: 5,
-          showInitialHint: true,
-          maxPlaybackPerSegment: 3,
-          ...settings.defaults
+          ...settings.defaults,
+          enableTimer: settings.defaults.enableTimer ?? true,
+          timerDuration: settings.defaults.timerDuration ?? 5,
+          maxAttempts: settings.defaults.maxAttempts ?? 5,
+          showInitialHint: settings.defaults.showInitialHint ?? true,
+          maxPlaybackPerSegment: settings.defaults.maxPlaybackPerSegment ?? 3
         },
         overrides: {
           city: settings.overrides?.city || {},

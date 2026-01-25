@@ -11,6 +11,7 @@ export interface Movie {
   name: string
   nameVariants: string[]
   duration: number
+  hint?: string      // 初始提示（可选，如"漫威"、"国产动画"）
   videoUrl?: string  // 可选，因为现在使用本地文件
   videoType?: 'api' | 'local'  // 可选
   apiProvider?: 'youtube' | 'bilibili' | 'other'
@@ -33,6 +34,7 @@ export async function getAllMovies(): Promise<Movie[]> {
       name: movie.name,
       nameVariants: movie.nameVariants,
       duration: movie.duration,
+      hint: movie.hint,
       description: movie.description,
       year: movie.year,
       videoType: 'local' as const

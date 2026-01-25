@@ -55,6 +55,7 @@ export interface GameHistoryEntry {
 
 export interface GameSettings {
   defaults: {
+    enableTimer: boolean        // 是否启用倒计时，默认true
     timerDuration: number      // 倒计时时长（分钟），默认5
     maxAttempts: number         // 最大尝试次数，默认5
     showInitialHint: boolean     // 是否显示初始提示，默认true
@@ -62,16 +63,19 @@ export interface GameSettings {
   }
   overrides: {
     city?: {
+      enableTimer?: boolean
       timerDuration?: number
       maxAttempts?: number
       showInitialHint?: boolean
     }
     hero?: {
+      enableTimer?: boolean
       timerDuration?: number
       maxAttempts?: number
       showInitialHint?: boolean
     }
     movie?: {
+      enableTimer?: boolean
       timerDuration?: number
       maxAttempts?: number
       showInitialHint?: boolean
@@ -81,6 +85,7 @@ export interface GameSettings {
 }
 
 export interface GameConfig {
+  enableTimer: boolean
   timerDuration: number
   maxAttempts: number
   showInitialHint: boolean
@@ -385,6 +390,7 @@ export function clearGameData(gameType: 'city' | 'hero' | 'movie'): void {
 function initGameSettings(): GameSettings {
   return {
     defaults: {
+      enableTimer: true,
       timerDuration: 5,
       maxAttempts: 5,
       showInitialHint: true,
@@ -416,6 +422,7 @@ export function getGameConfig(gameType: 'city' | 'hero' | 'movie'): GameConfig {
   const override = settings.overrides[gameType]
   
   const config: GameConfig = {
+    enableTimer: override?.enableTimer ?? settings.defaults.enableTimer,
     timerDuration: override?.timerDuration ?? settings.defaults.timerDuration,
     maxAttempts: override?.maxAttempts ?? settings.defaults.maxAttempts,
     showInitialHint: override?.showInitialHint ?? settings.defaults.showInitialHint
@@ -423,7 +430,8 @@ export function getGameConfig(gameType: 'city' | 'hero' | 'movie'): GameConfig {
   
   // 电影游戏特有的配置
   if (gameType === 'movie') {
-    config.maxPlaybackPerSegment = override?.maxPlaybackPerSegment ?? settings.defaults.maxPlaybackPerSegment ?? 3
+    const movieOverride = settings.overrides.movie
+    config.maxPlaybackPerSegment = movieOverride?.maxPlaybackPerSegment ?? settings.defaults.maxPlaybackPerSegment ?? 3
   }
   
   return config
