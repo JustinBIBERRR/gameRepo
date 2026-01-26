@@ -12,8 +12,8 @@ export interface AchievementDefinition {
   description: string
   icon: string
   category: 'milestone' | 'skill' | 'exploration' | 'time'
-  checkCondition: (stats: GameStats, gameType: 'city' | 'hero') => boolean
-  getProgress: (stats: GameStats, gameType: 'city' | 'hero') => number
+  checkCondition: (stats: GameStats, gameType: 'city' | 'hero' | 'movie') => boolean
+  getProgress: (stats: GameStats, gameType: 'city' | 'hero' | 'movie') => number
   maxProgress: number
 }
 

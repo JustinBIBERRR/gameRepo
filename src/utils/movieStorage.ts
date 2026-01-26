@@ -185,7 +185,7 @@ export async function getAllMovieFiles(): Promise<LocalMovieFiles[]> {
  */
 export async function hasMovieFiles(movieId: string): Promise<boolean> {
   const files = await getMovieFiles(movieId)
-  return files !== null && (files.sourceFile !== undefined || (files.keySegments && files.keySegments.length > 0))
+  return files !== null && (files.sourceFile !== undefined || (files.keySegments !== undefined && files.keySegments.length > 0))
 }
 
 /**

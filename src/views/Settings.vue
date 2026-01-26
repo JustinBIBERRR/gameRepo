@@ -422,7 +422,7 @@
                       {{ movieFileStatus[movie.id]?.sourceFile ? '更换文件' : '选择文件' }}
                     </label>
                     <span v-if="movieFileStatus[movie.id]?.sourceFile" class="text-sm text-gray-600">
-                      {{ formatFileSize(movieFileStatus[movie.id].sourceFile.size) }}
+                      {{ formatFileSize(movieFileStatus[movie.id]?.sourceFile?.size ?? 0) }}
                     </span>
                     <span v-else class="text-sm text-red-600">未配置</span>
                     <span v-if="getPreloadStatus(movie.id).isPreloaded" class="text-sm text-green-600">

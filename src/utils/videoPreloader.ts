@@ -101,7 +101,7 @@ class VideoPreloader {
         resolve()
       }
 
-      const handleError = (e: Event) => {
+      const handleError = () => {
         videoElement.removeEventListener('canplaythrough', handleCanPlayThrough)
         videoElement.removeEventListener('progress', handleProgress)
         videoElement.removeEventListener('loadedmetadata', handleLoadedMetadata)

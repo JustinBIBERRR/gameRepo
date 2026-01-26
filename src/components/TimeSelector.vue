@@ -114,7 +114,7 @@ function validateTime(seconds: number): boolean {
 function updateSeconds(seconds: number) {
   if (validateTime(seconds)) {
     currentSeconds.value = Math.min(seconds, props.maxDuration)
-    const { minutes, secs } = secondsToMinutesSeconds(currentSeconds.value)
+    const { minutes, seconds: secs } = secondsToMinutesSeconds(currentSeconds.value)
     localMinutes.value = minutes
     localSeconds.value = secs
     emit('change', currentSeconds.value)

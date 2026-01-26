@@ -203,7 +203,9 @@ const hasValidVideoUrl = computed(() => {
 })
 
 // 处理本地视频文件（优先使用预加载的视频）
-watch(() => [props.videoFile, props.movieId, props.videoUrl], async ([newFile, movieId, videoUrl]) => {
+watch(
+  () => [props.videoFile, props.movieId, props.videoUrl] as const,
+  async ([newFile, movieId, videoUrl]) => {
   if (props.videoType === 'local') {
     // 释放旧的Object URL（如果不是预加载的）
     if (videoObjectUrl.value && !isPreloadedUrl.value) {
@@ -223,7 +225,7 @@ watch(() => [props.videoFile, props.movieId, props.videoUrl], async ([newFile, m
         isLoading.value = false
         loadingProgress.value = 100
         // 确保 video 元素使用正确的 src
-        if (videoElement.value) {
+        if (videoElement.value && objectUrl) {
           videoElement.value.src = objectUrl
           videoElement.value.load()
         }
@@ -339,9 +341,11 @@ async function play() {
           reject(new Error('视频加载失败'))
         }
         
-        videoElement.value.addEventListener('canplay', handleCanPlay, { once: true })
-        videoElement.value.addEventListener('error', handleError, { once: true })
-        videoElement.value.load()
+        if (videoElement.value) {
+          videoElement.value.addEventListener('canplay', handleCanPlay, { once: true })
+          videoElement.value.addEventListener('error', handleError, { once: true })
+          videoElement.value.load()
+        }
       }).catch(error => {
         console.error('视频加载失败:', error)
         return
@@ -535,7 +539,6 @@ function handleTimeUpdate() {
   if (videoElement.value) {
     currentTime.value = videoElement.value.currentTime
     // 检查是否超过播放时长
-    const elapsed = videoElement.value.currentTime - props.startTime
     const endTime = Math.min(props.startTime + props.duration, videoDuration.value)
     
     // 如果当前时间超过结束时间，停止播放

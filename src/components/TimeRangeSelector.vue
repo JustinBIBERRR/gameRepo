@@ -56,11 +56,6 @@
         {{ props.disabled ? '播放中，请稍候...' : '拖动滑块选择15秒片段 | 蓝色区域=当前选中 | 深灰标记=已播放' }}
       </p>
     </div>
-
-    <!-- 错误提示 -->
-    <div v-if="errorMessage" class="text-sm text-red-600">
-      {{ errorMessage }}
-    </div>
   </div>
 </template>
 

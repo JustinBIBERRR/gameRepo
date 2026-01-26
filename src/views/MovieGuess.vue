@@ -269,7 +269,6 @@ import {
   getMovieById,
   matchMovie,
   searchMovies,
-  getAllMovieNames,
   formatTime,
   getAllMovies,
   type Movie

@@ -3,7 +3,7 @@
  * 处理电影数据的查询、匹配等功能
  */
 
-import { getAllUserMovies, type UserMovie } from './movieStorage'
+import { getAllUserMovies } from './movieStorage'
 
 // 兼容旧的Movie接口（用于游戏逻辑）
 export interface Movie {
