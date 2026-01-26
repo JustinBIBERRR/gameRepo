@@ -17,7 +17,17 @@ const STORAGE_KEYS = {
   // 游戏设置
   GAME_SETTINGS: 'gameSettings',
   // 倒计时状态
-  GAME_TIMER_STATE: 'gameTimerState'
+  GAME_TIMER_STATE: 'gameTimerState',
+  // 迁移标记
+  SETTINGS_MIGRATED: 'settingsMigrated',
+  // 自定义游戏数据
+  CUSTOM_CITY_DATA: 'customCityData',
+  CUSTOM_HERO_DATA: 'customHeroData',
+  CUSTOM_MOVIE_DATA: 'customMovieData',
+  // 游戏显示/隐藏状态
+  GAME_VISIBILITY: 'gameVisibility',
+  // Settings 元数据
+  SETTINGS_META: 'settingsMeta'
 } as const
 
 export interface GameStats {
@@ -59,7 +69,7 @@ export interface GameSettings {
     timerDuration: number      // 倒计时时长（分钟），默认5
     maxAttempts: number         // 最大尝试次数，默认5
     showInitialHint: boolean     // 是否显示初始提示，默认true
-    maxPlaybackPerSegment?: number  // 每个片段最多播放次数（仅电影游戏），默认3
+    maxPlaybackPerSegment?: number  // 每个片段最多播放次数（仅电影游戏），默认1
   }
   overrides: {
     city?: {
@@ -97,6 +107,24 @@ export interface TimerState {
   startTime: number        // 倒计时开始时间戳
   remainingSeconds: number // 剩余秒数
   isRunning: boolean       // 是否正在运行
+}
+
+export interface CustomGameData<T> {
+  useCustom: boolean       // 是否使用自定义数据
+  items: T[]               // 自定义数据项
+  lastModified: number     // 最后修改时间
+  expiresAt: number        // 过期时间戳（基于 lastModified + 过期天数计算）
+}
+
+export interface GameVisibility {
+  city: boolean            // 城市游戏是否在首页显示
+  hero: boolean            // 英雄游戏是否在首页显示
+  movie: boolean           // 电影游戏是否在首页显示
+}
+
+export interface SettingsMeta {
+  dataExpirationDays: number  // 数据过期天数，默认 30
+  lastAccess: number          // 最后访问时间
 }
 
 /**
@@ -394,7 +422,7 @@ function initGameSettings(): GameSettings {
       timerDuration: 5,
       maxAttempts: 5,
       showInitialHint: true,
-      maxPlaybackPerSegment: 3  // 默认每个片段最多播放3次
+      maxPlaybackPerSegment: 1  // 默认每个片段最多播放1次
     },
     overrides: {}
   }
@@ -431,7 +459,9 @@ export function getGameConfig(gameType: 'city' | 'hero' | 'movie'): GameConfig {
   // 电影游戏特有的配置
   if (gameType === 'movie') {
     const movieOverride = settings.overrides.movie
-    config.maxPlaybackPerSegment = movieOverride?.maxPlaybackPerSegment ?? settings.defaults.maxPlaybackPerSegment ?? 3
+    // 电影游戏默认倒计时30分钟，片段播放次数1次
+    config.timerDuration = movieOverride?.timerDuration ?? 30
+    config.maxPlaybackPerSegment = movieOverride?.maxPlaybackPerSegment ?? settings.defaults.maxPlaybackPerSegment ?? 1
   }
   
   return config
@@ -456,4 +486,214 @@ export function loadTimerState(): TimerState | null {
  */
 export function clearTimerState(): void {
   sessionStorage.removeItem(STORAGE_KEYS.GAME_TIMER_STATE)
+}
+
+/**
+ * 初始化游戏可见性配置
+ */
+function initGameVisibility(): GameVisibility {
+  return {
+    city: true,
+    hero: true,
+    movie: true
+  }
+}
+
+/**
+ * 获取游戏可见性配置
+ */
+export function getGameVisibility(): GameVisibility {
+  return getLocalStorage(STORAGE_KEYS.GAME_VISIBILITY, initGameVisibility())
+}
+
+/**
+ * 保存游戏可见性配置
+ */
+export function saveGameVisibility(visibility: GameVisibility): void {
+  setLocalStorage(STORAGE_KEYS.GAME_VISIBILITY, visibility)
+}
+
+/**
+ * 更新单个游戏的可见性
+ */
+export function updateGameVisibility(gameType: 'city' | 'hero' | 'movie', visible: boolean): void {
+  const visibility = getGameVisibility()
+  visibility[gameType] = visible
+  saveGameVisibility(visibility)
+}
+
+/**
+ * 初始化 Settings 元数据
+ */
+function initSettingsMeta(): SettingsMeta {
+  return {
+    dataExpirationDays: 30,
+    lastAccess: Date.now()
+  }
+}
+
+/**
+ * 获取 Settings 元数据
+ */
+export function getSettingsMeta(): SettingsMeta {
+  return getLocalStorage(STORAGE_KEYS.SETTINGS_META, initSettingsMeta())
+}
+
+/**
+ * 保存 Settings 元数据
+ */
+export function saveSettingsMeta(meta: SettingsMeta): void {
+  setLocalStorage(STORAGE_KEYS.SETTINGS_META, meta)
+}
+
+/**
+ * 更新数据过期天数
+ */
+export function updateDataExpirationDays(days: number): void {
+  const meta = getSettingsMeta()
+  meta.dataExpirationDays = Math.max(1, Math.min(365, days))
+  saveSettingsMeta(meta)
+}
+
+/**
+ * 获取自定义游戏数据
+ */
+export function getCustomGameData<T>(gameType: 'city' | 'hero' | 'movie'): CustomGameData<T> | null {
+  const key = gameType === 'city'
+    ? STORAGE_KEYS.CUSTOM_CITY_DATA
+    : gameType === 'hero'
+    ? STORAGE_KEYS.CUSTOM_HERO_DATA
+    : STORAGE_KEYS.CUSTOM_MOVIE_DATA
+  return getLocalStorage<CustomGameData<T> | null>(key, null)
+}
+
+/**
+ * 保存自定义游戏数据
+ */
+export function saveCustomGameData<T>(gameType: 'city' | 'hero' | 'movie', data: CustomGameData<T>): void {
+  const meta = getSettingsMeta()
+  const expirationMs = meta.dataExpirationDays * 24 * 60 * 60 * 1000
+  
+  const customData: CustomGameData<T> = {
+    ...data,
+    lastModified: Date.now(),
+    expiresAt: Date.now() + expirationMs
+  }
+  
+  const key = gameType === 'city'
+    ? STORAGE_KEYS.CUSTOM_CITY_DATA
+    : gameType === 'hero'
+    ? STORAGE_KEYS.CUSTOM_HERO_DATA
+    : STORAGE_KEYS.CUSTOM_MOVIE_DATA
+  setLocalStorage(key, customData)
+}
+
+/**
+ * 清除自定义游戏数据
+ */
+export function clearCustomGameData(gameType: 'city' | 'hero' | 'movie'): void {
+  const key = gameType === 'city'
+    ? STORAGE_KEYS.CUSTOM_CITY_DATA
+    : gameType === 'hero'
+    ? STORAGE_KEYS.CUSTOM_HERO_DATA
+    : STORAGE_KEYS.CUSTOM_MOVIE_DATA
+  localStorage.removeItem(key)
+}
+
+/**
+ * 检查并清除过期的自定义数据
+ * @returns 返回被清除的游戏类型数组
+ */
+export function checkAndClearExpiredData(): ('city' | 'hero' | 'movie')[] {
+  const meta = getSettingsMeta()
+  const now = Date.now()
+  const expirationMs = meta.dataExpirationDays * 24 * 60 * 60 * 1000
+  const clearedGames: ('city' | 'hero' | 'movie')[] = []
+  
+  for (const gameType of ['city', 'hero', 'movie'] as const) {
+    const data = getCustomGameData(gameType)
+    if (data && data.useCustom && data.lastModified + expirationMs < now) {
+      clearCustomGameData(gameType)
+      clearedGames.push(gameType)
+    }
+  }
+  
+  // 更新最后访问时间
+  meta.lastAccess = now
+  saveSettingsMeta(meta)
+  
+  return clearedGames
+}
+
+/**
+ * 切换为使用自定义数据（复制默认数据）
+ */
+export function switchToCustomData<T>(gameType: 'city' | 'hero' | 'movie', defaultData: T[]): CustomGameData<T> {
+  const customData: CustomGameData<T> = {
+    useCustom: true,
+    items: [...defaultData], // 深拷贝
+    lastModified: Date.now(),
+    expiresAt: 0 // 将在保存时计算
+  }
+  
+  saveCustomGameData(gameType, customData)
+  return customData
+}
+
+/**
+ * 重置为默认数据
+ */
+export function resetToDefaultData(gameType: 'city' | 'hero' | 'movie'): void {
+  clearCustomGameData(gameType)
+}
+
+/**
+ * 迁移旧设置数据到新格式
+ * 将全局默认设置迁移到各游戏的独立配置中
+ */
+export function migrateSettings(): void {
+  // 检查是否已经迁移过
+  const migrated = getLocalStorage(STORAGE_KEYS.SETTINGS_MIGRATED, false)
+  if (migrated) {
+    return
+  }
+  
+  const settings = getGameSettings()
+  
+  // 如果有全局默认设置，且各游戏没有独立配置，则迁移
+  if (settings.defaults && Object.keys(settings.overrides).length === 0) {
+    const defaults = settings.defaults
+    
+    // 为每个游戏创建独立配置
+    const newOverrides: GameSettings['overrides'] = {
+      city: {
+        enableTimer: defaults.enableTimer,
+        timerDuration: defaults.timerDuration,
+        maxAttempts: defaults.maxAttempts,
+        showInitialHint: defaults.showInitialHint
+      },
+      hero: {
+        enableTimer: defaults.enableTimer,
+        timerDuration: defaults.timerDuration,
+        maxAttempts: defaults.maxAttempts,
+        showInitialHint: defaults.showInitialHint
+      },
+      movie: {
+        enableTimer: defaults.enableTimer,
+        timerDuration: defaults.timerDuration,
+        maxAttempts: defaults.maxAttempts,
+        showInitialHint: defaults.showInitialHint,
+        maxPlaybackPerSegment: defaults.maxPlaybackPerSegment
+      }
+    }
+    
+    // 保存迁移后的设置
+    saveGameSettings({
+      defaults: settings.defaults, // 保留默认值作为后备
+      overrides: newOverrides
+    })
+  }
+  
+  // 标记迁移完成
+  setLocalStorage(STORAGE_KEYS.SETTINGS_MIGRATED, true)
 }

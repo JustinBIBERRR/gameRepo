@@ -60,7 +60,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
 import type { Achievement } from '../utils/storageUtils'
 
 const props = defineProps<{

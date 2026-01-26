@@ -254,8 +254,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import Navigation from '../components/Navigation.vue'
 import GameHeader from '../components/GameHeader.vue'
 import Autocomplete from '../components/Autocomplete.vue'
@@ -283,6 +281,7 @@ import {
 import { checkAndUpdateAchievements } from '../utils/achievementUtils'
 import { getMovieFiles } from '../utils/movieStorage'
 import { selectPlaybackMethod } from '../utils/moviePlayback'
+import { videoPreloader } from '../utils/videoPreloader'
 import type { LocalMovieFiles } from '../utils/movieStorage'
 
 const router = useRouter()
@@ -299,7 +298,7 @@ const gameConfig = getGameConfig('movie')
 const enableTimer = ref(gameConfig.enableTimer)
 const maxAttempts = ref(gameConfig.maxAttempts)
 const showInitialHint = ref(gameConfig.showInitialHint)
-const maxPlaybackPerSegment = ref(gameConfig.maxPlaybackPerSegment || 3)
+const maxPlaybackPerSegment = ref(gameConfig.maxPlaybackPerSegment || 1)
 const timerDuration = gameConfig.timerDuration * 60 // 转换为秒
 const targetMovie = ref<Movie | null>(null)
 const attempts = ref(0)
@@ -385,6 +384,36 @@ async function loadMovieFiles() {
   try {
     const files = await getMovieFiles(targetMovie.value.id)
     movieFiles.value = files
+    
+    // 如果视频已经预加载，直接使用，无需等待
+    if (files && files.sourceFile && videoPreloader.isPreloaded(targetMovie.value.id)) {
+      // 视频已预加载，可以直接播放，无需等待
+      // 如果电影时长为0，从预加载的视频中获取
+      if (!targetMovie.value.duration || targetMovie.value.duration === 0) {
+        const preloadedDuration = videoPreloader.getVideoDuration(targetMovie.value.id)
+        if (preloadedDuration && preloadedDuration > 0) {
+          targetMovie.value.duration = Math.floor(preloadedDuration)
+        }
+      }
+      await updatePlaybackSource(selectedTimePoint.value)
+      return
+    }
+    
+    // 如果没有预加载，尝试预加载（但这种情况应该很少，因为配置页面已经预加载了）
+    if (files && files.sourceFile && !videoPreloader.isPreloaded(targetMovie.value.id)) {
+      // 异步预加载，不阻塞游戏开始
+      videoPreloader.preloadVideo(targetMovie.value.id, files.sourceFile).then(() => {
+        // 预加载完成后，更新时长
+        if (targetMovie.value && (!targetMovie.value.duration || targetMovie.value.duration === 0)) {
+          const preloadedDuration = videoPreloader.getVideoDuration(targetMovie.value.id)
+          if (preloadedDuration && preloadedDuration > 0) {
+            targetMovie.value.duration = Math.floor(preloadedDuration)
+          }
+        }
+      }).catch(error => {
+        console.warn('预加载视频失败（不影响游戏）:', error)
+      })
+    }
     
     // 根据智能选择设置播放源
     await updatePlaybackSource(selectedTimePoint.value)
@@ -625,7 +654,7 @@ async function restartGame() {
   enableTimer.value = config.enableTimer
   maxAttempts.value = config.maxAttempts
   showInitialHint.value = config.showInitialHint
-  maxPlaybackPerSegment.value = config.maxPlaybackPerSegment || 3
+  maxPlaybackPerSegment.value = config.maxPlaybackPerSegment || 1
   
   // 检查是否有注册的电影
   const movies = await getAllMovies()
@@ -670,6 +699,14 @@ async function restartGame() {
   
   // 加载电影文件
   await loadMovieFiles()
+  
+  // 如果电影时长为0，尝试从预加载的视频中获取
+  if (targetMovie.value && (!targetMovie.value.duration || targetMovie.value.duration === 0)) {
+    const preloadedDuration = videoPreloader.getVideoDuration(targetMovie.value.id)
+    if (preloadedDuration && preloadedDuration > 0) {
+      targetMovie.value.duration = Math.floor(preloadedDuration)
+    }
+  }
   
   // 重置倒计时（仅在启用时）
   if (enableTimer.value) {

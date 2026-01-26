@@ -4,6 +4,9 @@
  */
 
 import { getAllUserMovies } from './movieStorage'
+import { getCustomGameData } from './storageUtils'
+import moviesDataRaw from '../data/movies.json'
+import type { MovieData } from '../schemas/movieSchema'
 
 // 兼容旧的Movie接口（用于游戏逻辑）
 export interface Movie {
@@ -19,25 +22,62 @@ export interface Movie {
   year?: number
 }
 
+// 默认电影数据
+const defaultMoviesData = (moviesDataRaw as any).movies || []
+
 // 缓存用户电影列表
 let cachedMovies: Movie[] | null = null
 
 /**
- * 获取所有电影（从IndexedDB读取用户注册的电影）
+ * 获取所有电影（优先自定义数据，然后用户注册的电影，最后默认数据）
  */
 export async function getAllMovies(): Promise<Movie[]> {
   try {
+    // 1. 检查是否有自定义数据
+    const customData = getCustomGameData<MovieData>('movie')
+    if (customData && customData.useCustom && customData.items.length > 0) {
+      // 使用自定义数据
+      cachedMovies = customData.items.map(item => ({
+        id: item.id,
+        name: item.name,
+        nameVariants: item.nameVariants || [],
+        duration: item.duration || 0,
+        hint: item.hint,
+        description: item.description,
+        year: item.year,
+        videoType: 'api' as const,
+        apiProvider: 'bilibili' as const
+      }))
+      return cachedMovies
+    }
+    
+    // 2. 从IndexedDB读取用户注册的电影
     const userMovies = await getAllUserMovies()
-    // 转换为Movie接口格式
-    cachedMovies = userMovies.map(movie => ({
+    if (userMovies.length > 0) {
+      cachedMovies = userMovies.map(movie => ({
+        id: movie.id,
+        name: movie.name,
+        nameVariants: movie.nameVariants,
+        duration: movie.duration,
+        hint: movie.hint,
+        description: movie.description,
+        year: movie.year,
+        videoType: 'local' as const
+      }))
+      return cachedMovies
+    }
+    
+    // 3. 使用默认数据
+    cachedMovies = defaultMoviesData.map((movie: any) => ({
       id: movie.id,
       name: movie.name,
-      nameVariants: movie.nameVariants,
-      duration: movie.duration,
+      nameVariants: movie.nameVariants || [],
+      duration: movie.duration || 0,
       hint: movie.hint,
       description: movie.description,
       year: movie.year,
-      videoType: 'local' as const
+      videoType: movie.videoType || 'api',
+      apiProvider: movie.apiProvider || 'bilibili'
     }))
     return cachedMovies
   } catch (error) {

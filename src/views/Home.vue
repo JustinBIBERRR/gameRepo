@@ -98,20 +98,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
 import Navigation from '../components/Navigation.vue'
 import GameCard from '../components/GameCard.vue'
 import AchievementBadge from '../components/AchievementBadge.vue'
 import { useModal } from '../composables/useModal'
-import { getGameStats, clearAllData } from '../utils/storageUtils'
+import { getGameStats, clearAllData, getGameVisibility } from '../utils/storageUtils'
 import { getAchievements } from '../utils/storageUtils'
 
 const { confirm: showConfirm, success: showSuccess } = useModal()
 
-import { h } from 'vue'
-
-const games = [
+const allGames = [
   {
+    gameType: 'city' as const,
     title: '城市猜测',
     description: '系统随机选择一个国内城市，你有5次机会猜测。每次猜测后会显示距离、方位和城市特点。',
     path: '/city-guess',
@@ -137,6 +135,7 @@ const games = [
     ])
   },
   {
+    gameType: 'hero' as const,
     title: '王者荣耀人物猜测',
     description: '系统随机选择一个王者荣耀英雄，你有5次机会猜测。通过职业、年代、国籍、人类、性别等属性提示来找到答案。',
     path: '/hero-guess',
@@ -156,6 +155,7 @@ const games = [
     ])
   },
   {
+    gameType: 'movie' as const,
     title: '听片段猜电影',
     description: '系统随机选择一部电影，你有8次机会猜测。通过听15秒音频片段来找到答案。',
     path: '/movie-guess',
@@ -175,6 +175,12 @@ const games = [
     ])
   }
 ]
+
+// 根据可见性配置过滤游戏
+const games = computed(() => {
+  const visibility = getGameVisibility()
+  return allGames.filter(game => visibility[game.gameType])
+})
 
 const stats = ref({
   wins: 0,

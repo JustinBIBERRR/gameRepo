@@ -1,4 +1,3 @@
-import { ref, computed, onUnmounted, onMounted } from 'vue'
 import { saveTimerState, loadTimerState, clearTimerState } from '../utils/storageUtils'
 
 export function useTimer(initialDuration: number, gameType: 'city' | 'hero' | 'movie', onTimeout?: () => void) {

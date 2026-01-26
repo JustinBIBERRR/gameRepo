@@ -1,4 +1,3 @@
-import { ref } from 'vue'
 
 interface ModalOptions {
   title: string

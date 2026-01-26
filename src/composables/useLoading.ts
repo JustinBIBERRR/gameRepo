@@ -1,4 +1,3 @@
-import { ref } from 'vue'
 
 interface LoadingState {
   visible: boolean

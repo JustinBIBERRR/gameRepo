@@ -1,5 +1,7 @@
 import heroesData from '../data/heroes.json'
 import { matchByPinyin, searchByPinyin } from './pinyinUtils'
+import { getCustomGameData } from './storageUtils'
+import type { HeroData } from '../schemas/heroSchema'
 
 export interface Hero {
   name: string
@@ -10,7 +12,34 @@ export interface Hero {
   gender: string
 }
 
-export const heroes: Hero[] = heroesData as Hero[]
+// 默认英雄数据
+const defaultHeroes: Hero[] = heroesData as Hero[]
+
+// 获取当前使用的英雄数据（优先自定义数据）
+function getHeroes(): Hero[] {
+  const customData = getCustomGameData<HeroData>('hero')
+  if (customData && customData.useCustom && customData.items.length > 0) {
+    // 使用自定义数据
+    return customData.items.map(item => ({
+      name: item.name,
+      role: item.role || '',
+      era: item.era || '',
+      nationality: item.nationality || '',
+      human: item.human || '',
+      gender: item.gender || ''
+    }))
+  }
+  // 使用默认数据
+  return defaultHeroes
+}
+
+// 提供一个函数来获取最新的英雄数据（用于动态更新）
+export function getCurrentHeroes(): Hero[] {
+  return getHeroes()
+}
+
+// 为了向后兼容，提供一个 heroes 常量（但建议使用 getCurrentHeroes()）
+export const heroes: Hero[] = getHeroes()
 
 export const attributes = ['role', 'era', 'nationality', 'human', 'gender'] as const
 export const attributeLabels = {
@@ -26,16 +55,17 @@ export const attributeLabels = {
  */
 export function matchHero(input: string): Hero | null {
   const normalizedInput = input.trim()
+  const currentHeroes = getCurrentHeroes()
   
   // 优先精确匹配中文名称
-  for (const hero of heroes) {
+  for (const hero of currentHeroes) {
     if (hero.name === normalizedInput) {
       return hero
     }
   }
   
   // 使用拼音匹配
-  for (const hero of heroes) {
+  for (const hero of currentHeroes) {
     if (matchByPinyin(normalizedInput, hero.name)) {
       return hero
     }
@@ -48,7 +78,7 @@ export function matchHero(input: string): Hero | null {
  * 获取所有人物名称
  */
 export function getAllHeroNames(): string[] {
-  return heroes.map(hero => hero.name)
+  return getCurrentHeroes().map(hero => hero.name)
 }
 
 /**
@@ -59,7 +89,7 @@ export function searchHeroes(query: string): string[] {
     return []
   }
   
-  const heroNames = heroes.map(hero => hero.name)
+  const heroNames = getCurrentHeroes().map(hero => hero.name)
   const results = searchByPinyin(query, heroNames)
   
   return results.slice(0, 10)
@@ -69,8 +99,12 @@ export function searchHeroes(query: string): string[] {
  * 随机选择一个人物
  */
 export function getRandomHero(): Hero {
-  const index = Math.floor(Math.random() * heroes.length)
-  return heroes[index]
+  const currentHeroes = getCurrentHeroes()
+  if (currentHeroes.length === 0) {
+    throw new Error('没有可用的英雄数据')
+  }
+  const index = Math.floor(Math.random() * currentHeroes.length)
+  return currentHeroes[index]
 }
 
 /**

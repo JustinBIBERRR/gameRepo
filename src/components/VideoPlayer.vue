@@ -113,7 +113,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { videoPreloader } from '../utils/videoPreloader'
 
 interface Props {

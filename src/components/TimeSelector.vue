@@ -62,7 +62,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
 import { secondsToMinutesSeconds, minutesSecondsToSeconds } from '../utils/movieUtils'
 
 interface Props {

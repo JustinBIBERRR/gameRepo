@@ -28,6 +28,21 @@ const router = createRouter({
       component: () => import('../views/Settings.vue')
     },
     {
+      path: '/settings/city',
+      name: 'CitySettings',
+      component: () => import('../views/GameSettings/CitySettings.vue')
+    },
+    {
+      path: '/settings/hero',
+      name: 'HeroSettings',
+      component: () => import('../views/GameSettings/HeroSettings.vue')
+    },
+    {
+      path: '/settings/movie',
+      name: 'MovieSettings',
+      component: () => import('../views/GameSettings/MovieSettings.vue')
+    },
+    {
       path: '/movie-guess',
       name: 'MovieGuess',
       component: () => import('../views/MovieGuess.vue')

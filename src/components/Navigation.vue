@@ -8,12 +8,12 @@
           </router-link>
         </div>
         <div class="flex items-center gap-4">
-          <!-- 设置入口 -->
+          <!-- 管理入口（仅显示齿轮图标） -->
           <router-link
             to="/settings"
             class="text-gray-700 hover:text-blue-600 p-2 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            :class="{ 'text-blue-600': route.path === '/settings' }"
-            title="设置"
+            :class="{ 'text-blue-600': route.path.startsWith('/settings') }"
+            title="管理"
           >
             <svg
               class="w-5 h-5"
@@ -83,9 +83,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, h } from 'vue'
-import { useRoute } from 'vue-router'
-
 const route = useRoute()
 const dropdownRef = ref<HTMLElement | null>(null)
 const isDropdownOpen = ref(false)

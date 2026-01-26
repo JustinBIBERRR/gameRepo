@@ -1,5 +1,7 @@
 import citiesData from '../data/cities.json'
 import { matchByPinyin } from './pinyinUtils'
+import { getCustomGameData } from './storageUtils'
+import type { CityData } from '../schemas/citySchema'
 
 export interface City {
   name: string
@@ -9,8 +11,33 @@ export interface City {
   features: string[]
 }
 
-// 加载城市数据
-export const cities: City[] = citiesData as City[]
+// 默认城市数据
+const defaultCities: City[] = citiesData as City[]
+
+// 获取当前使用的城市数据（优先自定义数据）
+function getCities(): City[] {
+  const customData = getCustomGameData<CityData>('city')
+  if (customData && customData.useCustom && customData.items.length > 0) {
+    // 使用自定义数据
+    return customData.items.map(item => ({
+      name: item.name,
+      aliases: item.aliases || [],
+      latitude: item.latitude,
+      longitude: item.longitude,
+      features: item.features || []
+    }))
+  }
+  // 使用默认数据
+  return defaultCities
+}
+
+// 提供一个函数来获取最新的城市数据（用于动态更新）
+export function getCurrentCities(): City[] {
+  return getCities()
+}
+
+// 为了向后兼容，提供一个 cities 常量（但建议使用 getCurrentCities()）
+export const cities: City[] = getCities()
 
 /**
  * 使用 Haversine 公式计算两点间的距离（公里）
@@ -78,8 +105,9 @@ export function bearingToDirection(bearing: number): string {
  */
 export function matchCity(input: string): City | null {
   const normalizedInput = input.trim()
+  const currentCities = getCurrentCities()
   
-  for (const city of cities) {
+  for (const city of currentCities) {
     // 精确匹配主名称
     if (city.name === normalizedInput) {
       return city
@@ -112,7 +140,7 @@ export function matchCity(input: string): City | null {
  * 获取所有城市名称（用于 autocomplete）
  */
 export function getAllCityNames(): string[] {
-  return cities.map(city => city.name)
+  return getCurrentCities().map(city => city.name)
 }
 
 /**
@@ -126,8 +154,9 @@ export function searchCities(query: string): string[] {
   const normalizedQuery = query.trim().toLowerCase()
   const results: string[] = []
   const addedCities = new Set<string>()
+  const currentCities = getCurrentCities()
   
-  for (const city of cities) {
+  for (const city of currentCities) {
     // 如果已经添加过，跳过
     if (addedCities.has(city.name)) {
       continue
@@ -157,8 +186,12 @@ export function searchCities(query: string): string[] {
  * 随机选择一个城市
  */
 export function getRandomCity(): City {
-  const index = Math.floor(Math.random() * cities.length)
-  return cities[index]
+  const currentCities = getCurrentCities()
+  if (currentCities.length === 0) {
+    throw new Error('没有可用的城市数据')
+  }
+  const index = Math.floor(Math.random() * currentCities.length)
+  return currentCities[index]
 }
 
 /**

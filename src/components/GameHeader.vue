@@ -66,7 +66,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import GameTimer from './GameTimer.vue'
 import TimerRestoreTip from './TimerRestoreTip.vue'
 import ProgressBar from './ProgressBar.vue'

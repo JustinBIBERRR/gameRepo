@@ -59,8 +59,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed, h } from 'vue'
-
 const props = withDefaults(defineProps<{
   modelValue: boolean
   title: string
