@@ -1,7 +1,6 @@
 <template>
   <div id="app" class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
     <router-view />
-    <GlobalModal />
     <GlobalLoading />
     <!-- useModal 确认对话框 -->
     <Modal
@@ -21,7 +20,6 @@
 </template>
 
 <script setup lang="ts">
-import GlobalModal from './components/GlobalModal.vue'
 import GlobalLoading from './components/GlobalLoading.vue'
 import Modal from './components/Modal.vue'
 import { modalState, handleConfirm, handleCancel } from './composables/useModal'

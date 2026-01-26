@@ -11,7 +11,7 @@ checkAndClearExpiredData()
 
 const app = createApp(App)
 
-// 全局注册 TinyVue 组件（使用 game-xxx 前缀）
+// 注册全局组件（目前为空，未来可扩展）
 app.use(gameComponents)
 
 app.use(router).mount('#app')
