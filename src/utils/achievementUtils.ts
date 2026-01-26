@@ -150,7 +150,8 @@ export function checkAndUpdateAchievements(
     
     // 查找或创建成就
     let achievement = achievements.find(a => a.id === def.id)
-    const wasUnlocked = achievement?.unlockedAt !== null
+    // 修复：只有当成就存在且已解锁时，wasUnlocked 才为 true
+    const wasUnlocked = achievement !== undefined && achievement.unlockedAt !== null
     
     if (!achievement) {
       achievement = {
@@ -168,7 +169,7 @@ export function checkAndUpdateAchievements(
       achievement.maxProgress = maxProgress
     }
     
-    // 检查是否解锁
+    // 检查是否解锁：进度达到最大值且之前未解锁
     if (progress >= maxProgress && !wasUnlocked) {
       achievement.unlockedAt = Date.now()
       newlyUnlocked.push(achievement)

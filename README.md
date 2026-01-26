@@ -76,6 +76,24 @@ npm run dev
 npm run build
 ```
 
+#### 5. 运行测试
+
+```bash
+# 运行所有单元测试
+npm run test:unit
+
+# 运行 E2E 测试
+npm run test:e2e
+
+# 运行测试 UI（可视化界面）
+npm run test:ui
+
+# 生成覆盖率报告
+npm run test:coverage
+```
+
+详细的测试文档请参考 [tests/README.md](tests/README.md)
+
 ---
 
 ## 🛠️ 技术栈
