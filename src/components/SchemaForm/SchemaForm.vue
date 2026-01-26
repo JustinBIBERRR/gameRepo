@@ -44,6 +44,9 @@ const emit = defineEmits<{
 const formData = ref<Record<string, any>>({})
 const fieldErrors = ref<Record<string, string>>({})
 
+// 显示所有字段
+const displayFields = computed(() => props.schema.fields)
+
 // 初始化表单数据
 function initFormData() {
   const data: Record<string, any> = {}

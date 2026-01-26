@@ -11,7 +11,7 @@
           + 新增
         </button>
         <button
-          v-if="useCustom.value"
+          v-if="useCustom"
           @click="handleReset"
           class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
         >
@@ -90,7 +90,7 @@
       <template #body>
         <SchemaForm
           :schema="schema"
-          :initial-data="editingItem"
+          :initial-data="editingItem ?? undefined"
           @submit="handleSubmit"
           @cancel="closeModal"
         />
@@ -286,7 +286,7 @@ function handleReset() {
 }
 
 function handleExportJSON() {
-  const dataToExport = props.useCustom ? props.customData : props.defaultData
+  const dataToExport = useCustom.value ? props.customData : props.defaultData
   const jsonStr = JSON.stringify(dataToExport, null, 2)
   const blob = new Blob([jsonStr], { type: 'application/json' })
   const url = URL.createObjectURL(blob)

@@ -104,7 +104,7 @@
 </template>
 
 <script setup lang="ts">
-import type { GameDataSchema, FieldSchema } from '../../schemas/types'
+import type { GameDataSchema } from '../../schemas/types'
 
 const props = defineProps<{
   schema: GameDataSchema
@@ -114,7 +114,9 @@ const props = defineProps<{
   currentCount?: number
 }>()
 
-const emit = defineEmits<{
+// emit 在模板中使用 ($emit)，但 TypeScript 检测不到
+// @ts-ignore - emit 在模板中使用
+defineEmits<{
   edit: [item: Record<string, any>]
   delete: [item: Record<string, any>]
 }>()

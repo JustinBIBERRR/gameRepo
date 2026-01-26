@@ -107,8 +107,8 @@ watch(() => useCustom.value, (value) => {
   }
 })
 
-function handleCustomDataChange(data: HeroData[]) {
-  customHeroes.value = data
+function handleCustomDataChange(data: Record<string, any>[]) {
+  customHeroes.value = data as HeroData[]
   saveCustomGameData('hero', {
     useCustom: true,
     items: data,

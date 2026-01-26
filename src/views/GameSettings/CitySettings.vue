@@ -56,7 +56,6 @@ import { getGameConfig, saveGameSettings, getGameSettings } from '../../utils/st
 import {
   getCustomGameData,
   saveCustomGameData,
-  clearCustomGameData,
   switchToCustomData,
   resetToDefaultData
 } from '../../utils/storageUtils'
@@ -120,8 +119,8 @@ watch(() => useCustom.value, (value) => {
   }
 })
 
-function handleCustomDataChange(data: CityData[]) {
-  customCities.value = data
+function handleCustomDataChange(data: Record<string, any>[]) {
+  customCities.value = data as CityData[]
   saveCustomGameData('city', {
     useCustom: true,
     items: data,

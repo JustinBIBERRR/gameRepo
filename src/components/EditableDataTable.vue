@@ -78,7 +78,7 @@
             <td class="px-3 py-3 text-right text-sm font-medium w-24">
               <div class="flex items-center justify-end gap-2 whitespace-nowrap">
                 <button
-                  @click="handleEditRow(item, index)"
+                  @click="handleEditRow(item)"
                   class="text-blue-600 hover:text-blue-900 flex-shrink-0 px-1"
                 >
                   编辑
@@ -104,7 +104,7 @@
 </template>
 
 <script setup lang="ts">
-import type { GameDataSchema, FieldSchema } from '../schemas/types'
+import type { GameDataSchema } from '../schemas/types'
 
 const props = defineProps<{
   schema: GameDataSchema
@@ -113,13 +113,12 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:data': [data: Record<string, any>[]]
-  'edit': [item: Record<string, any>]
+  'edit': [item: Record<string, any> | null]
 }>()
 
 const searchQuery = ref('')
 const editingValues = ref<Record<string, any>>({})
 const editingCell = ref<string | null>(null)
-const editingRow = ref<number | null>(null)
 
 const displayFields = computed(() => {
   // 如果是电影游戏，只显示 name, description, hint 字段
@@ -198,7 +197,7 @@ function startEdit(item: Record<string, any>, fieldKey: string, index: number) {
   }
 }
 
-function handleCellBlur(item: Record<string, any>, fieldKey: string, index: number) {
+function handleCellBlur(_item: Record<string, any>, fieldKey: string, index: number) {
   const cellKey = `${index}-${fieldKey}`
   const field = props.schema.fields.find(f => f.key === fieldKey)
   if (!field) return
@@ -226,7 +225,7 @@ function handleCellBlur(item: Record<string, any>, fieldKey: string, index: numb
   delete editingValues.value[cellKey]
 }
 
-function cancelEdit(item: Record<string, any>, fieldKey: string, index: number) {
+function cancelEdit(_item: Record<string, any>, fieldKey: string, index: number) {
   const cellKey = `${index}-${fieldKey}`
   editingCell.value = null
   delete editingValues.value[cellKey]
@@ -236,7 +235,7 @@ function handleAddRow() {
   emit('edit', null) // 传递 null 表示新增
 }
 
-function handleEditRow(item: Record<string, any>, index: number) {
+function handleEditRow(item: Record<string, any>) {
   emit('edit', { ...item })
 }
 

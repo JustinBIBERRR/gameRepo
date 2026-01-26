@@ -109,7 +109,7 @@
       <template #body>
         <SchemaForm
           :schema="schema"
-          :initial-data="editingItem"
+          :initial-data="editingItem ?? undefined"
           @submit="handleFormSubmit"
           @cancel="closeEditModal"
         />
@@ -361,9 +361,11 @@ function handleClearAll() {
 }
 
 // 监听 JSON 内容变化（仅在启用 JSON 编辑器时）
-watch(() => jsonContent.value, () => {
-  // JSON 编辑器会自动触发验证
-}, { enabled: () => !props.disableJsonEditor })
+if (!props.disableJsonEditor) {
+  watch(() => jsonContent.value, () => {
+    // JSON 编辑器会自动触发验证
+  })
+}
 </script>
 
 <style scoped>

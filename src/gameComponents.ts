@@ -11,7 +11,7 @@ import type { App } from 'vue'
  * 安装函数 - 用于注册全局组件
  * 目前为空实现，后续如需注册全局组件可在此添加
  */
-export function install(app: App): void {
+export function install(_app: App): void {
   // 未来可在此注册全局组件
 }
 

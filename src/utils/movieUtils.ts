@@ -79,10 +79,10 @@ export async function getAllMovies(): Promise<Movie[]> {
       videoType: movie.videoType || 'api',
       apiProvider: movie.apiProvider || 'bilibili'
     }))
-    return cachedMovies
+    return cachedMovies || []
   } catch (error) {
     console.error('获取电影列表失败:', error)
-    return cachedMovies || []
+    return []
   }
 }
 

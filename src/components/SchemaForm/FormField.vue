@@ -40,7 +40,7 @@
     <div v-else-if="field.type === 'array'">
       <div class="space-y-2">
         <div
-          v-for="(item, index) in arrayValue"
+          v-for="(_item, index) in arrayValue"
           :key="index"
           class="flex items-center gap-2"
         >

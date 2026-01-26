@@ -148,7 +148,6 @@ import MovieForm from './MovieForm.vue'
 import {
   getAllUserMovies,
   deleteUserMovie,
-  getUserMovie,
   saveUserMovie,
   getMovieFiles,
   deleteMovieFiles,

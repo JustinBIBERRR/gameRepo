@@ -85,7 +85,7 @@ const editorRef = ref<HTMLDivElement | null>(null)
 let editorView: EditorView | null = null
 const errors = ref<Array<{ line: number; message: string }>>([])
 const showErrorPanel = ref(true)
-const searchOpen = ref(false)
+// const searchOpen = ref(false) // 未使用，保留以备将来使用
 
 const hasErrors = computed(() => errors.value.length > 0)
 
@@ -262,7 +262,7 @@ function validateJson(content: string) {
   // 2. Schema 验证（如果有提供）
   if (props.schema && newErrors.length === 0) {
     try {
-      const parsed = JSON.parse(content)
+      JSON.parse(content) // 验证 JSON 格式
       // 这里可以添加 JSON Schema 验证逻辑
       // 暂时跳过，因为需要额外的库
     } catch (error) {
