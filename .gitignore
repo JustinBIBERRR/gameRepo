@@ -32,3 +32,11 @@ dist-ssr
 # Auto-imports
 auto-imports.d.ts
 .eslintrc-auto-import.json
+
+# Test coverage
+coverage/
+
+# Test assets (large video files)
+tests/assets/*.mp4
+tests/assets/*.mov
+tests/assets/*.avi
