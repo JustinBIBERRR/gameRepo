@@ -25,7 +25,7 @@ export default defineConfig({
   },
         test: {
           globals: true,
-          environment: 'jsdom',
+          environment: 'happy-dom',
           setupFiles: ['./tests/utils/setupTest.ts'],
           include: ['tests/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
           exclude: ['node_modules', 'dist', '.idea', '.git', '.cache', 'tests/e2e'],
