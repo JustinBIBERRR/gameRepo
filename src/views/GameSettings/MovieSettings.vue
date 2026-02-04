@@ -51,8 +51,9 @@ import { getGameConfig, saveGameSettings, getGameSettings } from '../../utils/st
 import type { GameConfig } from '../../utils/storageUtils'
 
 const config = ref<GameConfig>({
-  enableTimer: true,
+  enableTimer: false,
   timerDuration: 30,
+  limitAttempts: false,
   maxAttempts: 5,
   showInitialHint: true,
   maxPlaybackPerSegment: 1
@@ -67,7 +68,8 @@ function handleConfigUpdate(newConfig: GameConfig) {
   settings.overrides.movie = {
     enableTimer: config.value.enableTimer,
     timerDuration: config.value.timerDuration,
-    maxAttempts: config.value.maxAttempts,
+    limitAttempts: config.value.limitAttempts,
+    maxAttempts: Number.isFinite(config.value.maxAttempts) ? config.value.maxAttempts : 5,
     showInitialHint: config.value.showInitialHint,
     maxPlaybackPerSegment: config.value.maxPlaybackPerSegment
   }
@@ -87,7 +89,8 @@ onMounted(() => {
   settings.overrides.movie = {
     enableTimer: config.value.enableTimer,
     timerDuration: config.value.timerDuration,
-    maxAttempts: config.value.maxAttempts,
+    limitAttempts: config.value.limitAttempts,
+    maxAttempts: Number.isFinite(config.value.maxAttempts) ? config.value.maxAttempts : 5,
     showInitialHint: config.value.showInitialHint,
     maxPlaybackPerSegment: config.value.maxPlaybackPerSegment
   }

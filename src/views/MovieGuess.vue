@@ -624,9 +624,9 @@ async function playReviewVideo(timePoint: number) {
 
 function clearAndRestart() {
   showConfirm({
-    title: t('game.clearGameDataTitle'),
-    message: t('game.clearGameDataMessage'),
-    confirmText: t('game.confirmClear'),
+    title: t('game.playAgainTitle'),
+    message: t('game.playAgainMessage'),
+    confirmText: t('game.playAgainConfirm'),
     cancelText: t('common.cancel')
   }).then((result) => {
     if (result) {

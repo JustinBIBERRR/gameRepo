@@ -66,8 +66,9 @@ import type { GameConfig } from '../../utils/storageUtils'
 import type { HeroData } from '../../schemas/heroSchema'
 
 const config = ref<GameConfig>({
-  enableTimer: true,
+  enableTimer: false,
   timerDuration: 5,
+  limitAttempts: false,
   maxAttempts: 5,
   showInitialHint: true
 })
@@ -135,7 +136,8 @@ function handleConfigUpdate(newConfig: GameConfig) {
   settings.overrides.hero = {
     enableTimer: config.value.enableTimer,
     timerDuration: config.value.timerDuration,
-    maxAttempts: config.value.maxAttempts,
+    limitAttempts: config.value.limitAttempts,
+    maxAttempts: Number.isFinite(config.value.maxAttempts) ? config.value.maxAttempts : 5,
     showInitialHint: config.value.showInitialHint
   }
   saveGameSettings(settings)
@@ -153,7 +155,8 @@ onMounted(() => {
   settings.overrides.hero = {
     enableTimer: config.value.enableTimer,
     timerDuration: config.value.timerDuration,
-    maxAttempts: config.value.maxAttempts,
+    limitAttempts: config.value.limitAttempts,
+    maxAttempts: Number.isFinite(config.value.maxAttempts) ? config.value.maxAttempts : 5,
     showInitialHint: config.value.showInitialHint
   }
   saveGameSettings(settings)

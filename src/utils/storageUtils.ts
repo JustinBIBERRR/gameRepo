@@ -73,7 +73,8 @@ export interface GameSettings {
   defaults: {
     enableTimer: boolean        // 是否启用倒计时，默认true
     timerDuration: number      // 倒计时时长（分钟），默认5
-    maxAttempts: number         // 最大尝试次数，默认5
+    limitAttempts: boolean     // 是否启用尝试次数限制，默认 false = 无限次
+    maxAttempts: number        // 启用限制时的最大尝试次数，默认5
     showInitialHint: boolean     // 是否显示初始提示，默认true
     maxPlaybackPerSegment?: number  // 每个片段最多播放次数（仅电影游戏），默认1
   }
@@ -81,18 +82,21 @@ export interface GameSettings {
     city?: {
       enableTimer?: boolean
       timerDuration?: number
+      limitAttempts?: boolean
       maxAttempts?: number
       showInitialHint?: boolean
     }
     hero?: {
       enableTimer?: boolean
       timerDuration?: number
+      limitAttempts?: boolean
       maxAttempts?: number
       showInitialHint?: boolean
     }
     movie?: {
       enableTimer?: boolean
       timerDuration?: number
+      limitAttempts?: boolean
       maxAttempts?: number
       showInitialHint?: boolean
       maxPlaybackPerSegment?: number  // 每个片段最多播放次数
@@ -100,6 +104,7 @@ export interface GameSettings {
     visual?: {
       enableTimer?: boolean
       timerDuration?: number
+      limitAttempts?: boolean
       maxAttempts?: number
       showInitialHint?: boolean
       showCategoryHint?: boolean
@@ -112,6 +117,7 @@ export interface GameSettings {
     listenSong?: {
       enableTimer?: boolean
       timerDuration?: number
+      limitAttempts?: boolean
       maxAttempts?: number
       showInitialHint?: boolean
     }
@@ -121,10 +127,15 @@ export interface GameSettings {
 export interface GameConfig {
   enableTimer: boolean
   timerDuration: number
+  /** 是否启用尝试次数限制；不启用时 maxAttempts 在运行时为 Infinity */
+  limitAttempts: boolean
   maxAttempts: number
   showInitialHint: boolean
   maxPlaybackPerSegment?: number  // 每个片段最多播放次数（仅电影游戏）
 }
+
+/** 运行时“无限次尝试”时的 maxAttempts 值 */
+export const UNLIMITED_ATTEMPTS = Infinity
 
 export interface TimerState {
   gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong'
@@ -465,8 +476,9 @@ export function clearGameData(gameType: 'city' | 'hero' | 'movie' | 'visual' | '
 function initGameSettings(): GameSettings {
   return {
     defaults: {
-      enableTimer: true,
+      enableTimer: false,
       timerDuration: 5,
+      limitAttempts: false,
       maxAttempts: 5,
       showInitialHint: true,
       maxPlaybackPerSegment: 1  // 默认每个片段最多播放1次
@@ -495,15 +507,21 @@ export function saveGameSettings(settings: GameSettings): void {
 export function getGameConfig(gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong'): GameConfig {
   const settings = getGameSettings()
   const override = settings.overrides[gameType]
+  // 兼容旧数据：未设置 limitAttempts 时视为启用限制
+  const defaultLimitAttempts = (settings.defaults as { limitAttempts?: boolean }).limitAttempts
+  const limitAttemptsRaw = override?.limitAttempts ?? defaultLimitAttempts
+  const limitAttempts = limitAttemptsRaw === undefined ? true : limitAttemptsRaw
+  const rawMaxAttempts = override?.maxAttempts ?? settings.defaults.maxAttempts
 
   const config: GameConfig = {
     enableTimer: override?.enableTimer ?? settings.defaults.enableTimer,
     timerDuration: override?.timerDuration ?? settings.defaults.timerDuration,
-    maxAttempts: override?.maxAttempts ?? settings.defaults.maxAttempts,
+    limitAttempts: limitAttempts === true,
+    maxAttempts: limitAttempts ? rawMaxAttempts : UNLIMITED_ATTEMPTS,
     showInitialHint: override?.showInitialHint ?? settings.defaults.showInitialHint
   }
 
-  if (gameType === 'visual') {
+  if (gameType === 'visual' && limitAttempts) {
     config.maxAttempts = override?.maxAttempts ?? 3
   }
 
@@ -513,7 +531,7 @@ export function getGameConfig(gameType: 'city' | 'hero' | 'movie' | 'visual' | '
     config.maxPlaybackPerSegment = movieOverride?.maxPlaybackPerSegment ?? settings.defaults.maxPlaybackPerSegment ?? 1
   }
 
-  if (gameType === 'listenSong') {
+  if (gameType === 'listenSong' && limitAttempts) {
     config.maxAttempts = override?.maxAttempts ?? 5
   }
 
@@ -768,24 +786,28 @@ export function migrateSettings(): void {
   // 如果有全局默认设置，且各游戏没有独立配置，则迁移
   if (settings.defaults && Object.keys(settings.overrides).length === 0) {
     const defaults = settings.defaults
-    
+    const limitAttemptsDefault = (defaults as { limitAttempts?: boolean }).limitAttempts ?? true
+
     // 为每个游戏创建独立配置
     const newOverrides: GameSettings['overrides'] = {
       city: {
         enableTimer: defaults.enableTimer,
         timerDuration: defaults.timerDuration,
+        limitAttempts: limitAttemptsDefault,
         maxAttempts: defaults.maxAttempts,
         showInitialHint: defaults.showInitialHint
       },
       hero: {
         enableTimer: defaults.enableTimer,
         timerDuration: defaults.timerDuration,
+        limitAttempts: limitAttemptsDefault,
         maxAttempts: defaults.maxAttempts,
         showInitialHint: defaults.showInitialHint
       },
       movie: {
         enableTimer: defaults.enableTimer,
         timerDuration: defaults.timerDuration,
+        limitAttempts: limitAttemptsDefault,
         maxAttempts: defaults.maxAttempts,
         showInitialHint: defaults.showInitialHint,
         maxPlaybackPerSegment: defaults.maxPlaybackPerSegment

@@ -1,25 +1,25 @@
 <template>
   <div>
-    <!-- 游戏名称、描述和清除按钮 -->
+    <!-- 游戏名称、描述和再来一局按钮 -->
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6">
       <div>
         <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ title }}</h1>
         <p class="text-gray-600">
           {{ description }}
-          <span v-if="showRemainingAttempts" class="font-bold text-blue-600">{{ remainingAttempts }}</span>
+          <span v-if="showRemainingAttempts" class="font-bold text-blue-600">{{ attemptsDisplay }}</span>
           {{ descriptionSuffix }}
         </p>
       </div>
       <button
         @click="$emit('clear')"
         class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 min-h-[44px] self-start sm:self-auto"
-        :aria-label="t('game.clearDataAria')"
+        :aria-label="t('game.playAgainAria')"
       >
         <span class="flex items-center gap-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
-          {{ t('game.clearData') }}
+          {{ t('game.playAgain') }}
         </span>
       </button>
     </div>
@@ -122,5 +122,8 @@ defineEmits<{
   clear: []
 }>()
 
-const remainingAttempts = computed(() => props.maxAttempts - props.attempts)
+const isAttemptsUnlimited = computed(() => !Number.isFinite(props.maxAttempts) || props.maxAttempts <= 0)
+const attemptsDisplay = computed(() =>
+  isAttemptsUnlimited.value ? t('game.attemptsUnlimited') : (props.maxAttempts - props.attempts)
+)
 </script>

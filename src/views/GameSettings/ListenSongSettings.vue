@@ -46,8 +46,9 @@ import type { GameConfig } from '../../utils/storageUtils'
 const { t } = useI18n()
 
 const config = ref<GameConfig>({
-  enableTimer: true,
+  enableTimer: false,
   timerDuration: 5,
+  limitAttempts: false,
   maxAttempts: 5,
   showInitialHint: true
 })
@@ -59,7 +60,8 @@ function handleConfigUpdate(newConfig: GameConfig) {
   settings.overrides.listenSong = {
     enableTimer: newConfig.enableTimer,
     timerDuration: newConfig.timerDuration,
-    maxAttempts: newConfig.maxAttempts,
+    limitAttempts: newConfig.limitAttempts,
+    maxAttempts: Number.isFinite(newConfig.maxAttempts) ? newConfig.maxAttempts : 5,
     showInitialHint: newConfig.showInitialHint
   }
   saveGameSettings(settings)
@@ -72,7 +74,8 @@ onMounted(() => {
   s.overrides.listenSong = {
     enableTimer: config.value.enableTimer,
     timerDuration: config.value.timerDuration,
-    maxAttempts: config.value.maxAttempts,
+    limitAttempts: config.value.limitAttempts,
+    maxAttempts: Number.isFinite(config.value.maxAttempts) ? config.value.maxAttempts : 5,
     showInitialHint: config.value.showInitialHint
   }
   saveGameSettings(s)

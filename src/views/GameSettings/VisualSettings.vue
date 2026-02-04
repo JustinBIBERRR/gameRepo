@@ -140,6 +140,7 @@ function fromTableRow(row: TableRow): ItemData {
 const config = ref<GameConfig>({
   enableTimer: false,
   timerDuration: 5,
+  limitAttempts: false,
   maxAttempts: 3,
   showInitialHint: true
 })
@@ -223,7 +224,8 @@ function handleConfigUpdate(newConfig: GameConfig) {
     ...settings.overrides.visual,
     enableTimer: newConfig.enableTimer,
     timerDuration: newConfig.timerDuration,
-    maxAttempts: newConfig.maxAttempts,
+    limitAttempts: newConfig.limitAttempts,
+    maxAttempts: Number.isFinite(newConfig.maxAttempts) ? newConfig.maxAttempts : 5,
     showInitialHint: newConfig.showInitialHint,
     showCategoryHint: showCategoryHint.value,
     initialHint: initialHintText.value.trim() || undefined,
