@@ -636,12 +636,31 @@ export function updateDataExpirationDays(days: number): void {
   saveSettingsMeta(meta)
 }
 
+/** 年会：默认奖励/惩罚 mock 数据 */
+const PARTY_DEFAULT_REWARDS: PartyRewardPunishmentItem[] = [
+  { id: 'party-reward-1', type: 'reward', text: '领取毛绒玩具一个' },
+  { id: 'party-reward-2', type: 'reward', text: '领取扑克牌一副' },
+  { id: 'party-reward-3', type: 'reward', text: '领取限定饮料一瓶' }
+]
+const PARTY_DEFAULT_PUNISHMENTS: PartyRewardPunishmentItem[] = [
+  { id: 'party-punishment-1', type: 'punishment', text: '唱30s歌' },
+  { id: 'party-punishment-2', type: 'punishment', text: '喝一杯养生特制饮料' },
+  { id: 'party-punishment-3', type: 'punishment', text: '发一个红包' }
+]
+
 function initPartyRewardsPunishments(): PartyRewardPunishmentItem[] {
-  return []
+  return [...PARTY_DEFAULT_REWARDS, ...PARTY_DEFAULT_PUNISHMENTS]
 }
 
+/** 年会：默认人员名单 mock 数据 */
+const PARTY_DEFAULT_PERSONNEL: PartyPersonnelItem[] = [
+  { id: 'party-person-1', name: '张三' },
+  { id: 'party-person-2', name: '李四' },
+  { id: 'party-person-3', name: '王五' }
+]
+
 function initPartyPersonnel(): PartyPersonnelItem[] {
-  return []
+  return [...PARTY_DEFAULT_PERSONNEL]
 }
 
 /**
