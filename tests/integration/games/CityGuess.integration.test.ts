@@ -5,6 +5,7 @@ import { createTestRouter } from '../../utils/testWrapper'
 import { resetStorage, setupRandomSeed } from '../../utils/testUtils'
 import { clearAllData, getGameStats, updateGameStats } from '@/utils/storageUtils'
 import { getRandomCity, matchCity, calculateDistance } from '@/utils/cityUtils'
+import i18n from '@/locales'
 
 // Mock 路由
 vi.mock('vue-router', async () => {
@@ -36,7 +37,7 @@ describe('CityGuess Integration Tests', () => {
         const router = createTestRouter()
         const wrapper = mount(CityGuess, {
           global: {
-            plugins: [router],
+            plugins: [router, i18n],
             stubs: ['Navigation', 'GameHeader', 'Autocomplete', 'Celebration']
           }
         })

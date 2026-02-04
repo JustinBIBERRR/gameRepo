@@ -154,8 +154,9 @@ describe('storageUtils', () => {
     test('should return default settings when no settings exist', () => {
       const settings = getGameSettings()
       
-      expect(settings.defaults.enableTimer).toBe(true)
+      expect(settings.defaults.enableTimer).toBe(false)
       expect(settings.defaults.timerDuration).toBe(5)
+      expect(settings.defaults.limitAttempts).toBe(false)
       expect(settings.defaults.maxAttempts).toBe(5)
       expect(settings.defaults.showInitialHint).toBe(true)
     })
@@ -165,6 +166,7 @@ describe('storageUtils', () => {
         defaults: {
           enableTimer: false,
           timerDuration: 10,
+          limitAttempts: false,
           maxAttempts: 8,
           showInitialHint: false
         },
@@ -189,9 +191,10 @@ describe('storageUtils', () => {
     test('should return default config when no overrides exist', () => {
       const config = getGameConfig('city')
       
-      expect(config.enableTimer).toBe(true)
+      expect(config.enableTimer).toBe(false)
       expect(config.timerDuration).toBe(5)
-      expect(config.maxAttempts).toBe(5)
+      expect(config.limitAttempts).toBe(false)
+      expect(config.maxAttempts).toBe(Number.POSITIVE_INFINITY)
       expect(config.showInitialHint).toBe(true)
     })
 
@@ -200,6 +203,7 @@ describe('storageUtils', () => {
         defaults: {
           enableTimer: true,
           timerDuration: 5,
+          limitAttempts: true,
           maxAttempts: 5,
           showInitialHint: true
         },
@@ -207,6 +211,7 @@ describe('storageUtils', () => {
           city: {
             enableTimer: false,
             timerDuration: 10,
+            limitAttempts: true,
             maxAttempts: 8
           }
         }
