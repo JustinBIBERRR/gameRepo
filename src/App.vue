@@ -2,6 +2,7 @@
   <div id="app" class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
     <router-view />
     <GlobalLoading />
+    <PartyFloatingWidget />
     <!-- useModal 确认对话框 -->
     <Modal
       v-if="modalState.visible && modalState.options"
@@ -22,5 +23,6 @@
 <script setup lang="ts">
 import GlobalLoading from './components/GlobalLoading.vue'
 import Modal from './components/Modal.vue'
+import PartyFloatingWidget from './components/PartyFloatingWidget.vue'
 import { modalState, handleConfirm, handleCancel } from './composables/useModal'
 </script>

@@ -42,6 +42,7 @@
               :suggestions="suggestions"
               :no-match-message="noMatchMessage"
               :show-error="showInputError"
+              :enabled="hasHeroData"
               placeholder="输入英雄名称..."
               @select="handleSelect"
             />
@@ -237,10 +238,9 @@ function handleTimerTimeout() {
 // 初始化倒计时（仅在启用时）
 const timer = useTimer(enableTimer.value ? timerDuration : 0, 'hero', handleTimerTimeout)
 
+const hasHeroData = computed(() => getAllHeroNames().length > 0)
 const suggestions = computed(() => {
-  if (!inputValue.value.trim()) {
-    return []
-  }
+  if (!hasHeroData.value || !inputValue.value.trim()) return []
   return searchHeroes(inputValue.value)
 })
 

@@ -12,8 +12,8 @@ export interface AchievementDefinition {
   description: string
   icon: string
   category: 'milestone' | 'skill' | 'exploration' | 'time'
-  checkCondition: (stats: GameStats, gameType: 'city' | 'hero' | 'movie') => boolean
-  getProgress: (stats: GameStats, gameType: 'city' | 'hero' | 'movie') => number
+  checkCondition: (stats: GameStats, gameType: 'city' | 'hero' | 'movie' | 'visual') => boolean
+  getProgress: (stats: GameStats, gameType: 'city' | 'hero' | 'movie' | 'visual') => number
   maxProgress: number
 }
 
@@ -138,7 +138,7 @@ export const ACHIEVEMENT_DEFINITIONS: AchievementDefinition[] = [
  * 检查并更新所有成就
  */
 export function checkAndUpdateAchievements(
-  gameType: 'city' | 'hero' | 'movie',
+  gameType: 'city' | 'hero' | 'movie' | 'visual',
   stats: GameStats
 ): Achievement[] {
   const achievements = getAchievements()

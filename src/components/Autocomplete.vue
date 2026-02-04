@@ -3,7 +3,7 @@
     <input
       v-model="inputValue"
       @input="handleInput"
-      @focus="showSuggestions = true"
+      @focus="handleFocus"
       @blur="handleBlur"
       @keydown.enter.prevent="selectFirst"
       @keydown.arrow-down.prevent="navigateDown"
@@ -16,7 +16,7 @@
     
     <!-- 下拉建议列表 -->
     <div
-      v-if="showSuggestions && (suggestions.length > 0 || showNoMatchMessage)"
+      v-if="enabled && showSuggestions && (suggestions.length > 0 || showNoMatchMessage)"
       class="autocomplete-dropdown absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto"
       @mousedown.prevent
     >
@@ -48,6 +48,7 @@ const props = defineProps<{
   placeholder?: string
   noMatchMessage?: string
   showError?: boolean
+  enabled?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -60,7 +61,7 @@ const showSuggestions = ref(false)
 const selectedIndex = ref(-1)
 
 const showNoMatchMessage = computed(() => {
-  return props.modelValue.trim() !== '' && props.suggestions.length === 0
+  return props.enabled !== false && props.modelValue.trim() !== '' && props.suggestions.length === 0
 })
 
 watch(() => props.modelValue, (newVal) => {
@@ -71,8 +72,16 @@ function handleInput(event: Event) {
   const value = (event.target as HTMLInputElement).value
   inputValue.value = value
   emit('update:modelValue', value)
-  showSuggestions.value = true
+  if (props.enabled !== false) {
+    showSuggestions.value = true
+  }
   selectedIndex.value = -1
+}
+
+function handleFocus() {
+  if (props.enabled !== false) {
+    showSuggestions.value = true
+  }
 }
 
 function handleBlur(event: FocusEvent) {

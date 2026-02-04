@@ -104,82 +104,14 @@ import AchievementBadge from '../components/AchievementBadge.vue'
 import { useModal } from '../composables/useModal'
 import { getGameStats, clearAllData, getGameVisibility } from '../utils/storageUtils'
 import { getAchievements } from '../utils/storageUtils'
+import { allGamesConfig } from '../config/games'
 
 const { confirm: showConfirm, success: showSuccess } = useModal()
-
-const allGames = [
-  {
-    gameType: 'city' as const,
-    title: '城市猜测',
-    description: '系统随机选择一个国内城市，你有5次机会猜测。每次猜测后会显示距离、方位和城市特点。',
-    path: '/city-guess',
-    iconColor: 'blue' as const,
-    icon: () => h('svg', {
-      class: 'w-6 h-6',
-      fill: 'none',
-      stroke: 'currentColor',
-      viewBox: '0 0 24 24'
-    }, [
-      h('path', {
-        'stroke-linecap': 'round',
-        'stroke-linejoin': 'round',
-        'stroke-width': '2',
-        d: 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z'
-      }),
-      h('path', {
-        'stroke-linecap': 'round',
-        'stroke-linejoin': 'round',
-        'stroke-width': '2',
-        d: 'M15 11a3 3 0 11-6 0 3 3 0 016 0z'
-      })
-    ])
-  },
-  {
-    gameType: 'hero' as const,
-    title: '王者荣耀人物猜测',
-    description: '系统随机选择一个王者荣耀英雄，你有5次机会猜测。通过职业、年代、国籍、人类、性别等属性提示来找到答案。',
-    path: '/hero-guess',
-    iconColor: 'purple' as const,
-    icon: () => h('svg', {
-      class: 'w-6 h-6',
-      fill: 'none',
-      stroke: 'currentColor',
-      viewBox: '0 0 24 24'
-    }, [
-      h('path', {
-        'stroke-linecap': 'round',
-        'stroke-linejoin': 'round',
-        'stroke-width': '2',
-        d: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z'
-      })
-    ])
-  },
-  {
-    gameType: 'movie' as const,
-    title: '听片段猜电影',
-    description: '系统随机选择一部电影，你有8次机会猜测。通过听15秒音频片段来找到答案。',
-    path: '/movie-guess',
-    iconColor: 'red' as const,
-    icon: () => h('svg', {
-      class: 'w-6 h-6',
-      fill: 'none',
-      stroke: 'currentColor',
-      viewBox: '0 0 24 24'
-    }, [
-      h('path', {
-        'stroke-linecap': 'round',
-        'stroke-linejoin': 'round',
-        'stroke-width': '2',
-        d: 'M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z'
-      })
-    ])
-  }
-]
 
 // 根据可见性配置过滤游戏
 const games = computed(() => {
   const visibility = getGameVisibility()
-  return allGames.filter(game => visibility[game.gameType])
+  return allGamesConfig.filter(game => visibility[game.gameType])
 })
 
 const stats = ref({
@@ -194,6 +126,7 @@ const hasGameData = ref(false)
 const cityStats = ref(getGameStats('city'))
 const heroStats = ref(getGameStats('hero'))
 const movieStats = ref(getGameStats('movie'))
+const visualStats = ref(getGameStats('visual'))
 const allAchievements = ref(getAchievements())
 
 // 刷新统计数据
@@ -201,21 +134,22 @@ function refreshStats() {
   cityStats.value = getGameStats('city')
   heroStats.value = getGameStats('hero')
   movieStats.value = getGameStats('movie')
+  visualStats.value = getGameStats('visual')
   allAchievements.value = getAchievements()
 }
 
 const totalStats = computed(() => {
   return {
-    wins: cityStats.value.wins + heroStats.value.wins + movieStats.value.wins,
-    losses: cityStats.value.losses + heroStats.value.losses + movieStats.value.losses,
-    total: cityStats.value.totalGames + heroStats.value.totalGames + movieStats.value.totalGames,
-    bestStreak: Math.max(cityStats.value.bestStreak, heroStats.value.bestStreak, movieStats.value.bestStreak)
+    wins: cityStats.value.wins + heroStats.value.wins + movieStats.value.wins + visualStats.value.wins,
+    losses: cityStats.value.losses + heroStats.value.losses + movieStats.value.losses + visualStats.value.losses,
+    total: cityStats.value.totalGames + heroStats.value.totalGames + movieStats.value.totalGames + visualStats.value.totalGames,
+    bestStreak: Math.max(cityStats.value.bestStreak, heroStats.value.bestStreak, movieStats.value.bestStreak, visualStats.value.bestStreak)
   }
 })
 
 const todayStats = computed(() => {
-  const cityToday = cityStats.value.todayStats.date === new Date().toDateString() 
-    ? cityStats.value.todayStats 
+  const cityToday = cityStats.value.todayStats.date === new Date().toDateString()
+    ? cityStats.value.todayStats
     : { games: 0, wins: 0 }
   const heroToday = heroStats.value.todayStats.date === new Date().toDateString()
     ? heroStats.value.todayStats
@@ -223,10 +157,13 @@ const todayStats = computed(() => {
   const movieToday = movieStats.value.todayStats.date === new Date().toDateString()
     ? movieStats.value.todayStats
     : { games: 0, wins: 0 }
-  
-  const games = cityToday.games + heroToday.games + movieToday.games
-  const wins = cityToday.wins + heroToday.wins + movieToday.wins
-  
+  const visualToday = visualStats.value.todayStats.date === new Date().toDateString()
+    ? visualStats.value.todayStats
+    : { games: 0, wins: 0 }
+
+  const games = cityToday.games + heroToday.games + movieToday.games + visualToday.games
+  const wins = cityToday.wins + heroToday.wins + movieToday.wins + visualToday.wins
+
   return {
     games,
     wins,
@@ -251,7 +188,8 @@ function checkGameData() {
     sessionStorage.getItem('gameStats') ||
     sessionStorage.getItem('cityGuessGame') ||
     sessionStorage.getItem('heroGuessGame') ||
-    sessionStorage.getItem('movieGuessGame')
+    sessionStorage.getItem('movieGuessGame') ||
+    sessionStorage.getItem('visualGuessGame')
   )
 }
 
@@ -268,6 +206,7 @@ function clearSessionData() {
       sessionStorage.removeItem('cityGuessGame')
       sessionStorage.removeItem('heroGuessGame')
       sessionStorage.removeItem('movieGuessGame')
+      sessionStorage.removeItem('visualGuessGame')
       
       // 重置统计数据
       stats.value = {

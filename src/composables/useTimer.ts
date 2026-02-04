@@ -1,6 +1,6 @@
 import { saveTimerState, loadTimerState, clearTimerState } from '../utils/storageUtils'
 
-export function useTimer(initialDuration: number, gameType: 'city' | 'hero' | 'movie', onTimeout?: () => void) {
+export function useTimer(initialDuration: number, gameType: 'city' | 'hero' | 'movie' | 'visual', onTimeout?: () => void) {
   const timeRemaining = ref(initialDuration)
   const isRunning = ref(false)
   const startTime = ref<number | null>(null)

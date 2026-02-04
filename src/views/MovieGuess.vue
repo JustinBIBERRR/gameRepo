@@ -104,6 +104,7 @@
               :suggestions="suggestions"
               :no-match-message="noMatchMessage"
               :show-error="showInputError"
+              :enabled="hasMovieData"
               placeholder="输入电影名称..."
               @select="handleSelect"
             />
@@ -262,11 +263,13 @@ import TimeRangeSelector from '../components/TimeRangeSelector.vue'
 import VideoPlayer from '../components/VideoPlayer.vue'
 import { useModal } from '../composables/useModal'
 import { useTimer } from '../composables/useTimer'
+import { useLoading } from '../composables/useLoading'
 import {
   getRandomMovie,
   getMovieById,
   matchMovie,
   searchMovies,
+  getAllMovieNames,
   formatTime,
   getAllMovies,
   type Movie
@@ -350,10 +353,9 @@ function handleTimerTimeout() {
 // 初始化倒计时（仅在启用时）
 const timer = useTimer(enableTimer.value ? timerDuration : 0, 'movie', handleTimerTimeout)
 
+const hasMovieData = computed(() => getAllMovieNames().length > 0)
 const suggestions = computed(() => {
-  if (!inputValue.value.trim()) {
-    return []
-  }
+  if (!hasMovieData.value || !inputValue.value.trim()) return []
   return searchMovies(inputValue.value).map(m => m.name)
 })
 
@@ -780,40 +782,47 @@ async function loadGameState() {
   return false
 }
 
+const { showLoading, hideLoading } = useLoading()
+
 onMounted(async () => {
-  // 先加载电影列表到缓存
-  await getAllMovies()
-  
-  // 重新读取配置（确保使用最新配置）
-  const config = getGameConfig('movie')
-  enableTimer.value = config.enableTimer
-  showInitialHint.value = config.showInitialHint
-  maxAttempts.value = config.maxAttempts
-  
-  // 尝试恢复倒计时状态（仅在启用时）
-  let restored = false
-  if (enableTimer.value) {
-    restored = timer.restoreState()
-    if (restored) {
-      showRestoreTip.value = true
-      restoreTipMessage.value = `倒计时已恢复，剩余时间：${timer.formattedTime.value}，或者看广告延长时间，QAQ骗你的没广告~`
+  showLoading('正在加载电影资源...')
+  try {
+    // 先加载电影列表到缓存
+    await getAllMovies()
+
+    // 重新读取配置（确保使用最新配置）
+    const config = getGameConfig('movie')
+    enableTimer.value = config.enableTimer
+    showInitialHint.value = config.showInitialHint
+    maxAttempts.value = config.maxAttempts
+
+    // 尝试恢复倒计时状态（仅在启用时）
+    let restored = false
+    if (enableTimer.value) {
+      restored = timer.restoreState()
+      if (restored) {
+        showRestoreTip.value = true
+        restoreTipMessage.value = `倒计时已恢复，剩余时间：${timer.formattedTime.value}，或者看广告延长时间，QAQ骗你的没广告~`
+      }
     }
-  }
-  
-  const gameStateRestored = await loadGameState()
-  if (!gameStateRestored) {
-    await restartGame()
-  } else {
-    // 如果加载了游戏状态但没有开始时间，设置当前时间
-    if (!gameStartTime.value) {
-      gameStartTime.value = Date.now()
+
+    const gameStateRestored = await loadGameState()
+    if (!gameStateRestored) {
+      await restartGame()
+    } else {
+      // 如果加载了游戏状态但没有开始时间，设置当前时间
+      if (!gameStartTime.value) {
+        gameStartTime.value = Date.now()
+      }
+
+      // 如果游戏还在进行中且倒计时未恢复，启动倒计时（仅在启用时）
+      if (!gameOver.value && !gameWon.value && !restored && enableTimer.value) {
+        timer.reset(config.timerDuration * 60)
+        timer.start()
+      }
     }
-    
-    // 如果游戏还在进行中且倒计时未恢复，启动倒计时（仅在启用时）
-    if (!gameOver.value && !gameWon.value && !restored && enableTimer.value) {
-      timer.reset(config.timerDuration * 60)
-      timer.start()
-    }
+  } finally {
+    hideLoading()
   }
 })
 </script>

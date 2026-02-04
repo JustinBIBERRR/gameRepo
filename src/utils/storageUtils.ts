@@ -8,6 +8,7 @@ const STORAGE_KEYS = {
   CITY_GAME_STATS: 'cityGameStats',
   HERO_GAME_STATS: 'heroGameStats',
   MOVIE_GAME_STATS: 'movieGameStats',
+  VISUAL_GAME_STATS: 'visualGameStats',
   // 成就系统
   ACHIEVEMENTS: 'achievements',
   // 游戏历史记录
@@ -24,10 +25,14 @@ const STORAGE_KEYS = {
   CUSTOM_CITY_DATA: 'customCityData',
   CUSTOM_HERO_DATA: 'customHeroData',
   CUSTOM_MOVIE_DATA: 'customMovieData',
+  CUSTOM_VISUAL_DATA: 'customVisualData',
   // 游戏显示/隐藏状态
   GAME_VISIBILITY: 'gameVisibility',
   // Settings 元数据
-  SETTINGS_META: 'settingsMeta'
+  SETTINGS_META: 'settingsMeta',
+  // 年会活动：随机奖惩列表、人员名单
+  PARTY_REWARDS_PUNISHMENTS: 'partyRewardsPunishments',
+  PARTY_PERSONNEL: 'partyPersonnel'
 } as const
 
 export interface GameStats {
@@ -56,7 +61,7 @@ export interface Achievement {
 }
 
 export interface GameHistoryEntry {
-  gameType: 'city' | 'hero' | 'movie'
+  gameType: 'city' | 'hero' | 'movie' | 'visual'
   date: number
   won: boolean
   attempts: number
@@ -91,6 +96,18 @@ export interface GameSettings {
       showInitialHint?: boolean
       maxPlaybackPerSegment?: number  // 每个片段最多播放次数
     }
+    visual?: {
+      enableTimer?: boolean
+      timerDuration?: number
+      maxAttempts?: number
+      showInitialHint?: boolean
+      showCategoryHint?: boolean
+      /** 游戏开始时显示的初始提示文案，如：生活用品、品牌logo、国旗等 */
+      initialHint?: string
+      /** 图片壳等分：行数、列数，如 2×2=4 格 */
+      gridRows?: number
+      gridCols?: number
+    }
   }
 }
 
@@ -103,7 +120,7 @@ export interface GameConfig {
 }
 
 export interface TimerState {
-  gameType: 'city' | 'hero' | 'movie'
+  gameType: 'city' | 'hero' | 'movie' | 'visual'
   startTime: number        // 倒计时开始时间戳
   remainingSeconds: number // 剩余秒数
   isRunning: boolean       // 是否正在运行
@@ -120,11 +137,25 @@ export interface GameVisibility {
   city: boolean            // 城市游戏是否在首页显示
   hero: boolean            // 英雄游戏是否在首页显示
   movie: boolean           // 电影游戏是否在首页显示
+  visual: boolean          // 看图猜测游戏是否在首页显示
 }
 
 export interface SettingsMeta {
   dataExpirationDays: number  // 数据过期天数，默认 30
   lastAccess: number          // 最后访问时间
+}
+
+/** 年会：奖惩条目（奖励/惩罚 + 文字描述） */
+export interface PartyRewardPunishmentItem {
+  id: string
+  type: 'reward' | 'punishment'
+  text: string
+}
+
+/** 年会：人员名单条目 */
+export interface PartyPersonnelItem {
+  id: string
+  name: string
 }
 
 /**
@@ -204,12 +235,14 @@ function initGameStats(): GameStats {
 /**
  * 获取游戏统计数据
  */
-export function getGameStats(gameType: 'city' | 'hero' | 'movie'): GameStats {
-  const key = gameType === 'city' 
-    ? STORAGE_KEYS.CITY_GAME_STATS 
+export function getGameStats(gameType: 'city' | 'hero' | 'movie' | 'visual'): GameStats {
+  const key = gameType === 'city'
+    ? STORAGE_KEYS.CITY_GAME_STATS
     : gameType === 'hero'
     ? STORAGE_KEYS.HERO_GAME_STATS
-    : STORAGE_KEYS.MOVIE_GAME_STATS
+    : gameType === 'movie'
+    ? STORAGE_KEYS.MOVIE_GAME_STATS
+    : STORAGE_KEYS.VISUAL_GAME_STATS
   return getLocalStorage(key, initGameStats())
 }
 
@@ -217,13 +250,13 @@ export function getGameStats(gameType: 'city' | 'hero' | 'movie'): GameStats {
  * 更新游戏统计数据
  */
 export function updateGameStats(
-  gameType: 'city' | 'hero' | 'movie',
+  gameType: 'city' | 'hero' | 'movie' | 'visual',
   won: boolean,
   attempts: number
 ): GameStats {
   const stats = getGameStats(gameType)
   const today = new Date().toDateString()
-  
+
   // 更新今日统计
   if (stats.todayStats.date !== today) {
     stats.todayStats = {
@@ -232,10 +265,10 @@ export function updateGameStats(
       wins: 0
     }
   }
-  
+
   stats.totalGames++
   stats.todayStats.games++
-  
+
   if (won) {
     stats.wins++
     stats.todayStats.wins++
@@ -251,28 +284,30 @@ export function updateGameStats(
     stats.losses++
     stats.currentStreak = 0
   }
-  
+
   // 更新平均尝试次数
   const totalAttempts = stats.averageAttempts * (stats.totalGames - 1) + attempts
   stats.averageAttempts = Math.round((totalAttempts / stats.totalGames) * 10) / 10
-  
-  const key = gameType === 'city' 
-    ? STORAGE_KEYS.CITY_GAME_STATS 
+
+  const key = gameType === 'city'
+    ? STORAGE_KEYS.CITY_GAME_STATS
     : gameType === 'hero'
     ? STORAGE_KEYS.HERO_GAME_STATS
-    : STORAGE_KEYS.MOVIE_GAME_STATS
+    : gameType === 'movie'
+    ? STORAGE_KEYS.MOVIE_GAME_STATS
+    : STORAGE_KEYS.VISUAL_GAME_STATS
   setLocalStorage(key, stats)
-  
+
   // 保存游戏历史
   addGameHistory(gameType, won, attempts)
-  
+
   return stats
 }
 
 /**
  * 添加游戏历史记录
  */
-function addGameHistory(gameType: 'city' | 'hero' | 'movie', won: boolean, attempts: number): void {
+function addGameHistory(gameType: 'city' | 'hero' | 'movie' | 'visual', won: boolean, attempts: number): void {
   const history = getGameHistory()
   const entry: GameHistoryEntry = {
     gameType,
@@ -397,18 +432,22 @@ export function clearAllData(): void {
 /**
  * 清除特定游戏的数据
  */
-export function clearGameData(gameType: 'city' | 'hero' | 'movie'): void {
-  const key = gameType === 'city' 
-    ? STORAGE_KEYS.CITY_GAME_STATS 
+export function clearGameData(gameType: 'city' | 'hero' | 'movie' | 'visual'): void {
+  const key = gameType === 'city'
+    ? STORAGE_KEYS.CITY_GAME_STATS
     : gameType === 'hero'
     ? STORAGE_KEYS.HERO_GAME_STATS
-    : STORAGE_KEYS.MOVIE_GAME_STATS
+    : gameType === 'movie'
+    ? STORAGE_KEYS.MOVIE_GAME_STATS
+    : STORAGE_KEYS.VISUAL_GAME_STATS
   localStorage.removeItem(key)
-  const sessionKey = gameType === 'city' 
-    ? 'cityGuessGame' 
+  const sessionKey = gameType === 'city'
+    ? 'cityGuessGame'
     : gameType === 'hero'
     ? 'heroGuessGame'
-    : 'movieGuessGame'
+    : gameType === 'movie'
+    ? 'movieGuessGame'
+    : 'visualGuessGame'
   sessionStorage.removeItem(sessionKey)
 }
 
@@ -445,25 +484,29 @@ export function saveGameSettings(settings: GameSettings): void {
 /**
  * 获取游戏配置（优先返回游戏类型覆盖，否则返回全局默认值）
  */
-export function getGameConfig(gameType: 'city' | 'hero' | 'movie'): GameConfig {
+export function getGameConfig(gameType: 'city' | 'hero' | 'movie' | 'visual'): GameConfig {
   const settings = getGameSettings()
   const override = settings.overrides[gameType]
-  
+
   const config: GameConfig = {
     enableTimer: override?.enableTimer ?? settings.defaults.enableTimer,
     timerDuration: override?.timerDuration ?? settings.defaults.timerDuration,
     maxAttempts: override?.maxAttempts ?? settings.defaults.maxAttempts,
     showInitialHint: override?.showInitialHint ?? settings.defaults.showInitialHint
   }
-  
+
+  // 看图猜测：默认 3 次提示、9 宫格
+  if (gameType === 'visual') {
+    config.maxAttempts = override?.maxAttempts ?? 3
+  }
+
   // 电影游戏特有的配置
   if (gameType === 'movie') {
     const movieOverride = settings.overrides.movie
-    // 电影游戏默认倒计时30分钟，片段播放次数1次
     config.timerDuration = movieOverride?.timerDuration ?? 30
     config.maxPlaybackPerSegment = movieOverride?.maxPlaybackPerSegment ?? settings.defaults.maxPlaybackPerSegment ?? 1
   }
-  
+
   return config
 }
 
@@ -495,7 +538,8 @@ function initGameVisibility(): GameVisibility {
   return {
     city: true,
     hero: true,
-    movie: true
+    movie: true,
+    visual: true
   }
 }
 
@@ -516,7 +560,7 @@ export function saveGameVisibility(visibility: GameVisibility): void {
 /**
  * 更新单个游戏的可见性
  */
-export function updateGameVisibility(gameType: 'city' | 'hero' | 'movie', visible: boolean): void {
+export function updateGameVisibility(gameType: 'city' | 'hero' | 'movie' | 'visual', visible: boolean): void {
   const visibility = getGameVisibility()
   visibility[gameType] = visible
   saveGameVisibility(visibility)
@@ -555,48 +599,90 @@ export function updateDataExpirationDays(days: number): void {
   saveSettingsMeta(meta)
 }
 
+function initPartyRewardsPunishments(): PartyRewardPunishmentItem[] {
+  return []
+}
+
+function initPartyPersonnel(): PartyPersonnelItem[] {
+  return []
+}
+
+/**
+ * 获取年会随机奖惩列表
+ */
+export function getPartyRewardsPunishments(): PartyRewardPunishmentItem[] {
+  return getLocalStorage(STORAGE_KEYS.PARTY_REWARDS_PUNISHMENTS, initPartyRewardsPunishments())
+}
+
+/**
+ * 保存年会随机奖惩列表
+ */
+export function savePartyRewardsPunishments(items: PartyRewardPunishmentItem[]): void {
+  setLocalStorage(STORAGE_KEYS.PARTY_REWARDS_PUNISHMENTS, items)
+}
+
+/**
+ * 获取年会人员名单
+ */
+export function getPartyPersonnel(): PartyPersonnelItem[] {
+  return getLocalStorage(STORAGE_KEYS.PARTY_PERSONNEL, initPartyPersonnel())
+}
+
+/**
+ * 保存年会人员名单
+ */
+export function savePartyPersonnel(items: PartyPersonnelItem[]): void {
+  setLocalStorage(STORAGE_KEYS.PARTY_PERSONNEL, items)
+}
+
 /**
  * 获取自定义游戏数据
  */
-export function getCustomGameData<T>(gameType: 'city' | 'hero' | 'movie'): CustomGameData<T> | null {
+export function getCustomGameData<T>(gameType: 'city' | 'hero' | 'movie' | 'visual'): CustomGameData<T> | null {
   const key = gameType === 'city'
     ? STORAGE_KEYS.CUSTOM_CITY_DATA
     : gameType === 'hero'
     ? STORAGE_KEYS.CUSTOM_HERO_DATA
-    : STORAGE_KEYS.CUSTOM_MOVIE_DATA
+    : gameType === 'movie'
+    ? STORAGE_KEYS.CUSTOM_MOVIE_DATA
+    : STORAGE_KEYS.CUSTOM_VISUAL_DATA
   return getLocalStorage<CustomGameData<T> | null>(key, null)
 }
 
 /**
  * 保存自定义游戏数据
  */
-export function saveCustomGameData<T>(gameType: 'city' | 'hero' | 'movie', data: CustomGameData<T>): void {
+export function saveCustomGameData<T>(gameType: 'city' | 'hero' | 'movie' | 'visual', data: CustomGameData<T>): void {
   const meta = getSettingsMeta()
   const expirationMs = meta.dataExpirationDays * 24 * 60 * 60 * 1000
-  
+
   const customData: CustomGameData<T> = {
     ...data,
     lastModified: Date.now(),
     expiresAt: Date.now() + expirationMs
   }
-  
+
   const key = gameType === 'city'
     ? STORAGE_KEYS.CUSTOM_CITY_DATA
     : gameType === 'hero'
     ? STORAGE_KEYS.CUSTOM_HERO_DATA
-    : STORAGE_KEYS.CUSTOM_MOVIE_DATA
+    : gameType === 'movie'
+    ? STORAGE_KEYS.CUSTOM_MOVIE_DATA
+    : STORAGE_KEYS.CUSTOM_VISUAL_DATA
   setLocalStorage(key, customData)
 }
 
 /**
  * 清除自定义游戏数据
  */
-export function clearCustomGameData(gameType: 'city' | 'hero' | 'movie'): void {
+export function clearCustomGameData(gameType: 'city' | 'hero' | 'movie' | 'visual'): void {
   const key = gameType === 'city'
     ? STORAGE_KEYS.CUSTOM_CITY_DATA
     : gameType === 'hero'
     ? STORAGE_KEYS.CUSTOM_HERO_DATA
-    : STORAGE_KEYS.CUSTOM_MOVIE_DATA
+    : gameType === 'movie'
+    ? STORAGE_KEYS.CUSTOM_MOVIE_DATA
+    : STORAGE_KEYS.CUSTOM_VISUAL_DATA
   localStorage.removeItem(key)
 }
 
@@ -604,13 +690,13 @@ export function clearCustomGameData(gameType: 'city' | 'hero' | 'movie'): void {
  * 检查并清除过期的自定义数据
  * @returns 返回被清除的游戏类型数组
  */
-export function checkAndClearExpiredData(): ('city' | 'hero' | 'movie')[] {
+export function checkAndClearExpiredData(): ('city' | 'hero' | 'movie' | 'visual')[] {
   const meta = getSettingsMeta()
   const now = Date.now()
   const expirationMs = meta.dataExpirationDays * 24 * 60 * 60 * 1000
-  const clearedGames: ('city' | 'hero' | 'movie')[] = []
-  
-  for (const gameType of ['city', 'hero', 'movie'] as const) {
+  const clearedGames: ('city' | 'hero' | 'movie' | 'visual')[] = []
+
+  for (const gameType of ['city', 'hero', 'movie', 'visual'] as const) {
     const data = getCustomGameData(gameType)
     if (data && data.useCustom && data.lastModified + expirationMs < now) {
       clearCustomGameData(gameType)
@@ -628,7 +714,7 @@ export function checkAndClearExpiredData(): ('city' | 'hero' | 'movie')[] {
 /**
  * 切换为使用自定义数据（复制默认数据）
  */
-export function switchToCustomData<T>(gameType: 'city' | 'hero' | 'movie', defaultData: T[]): CustomGameData<T> {
+export function switchToCustomData<T>(gameType: 'city' | 'hero' | 'movie' | 'visual', defaultData: T[]): CustomGameData<T> {
   const customData: CustomGameData<T> = {
     useCustom: true,
     items: [...defaultData], // 深拷贝
@@ -643,7 +729,7 @@ export function switchToCustomData<T>(gameType: 'city' | 'hero' | 'movie', defau
 /**
  * 重置为默认数据
  */
-export function resetToDefaultData(gameType: 'city' | 'hero' | 'movie'): void {
+export function resetToDefaultData(gameType: 'city' | 'hero' | 'movie' | 'visual'): void {
   clearCustomGameData(gameType)
 }
 

@@ -43,6 +43,7 @@
               :suggestions="suggestions"
               :no-match-message="noMatchMessage"
               :show-error="showInputError"
+              :enabled="hasCityData"
               placeholder="输入城市名称..."
               @select="handleSelect"
             />
@@ -243,10 +244,9 @@ function handleTimerTimeout() {
 // 初始化倒计时（仅在启用时）
 const timer = useTimer(enableTimer.value ? timerDuration : 0, 'city', handleTimerTimeout)
 
+const hasCityData = computed(() => getAllCityNames().length > 0)
 const suggestions = computed(() => {
-  if (!inputValue.value.trim()) {
-    return []
-  }
+  if (!hasCityData.value || !inputValue.value.trim()) return []
   return searchCities(inputValue.value)
 })
 

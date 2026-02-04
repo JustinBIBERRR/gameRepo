@@ -7,12 +7,12 @@
             游戏平台
           </router-link>
         </div>
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2">
           <!-- 管理入口（仅显示齿轮图标） -->
           <router-link
             to="/settings"
-            class="text-gray-700 hover:text-blue-600 p-2 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            :class="{ 'text-blue-600': route.path.startsWith('/settings') }"
+            class="text-gray-700 hover:bg-gray-100 p-2 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+            :class="{ 'bg-gray-100': route.path.startsWith('/settings') }"
             title="管理"
           >
             <svg
@@ -36,23 +36,15 @@
             </svg>
           </router-link>
           
-          <!-- 游戏选择下拉菜单 -->
+          <!-- 游戏选择下拉菜单（仅显示图标） -->
           <div class="relative" ref="dropdownRef">
             <button
               @click="toggleDropdown"
-              class="flex items-center gap-2 text-gray-700 hover:text-blue-600 px-4 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-              :class="{ 'text-blue-600': isDropdownOpen }"
+              class="text-gray-700 hover:bg-gray-100 p-2 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+              :class="{ 'bg-gray-100': isDropdownOpen || isAnyGameActive }"
+              title="游戏选择"
             >
-              <span>游戏选择</span>
-              <svg
-                class="w-4 h-4 transition-transform"
-                :class="{ 'rotate-180': isDropdownOpen }"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
+              <component :is="currentGameIcon" class="!w-5 !h-5" />
             </button>
             
             <!-- 下拉菜单 -->
@@ -67,10 +59,10 @@
                   :key="game.path"
                   :to="game.path"
                   @click="closeDropdown"
-                  class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                  :class="{ 'bg-blue-50 text-blue-600': isActive(game.path) }"
+                  class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                  :class="{ 'bg-gray-100': isActive(game.path) }"
                 >
-                  <component :is="game.icon" class="w-5 h-5 flex-shrink-0" />
+                  <component :is="game.icon" class="!w-5 !h-5 flex-shrink-0" />
                   <span>{{ game.name }}</span>
                 </router-link>
               </div>
@@ -83,56 +75,61 @@
 </template>
 
 <script setup lang="ts">
+import { allGamesConfig } from '../config/games'
+import { getGameVisibility } from '../utils/storageUtils'
+
 const route = useRoute()
 const dropdownRef = ref<HTMLElement | null>(null)
 const isDropdownOpen = ref(false)
 
-const games = [
-  {
-    name: '城市猜测',
-    path: '/city-guess',
-    icon: () => h('svg', {
-      class: 'w-5 h-5',
-      fill: 'none',
-      stroke: 'currentColor',
-      viewBox: '0 0 24 24'
-    }, [
-      h('path', {
-        'stroke-linecap': 'round',
-        'stroke-linejoin': 'round',
-        'stroke-width': '2',
-        d: 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z'
-      }),
-      h('path', {
-        'stroke-linecap': 'round',
-        'stroke-linejoin': 'round',
-        'stroke-width': '2',
-        d: 'M15 11a3 3 0 11-6 0 3 3 0 016 0z'
-      })
-    ])
-  },
-  {
-    name: '王者荣耀人物猜测',
-    path: '/hero-guess',
-    icon: () => h('svg', {
-      class: 'w-5 h-5',
-      fill: 'none',
-      stroke: 'currentColor',
-      viewBox: '0 0 24 24'
-    }, [
-      h('path', {
-        'stroke-linecap': 'round',
-        'stroke-linejoin': 'round',
-        'stroke-width': '2',
-        d: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z'
-      })
-    ])
-  }
-]
+// 根据可见性配置过滤游戏，并转换为导航需要的格式
+const games = computed(() => {
+  const visibility = getGameVisibility()
+  return allGamesConfig
+    .filter(game => visibility[game.gameType])
+    .map(game => {
+      // 创建小尺寸图标（w-5 h-5），替换原来的 w-6 h-6
+      return {
+        name: game.title,
+        path: game.path,
+        icon: () => {
+          // 直接调用原始图标函数，然后在模板中通过 class 覆盖尺寸
+          return game.icon()
+        }
+      }
+    })
+})
 
 function isActive(path: string) {
   return route.path === path
 }
+
+// 检查是否有任何游戏处于激活状态
+const isAnyGameActive = computed(() => {
+  return games.value.some(game => isActive(game.path))
+})
+
+// 获取当前激活游戏的图标，如果没有则显示默认图标
+const currentGameIcon = computed(() => {
+  const activeGame = games.value.find(game => isActive(game.path))
+  if (activeGame) {
+    return activeGame.icon
+  }
+  // 默认显示一个游戏图标
+  return () => h('svg', {
+    class: 'w-5 h-5',
+    fill: 'none',
+    stroke: 'currentColor',
+    viewBox: '0 0 24 24'
+  }, [
+    h('path', {
+      'stroke-linecap': 'round',
+      'stroke-linejoin': 'round',
+      'stroke-width': '2',
+      d: 'M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4'
+    })
+  ])
+})
 
 function toggleDropdown() {
   isDropdownOpen.value = !isDropdownOpen.value

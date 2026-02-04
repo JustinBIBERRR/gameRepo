@@ -25,15 +25,21 @@
       </div>
     </div>
     
-    <!-- Hover 时显示的快捷操作图标 -->
-    <div
-      class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
-      @click.stop="toggleVisibility"
-    >
-      <button
-        class="p-2 rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-        :title="visible ? '隐藏游戏' : '显示游戏'"
+    <!-- 右上角：游戏管理 tag + Hover 时显示的可见性图标 -->
+    <div class="absolute top-4 right-4 flex items-center gap-2 z-10">
+      <span
+        class="inline-flex px-2.5 py-1 text-xs font-medium rounded-md bg-slate-100 text-slate-700"
       >
+        游戏管理
+      </span>
+      <div
+        class="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+        @click.stop="toggleVisibility"
+      >
+        <button
+          class="p-2 rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+          :title="visible ? '隐藏游戏' : '显示游戏'"
+        >
         <svg
           v-if="visible"
           class="w-5 h-5 text-gray-700"
@@ -69,6 +75,7 @@
           />
         </svg>
       </button>
+      </div>
     </div>
   </div>
 </template>
@@ -84,12 +91,12 @@ const props = defineProps<{
     icon: () => any
     iconColor?: 'blue' | 'purple' | 'green' | 'orange' | 'red'
   }
-  gameType: 'city' | 'hero' | 'movie'
+  gameType: 'city' | 'hero' | 'movie' | 'visual'
   visible: boolean
 }>()
 
 const emit = defineEmits<{
-  visibilityChange: [gameType: 'city' | 'hero' | 'movie', visible: boolean]
+  visibilityChange: [gameType: 'city' | 'hero' | 'movie' | 'visual', visible: boolean]
 }>()
 
 const router = useRouter()

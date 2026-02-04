@@ -46,6 +46,21 @@ const router = createRouter({
       path: '/movie-guess',
       name: 'MovieGuess',
       component: () => import('../views/MovieGuess.vue')
+    },
+    {
+      path: '/visual-guess',
+      name: 'VisualGuess',
+      component: () => import('../views/VisualGuess.vue')
+    },
+    {
+      path: '/settings/visual',
+      name: 'VisualSettings',
+      component: () => import('../views/GameSettings/VisualSettings.vue')
+    },
+    {
+      path: '/settings/party',
+      name: 'PartySettings',
+      component: () => import('../views/GameSettings/PartySettings.vue')
     }
   ]
 })
