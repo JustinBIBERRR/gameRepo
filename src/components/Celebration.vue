@@ -10,7 +10,7 @@
         <div v-if="type === 'success'" class="celebration-success">
           <div class="text-8xl mb-4 animate-bounce">🎉</div>
           <h2 class="text-4xl font-bold text-white mb-2 drop-shadow-lg">
-            {{ title || '恭喜！' }}
+            {{ title || t('game.congrats') }}
           </h2>
           <p class="text-xl text-white drop-shadow-lg">{{ message }}</p>
           
@@ -24,7 +24,7 @@
         <div v-else-if="type === 'failure'" class="celebration-failure">
           <div class="text-6xl mb-4 animate-pulse">💪</div>
           <h2 class="text-3xl font-bold text-white mb-2 drop-shadow-lg">
-            {{ title || '再试试！' }}
+            {{ title || t('game.tryAgain') }}
           </h2>
           <p class="text-lg text-white drop-shadow-lg">{{ message }}</p>
         </div>
@@ -43,6 +43,9 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = withDefaults(defineProps<{
   show: boolean

@@ -5,8 +5,9 @@
       <div class="bg-white rounded-lg shadow-lg p-6 md:p-8">
         <!-- 游戏头部（标题、倒计时、提示、进度条） -->
         <GameHeader
-          title="听片段猜电影"
-          description="系统随机选择了一部电影，你有"
+          :title="t('games.movie.title')"
+          :description="t('game.movieDescPrefix')"
+          :description-suffix="t('game.attemptsSuffix')"
           :attempts="attempts"
           :max-attempts="maxAttempts"
           :game-over="gameOver"
@@ -255,7 +256,10 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import Navigation from '../components/Navigation.vue'
+
+const { t } = useI18n()
 import GameHeader from '../components/GameHeader.vue'
 import Autocomplete from '../components/Autocomplete.vue'
 import Celebration from '../components/Celebration.vue'
@@ -336,10 +340,10 @@ function handleTimerTimeout() {
     updateGameStats('movie', false, attempts.value)
     
     showConfirm({
-      title: '时间到',
-      message: '倒计时已结束，游戏失败！',
-      confirmText: '再来一局',
-      cancelText: '回到首页'
+      title: t('game.timeUp'),
+      message: t('game.timeUpMessage'),
+      confirmText: t('game.playAgain'),
+      cancelText: t('game.backToHome')
     }).then((result) => {
       if (result) {
         restartGame()
@@ -483,9 +487,9 @@ async function handlePlayAudio() {
   
   if (!hasSource) {
     showConfirm({
-      title: '视频资源未配置',
-      message: '当前电影的视频资源未配置，无法播放音频。请在设置页面配置本地视频文件，或在电影数据文件中添加有效的视频URL。',
-      confirmText: '确定',
+      title: t('game.noVideoTitle'),
+      message: t('game.noVideoMessage'),
+      confirmText: t('common.ok'),
       cancelText: ''
     })
     return
@@ -564,7 +568,7 @@ function handleGuess() {
     if (newlyUnlocked.length > 0) {
       setTimeout(() => {
         celebrationType.value = 'achievement'
-        celebrationTitle.value = '成就解锁！'
+        celebrationTitle.value = t('game.achievementUnlocked')
         celebrationMessage.value = newlyUnlocked.map(a => a.name).join('、')
         showCelebration.value = true
       }, 2500)
@@ -620,10 +624,10 @@ async function playReviewVideo(timePoint: number) {
 
 function clearAndRestart() {
   showConfirm({
-    title: '清除游戏数据',
-    message: '确定要清除当前游戏数据并重新开始吗？',
-    confirmText: '确定清除',
-    cancelText: '取消'
+    title: t('game.clearGameDataTitle'),
+    message: t('game.clearGameDataMessage'),
+    confirmText: t('game.confirmClear'),
+    cancelText: t('common.cancel')
   }).then((result) => {
     if (result) {
       // 清除 sessionStorage
@@ -662,10 +666,10 @@ async function restartGame() {
   const movies = await getAllMovies()
   if (movies.length === 0) {
     showConfirm({
-      title: '没有电影',
-      message: '请先在设置页面注册至少一部电影才能开始游戏。',
-      confirmText: '去设置',
-      cancelText: '取消'
+      title: t('game.noMoviesTitle'),
+      message: t('game.noMoviesMessage'),
+      confirmText: t('game.goToSettings'),
+      cancelText: t('common.cancel')
     }).then((result) => {
       if (result) {
         router.push('/settings')

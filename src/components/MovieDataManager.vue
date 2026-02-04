@@ -157,7 +157,9 @@ import { videoPreloader } from '../utils/videoPreloader'
 import { getVideoDuration } from '../utils/videoUtils'
 import type { UserMovie } from '../utils/movieStorage'
 import { useModal } from '../composables/useModal'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const { confirm: showConfirm, success: showSuccess, error: showError } = useModal()
 
 const movies = ref<UserMovie[]>([])
@@ -192,8 +194,8 @@ async function loadMovies() {
   } catch (error) {
     console.error('加载电影列表失败:', error)
     showError({
-      title: '加载失败',
-      message: '无法加载电影列表，请刷新页面重试'
+      title: t('modal.loadFailed'),
+      message: t('modal.loadFailedMessage')
     })
   }
 }
@@ -257,10 +259,10 @@ async function handleDeleteMovie(movieId: string) {
   const movieName = movie?.name || '该电影'
   
   showConfirm({
-    title: '确认删除',
-    message: `确定要删除"${movieName}"吗？此操作将删除电影信息和文件，且不可恢复。`,
-    confirmText: '删除',
-    cancelText: '取消'
+    title: t('modal.confirmDelete'),
+    message: t('modal.confirmDeleteMovieMessage', { name: movieName }),
+    confirmText: t('common.delete'),
+    cancelText: t('common.cancel')
   }).then(async (confirmed) => {
     if (confirmed) {
       try {
@@ -275,14 +277,14 @@ async function handleDeleteMovie(movieId: string) {
         await loadMovies()
         
         showSuccess({
-          title: '删除成功',
-          message: `已删除"${movieName}"`
+          title: t('modal.deleteSuccess'),
+          message: t('modal.deleteSuccessItem', { name: movieName })
         })
       } catch (error) {
         console.error('删除电影失败:', error)
         showError({
-          title: '删除失败',
-          message: '删除电影时发生错误，请重试'
+          title: t('modal.deleteFailed'),
+          message: t('modal.deleteFailedMessage')
         })
       }
     }
@@ -370,8 +372,8 @@ async function handleFormSubmit(formData: {
     await loadMovies()
     
     showSuccess({
-      title: editingMovie.value ? '更新成功' : '添加成功',
-      message: editingMovie.value ? '电影信息已更新' : '电影已添加'
+      title: editingMovie.value ? t('modal.updateSuccess') : t('modal.addSuccess'),
+      message: editingMovie.value ? t('modal.updateSuccessMessage') : t('modal.addSuccessMessage')
     })
     
     closeEditModal()
@@ -380,8 +382,8 @@ async function handleFormSubmit(formData: {
     loadingMovies.value[movieId] = false
     fileStatus.value[movieId] = 'error'
     showError({
-      title: '保存失败',
-      message: '保存电影时发生错误，请重试'
+      title: t('modal.saveFailed'),
+      message: t('modal.saveFailedMessage')
     })
   } finally {
     savingMovie.value = false

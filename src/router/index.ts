@@ -61,6 +61,16 @@ const router = createRouter({
       path: '/settings/party',
       name: 'PartySettings',
       component: () => import('../views/GameSettings/PartySettings.vue')
+    },
+    {
+      path: '/listen-song-guess',
+      name: 'ListenSongGuess',
+      component: () => import('../views/ListenSongAI.vue')
+    },
+    {
+      path: '/settings/listen-song',
+      name: 'ListenSongSettings',
+      component: () => import('../views/GameSettings/ListenSongSettings.vue')
     }
   ]
 })

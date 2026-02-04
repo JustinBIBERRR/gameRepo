@@ -48,10 +48,12 @@
 
 <script setup lang="ts">
 import { h } from 'vue'
+import { useI18n } from 'vue-i18n'
 import PartyDrawModal from './PartyDrawModal.vue'
 import { getPartyPersonnel, getPartyRewardsPunishments } from '../utils/storageUtils'
 import { useModal } from '../composables/useModal'
 
+const { t } = useI18n()
 const { alert: showAlert } = useModal()
 
 const subIconsVisible = ref(false)
@@ -123,7 +125,7 @@ function openDraw(type: 'draw-person' | 'reward-only' | 'punishment-only') {
   if (type === 'draw-person') {
     const list = getPartyPersonnel()
     if (list.length < 3) {
-      showAlert({ title: '配置不足', message: '请先在设置中配置至少 3 条人员' })
+      showAlert({ title: t('party.configInsufficientTitle'), message: t('party.configInsufficientPeople') })
       return
     }
   } else {
@@ -131,8 +133,8 @@ function openDraw(type: 'draw-person' | 'reward-only' | 'punishment-only') {
     const filtered = list.filter((i) => i.type === (type === 'reward-only' ? 'reward' : 'punishment'))
     if (filtered.length < 3) {
       showAlert({
-        title: '配置不足',
-        message: type === 'reward-only' ? '请先在设置中配置至少 3 条奖励' : '请先在设置中配置至少 3 条惩罚'
+        title: t('party.configInsufficientTitle'),
+        message: type === 'reward-only' ? t('party.configInsufficientRewards') : t('party.configInsufficientPunishments')
       })
       return
     }

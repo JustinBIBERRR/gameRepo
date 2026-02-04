@@ -5,10 +5,10 @@
       <!-- 标题 -->
       <div class="text-center mb-12">
         <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-          游戏配置管理
+          {{ t('settings.title') }}
         </h1>
         <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-          管理游戏参数和数据配置
+          {{ t('settings.subtitle') }}
         </p>
       </div>
 
@@ -31,7 +31,7 @@
           <span
             class="absolute top-4 right-4 inline-flex px-2.5 py-1 text-xs font-medium rounded-md bg-amber-100 text-amber-800 z-10"
           >
-            全局配置
+            {{ t('settings.globalConfig') }}
           </span>
           <div class="flex items-start gap-4 mb-4">
             <div class="flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center bg-amber-100">
@@ -40,11 +40,11 @@
               </svg>
             </div>
             <div class="flex-1 min-w-0">
-              <h3 class="text-xl font-bold text-gray-900 mb-2">年会活动配置</h3>
-              <p class="text-gray-600 text-sm leading-relaxed">配置数据过期、随机奖惩与随机抽人名单</p>
+              <h3 class="text-xl font-bold text-gray-900 mb-2">{{ t('settings.partyTitle') }}</h3>
+              <p class="text-gray-600 text-sm leading-relaxed">{{ t('settings.partyDesc') }}</p>
             </div>
           </div>
-          <div class="mt-auto pt-4 text-sm text-gray-500 text-center">点击进入配置</div>
+          <div class="mt-auto pt-4 text-sm text-gray-500 text-center">{{ t('settings.clickToEnter') }}</div>
         </router-link>
       </div>
     </main>
@@ -52,19 +52,22 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import Navigation from '../components/Navigation.vue'
 import SettingsCard from '../components/SettingsCard.vue'
 import { getGameVisibility, checkAndClearExpiredData, type GameVisibility } from '../utils/storageUtils'
 import { useModal } from '../composables/useModal'
 import { allGamesConfig } from '../config/games'
 
+const { t } = useI18n()
 const { success: showSuccess } = useModal()
 
 const visibility = ref<GameVisibility>({
   city: true,
   hero: true,
   movie: true,
-  visual: true
+  visual: true,
+  listenSong: true
 })
 
 
@@ -72,12 +75,12 @@ const visibility = ref<GameVisibility>({
 const games = computed(() => {
   return allGamesConfig.map(game => ({
     ...game,
-    description: `配置${game.title.replace('猜测', '').replace('听片段猜', '')}数据、游戏参数和倒计时设置`,
+    description: t('settings.gameCardDesc', { name: t(game.title) }),
     path: game.settingsPath
   }))
 })
 
-function handleVisibilityChange(gameType: 'city' | 'hero' | 'movie' | 'visual', visible: boolean) {
+function handleVisibilityChange(gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong', visible: boolean) {
   visibility.value[gameType] = visible
 }
 
@@ -87,14 +90,14 @@ onMounted(() => {
   const clearedGames = checkAndClearExpiredData()
   if (clearedGames.length > 0) {
     const gameNames = clearedGames.map(type => {
-      if (type === 'city') return '城市猜测'
-      if (type === 'hero') return '英雄猜测'
-      if (type === 'movie') return '电影猜测'
-      return '看图猜测物品'
-    }).join('、')
+      if (type === 'city') return t('games.city.title')
+      if (type === 'hero') return t('games.hero.title')
+      if (type === 'movie') return t('games.movie.title')
+      return t('games.visual.title')
+    }).join(t('common.comma'))
     showSuccess({
-      title: '数据已过期清除',
-      message: `${gameNames}的自定义数据已过期，已恢复为默认数据`
+      title: t('settings.expiredTitle'),
+      message: t('settings.expiredMessage', { games: gameNames })
     })
   }
 })

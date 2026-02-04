@@ -11,8 +11,8 @@
       :message="modalState.options.message"
       :type="modalState.options.type || 'confirm'"
       :show-cancel="modalState.options.showCancel !== false"
-      :confirm-text="modalState.options.confirmText || '确定'"
-      :cancel-text="modalState.options.cancelText || '取消'"
+      :confirm-text="modalState.options.confirmText || t('common.confirm')"
+      :cancel-text="modalState.options.cancelText || t('common.cancel')"
       :close-on-backdrop="modalState.options.closeOnBackdrop !== false"
       @confirm="handleConfirm"
       @cancel="handleCancel"
@@ -21,8 +21,11 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import GlobalLoading from './components/GlobalLoading.vue'
 import Modal from './components/Modal.vue'
 import PartyFloatingWidget from './components/PartyFloatingWidget.vue'
 import { modalState, handleConfirm, handleCancel } from './composables/useModal'
+
+const { t } = useI18n()
 </script>

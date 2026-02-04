@@ -10,20 +10,20 @@
           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
           </svg>
-          返回配置管理
+          {{ t('settings.backToSettings') }}
         </router-link>
       </div>
 
       <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">年会活动配置</h1>
-        <p class="text-gray-600">配置数据过期、随机奖惩与随机抽人名单</p>
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ t('settings.partyPageTitle') }}</h1>
+        <p class="text-gray-600">{{ t('settings.partyPageDesc') }}</p>
       </div>
 
       <!-- 数据过期 -->
       <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 class="text-xl font-semibold text-gray-900 mb-4">数据过期</h2>
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">{{ t('settings.dataExpiry') }}</h2>
         <div class="space-y-3 max-w-xs">
-          <label class="block text-sm font-medium text-gray-700">数据过期天数</label>
+          <label class="block text-sm font-medium text-gray-700">{{ t('settings.expirationDays') }}</label>
           <div class="flex items-center gap-2">
             <input
               v-model.number="expirationDays"
@@ -33,23 +33,23 @@
               class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               @change="handleExpirationChange"
             />
-            <span class="text-sm text-gray-600">天</span>
+            <span class="text-sm text-gray-600">{{ t('settings.days') }}</span>
           </div>
-          <p class="text-xs text-gray-500">范围 1–365 天，超过此天数未修改的自定义数据将自动清除</p>
+          <p class="text-xs text-gray-500">{{ t('settings.expirationHint') }}</p>
         </div>
       </div>
 
       <!-- 随机奖惩 -->
       <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 class="text-xl font-semibold text-gray-900 mb-4">随机奖惩</h2>
-        <p class="text-sm text-gray-600 mb-4">至少配置 3 条方可使用抽奖。奖励用绿色、惩罚用红色区分。</p>
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">{{ t('settings.rewardsPunishments') }}</h2>
+        <p class="text-sm text-gray-600 mb-4">{{ t('settings.rewardsPunishmentsHint') }}</p>
         <div class="overflow-x-auto">
           <table class="min-w-full border border-gray-200 rounded-lg overflow-hidden">
             <thead class="bg-gray-50">
               <tr>
-                <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">类型</th>
-                <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">内容</th>
-                <th class="px-4 py-2 w-24 text-right text-sm font-medium text-gray-700">操作</th>
+                <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">{{ t('settings.type') }}</th>
+                <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">{{ t('settings.content') }}</th>
+                <th class="px-4 py-2 w-24 text-right text-sm font-medium text-gray-700">{{ t('common.actions') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -63,7 +63,7 @@
                     class="inline-flex px-2 py-0.5 text-xs font-medium rounded"
                     :class="item.type === 'reward' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
                   >
-                    {{ item.type === 'reward' ? '奖励' : '惩罚' }}
+                    {{ item.type === 'reward' ? t('settings.reward') : t('settings.punishment') }}
                   </span>
                 </td>
                 <td class="px-4 py-2 text-sm text-gray-900">{{ item.text }}</td>
@@ -73,7 +73,7 @@
                     class="text-red-600 hover:text-red-800 text-sm"
                     @click="removeRewardPunishment(item.id)"
                   >
-                    删除
+                    {{ t('common.delete') }}
                   </button>
                 </td>
               </tr>
@@ -84,7 +84,7 @@
           <input
             v-model="newRPText"
             type="text"
-            placeholder="例如：唱一首歌"
+            :placeholder="t('settings.placeholderReward')"
             class="flex-1 min-w-[120px] px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             @keydown.enter="addRewardPunishment('reward')"
           />
@@ -93,22 +93,22 @@
             class="px-4 py-2 rounded-lg bg-green-100 text-green-800 hover:bg-green-200 text-sm font-medium"
             @click="addRewardPunishment('reward')"
           >
-            添加奖励
+            {{ t('settings.addReward') }}
           </button>
           <button
             type="button"
             class="px-4 py-2 rounded-lg bg-red-100 text-red-800 hover:bg-red-200 text-sm font-medium"
             @click="addRewardPunishment('punishment')"
           >
-            添加惩罚
+            {{ t('settings.addPunishment') }}
           </button>
         </div>
       </div>
 
       <!-- 随机抽人 -->
       <div class="bg-white rounded-lg shadow-md p-6">
-        <h2 class="text-xl font-semibold text-gray-900 mb-4">随机抽人名单</h2>
-        <p class="text-sm text-gray-600 mb-4">至少配置 3 人方可使用抽人。支持增删改。</p>
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">{{ t('settings.drawPeopleListTitle') }}</h2>
+        <p class="text-sm text-gray-600 mb-4">{{ t('settings.peopleListHint') }}</p>
         <ul class="space-y-2 mb-4 max-h-60 overflow-y-auto">
           <li
             v-for="p in personnel"
@@ -121,7 +121,7 @@
               class="text-red-600 hover:text-red-800 text-sm"
               @click="removePersonnel(p.id)"
             >
-              删除
+              {{ t('common.delete') }}
             </button>
           </li>
         </ul>
@@ -129,7 +129,7 @@
           <input
             v-model="newPersonName"
             type="text"
-            placeholder="输入姓名"
+            :placeholder="t('settings.placeholderPerson')"
             class="flex-1 max-w-xs px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             @keydown.enter="addPersonnel"
           />
@@ -138,7 +138,7 @@
             class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-sm font-medium"
             @click="addPersonnel"
           >
-            添加
+            {{ t('common.add') }}
           </button>
         </div>
       </div>
@@ -147,7 +147,10 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import Navigation from '../../components/Navigation.vue'
+
+const { t } = useI18n()
 import {
   getSettingsMeta,
   updateDataExpirationDays,
@@ -172,7 +175,7 @@ function handleExpirationChange() {
   const days = Math.max(1, Math.min(365, expirationDays.value))
   expirationDays.value = days
   updateDataExpirationDays(days)
-  showSuccess({ title: '已保存', message: `数据过期天数已设置为 ${days} 天` })
+  showSuccess({ title: t('settings.saved'), message: t('settings.expirationSaved', { days }) })
 }
 
 function addRewardPunishment(type: 'reward' | 'punishment') {
@@ -185,13 +188,13 @@ function addRewardPunishment(type: 'reward' | 'punishment') {
   })
   savePartyRewardsPunishments(rewardsPunishments.value)
   newRPText.value = ''
-  showSuccess({ title: '已添加', message: type === 'reward' ? '已添加奖励' : '已添加惩罚' })
+  showSuccess({ title: t('common.added'), message: type === 'reward' ? t('settings.addedReward') : t('settings.addedPunishment') })
 }
 
 function removeRewardPunishment(id: string) {
   rewardsPunishments.value = rewardsPunishments.value.filter((i) => i.id !== id)
   savePartyRewardsPunishments(rewardsPunishments.value)
-  showSuccess({ title: '已删除', message: '已删除该条' })
+  showSuccess({ title: t('common.removed'), message: t('settings.removedItem') })
 }
 
 function addPersonnel() {
@@ -200,13 +203,13 @@ function addPersonnel() {
   personnel.value.push({ id: crypto.randomUUID(), name })
   savePartyPersonnel(personnel.value)
   newPersonName.value = ''
-  showSuccess({ title: '已添加', message: '已添加人员' })
+  showSuccess({ title: t('common.added'), message: t('settings.addedPerson') })
 }
 
 function removePersonnel(id: string) {
   personnel.value = personnel.value.filter((p) => p.id !== id)
   savePartyPersonnel(personnel.value)
-  showSuccess({ title: '已删除', message: '已删除该人员' })
+  showSuccess({ title: t('common.removed'), message: t('settings.removedPerson') })
 }
 
 onMounted(() => {

@@ -11,13 +11,15 @@
 
 import { h } from 'vue'
 
-export type GameType = 'city' | 'hero' | 'movie' | 'visual'
+export type GameType = 'city' | 'hero' | 'movie' | 'visual' | 'listenSong'
 
 export type IconColor = 'blue' | 'purple' | 'red' | 'green' | 'orange'
 
 export interface GameConfig {
   gameType: GameType
+  /** i18n key for title, e.g. games.city.title */
   title: string
+  /** i18n key for description, e.g. games.city.description */
   description: string
   path: string
   settingsPath: string
@@ -31,8 +33,8 @@ export interface GameConfig {
 export const allGamesConfig: GameConfig[] = [
   {
     gameType: 'city',
-    title: '城市猜测',
-    description: '系统随机选择一个国内城市，你有5次机会猜测。每次猜测后会显示距离、方位和城市特点。',
+    title: 'games.city.title',
+    description: 'games.city.description',
     path: '/city-guess',
     settingsPath: '/settings/city',
     iconColor: 'blue',
@@ -58,8 +60,8 @@ export const allGamesConfig: GameConfig[] = [
   },
   {
     gameType: 'hero',
-    title: '王者荣耀人物猜测',
-    description: '系统随机选择一个王者荣耀英雄，你有5次机会猜测。通过职业、年代、国籍、人类、性别等属性提示来找到答案。',
+    title: 'games.hero.title',
+    description: 'games.hero.description',
     path: '/hero-guess',
     settingsPath: '/settings/hero',
     iconColor: 'purple',
@@ -79,8 +81,8 @@ export const allGamesConfig: GameConfig[] = [
   },
   {
     gameType: 'movie',
-    title: '听片段猜电影',
-    description: '系统随机选择一部电影，你有8次机会猜测。通过听15秒音频片段来找到答案。',
+    title: 'games.movie.title',
+    description: 'games.movie.description',
     path: '/movie-guess',
     settingsPath: '/settings/movie',
     iconColor: 'red',
@@ -99,9 +101,30 @@ export const allGamesConfig: GameConfig[] = [
     ])
   },
   {
+    gameType: 'listenSong',
+    title: 'games.listenSong.title',
+    description: 'games.listenSong.description',
+    path: '/listen-song-guess',
+    settingsPath: '/settings/listen-song',
+    iconColor: 'green',
+    icon: () => h('svg', {
+      class: 'w-6 h-6',
+      fill: 'none',
+      stroke: 'currentColor',
+      viewBox: '0 0 24 24'
+    }, [
+      h('path', {
+        'stroke-linecap': 'round',
+        'stroke-linejoin': 'round',
+        'stroke-width': '2',
+        d: 'M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3'
+      })
+    ])
+  },
+  {
     gameType: 'visual',
-    title: '看图猜测物品',
-    description: '系统随机选择一件物品（生活用品、品牌logo、国旗、专辑封面等），你有5次提示机会。通过局部细节→轮廓剪影→30%→50%→70%区域逐步猜测。',
+    title: 'games.visual.title',
+    description: 'games.visual.description',
     path: '/visual-guess',
     settingsPath: '/settings/visual',
     iconColor: 'orange',

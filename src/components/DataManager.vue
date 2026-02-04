@@ -131,12 +131,15 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import JsonEditor from './JsonEditor.vue'
 import EditableDataTable from './EditableDataTable.vue'
 import SchemaForm from './SchemaForm/SchemaForm.vue'
 import GlobalModal from './GlobalModal.vue'
 import type { GameDataSchema } from '../schemas/types'
 import { useModal } from '../composables/useModal'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   schema: GameDataSchema
@@ -275,8 +278,8 @@ function handleFormSubmit(data: Record<string, any>) {
         updateJsonFromData()
       }
       showSuccess({
-        title: '保存成功',
-        message: '数据已更新'
+        title: t('modal.saveSuccess'),
+        message: t('modal.dataUpdated')
       })
     }
   } else {
@@ -287,8 +290,8 @@ function handleFormSubmit(data: Record<string, any>) {
       updateJsonFromData()
     }
     showSuccess({
-      title: '保存成功',
-      message: '数据已添加'
+      title: t('modal.saveSuccess'),
+      message: t('modal.dataAdded')
     })
   }
   
@@ -313,10 +316,10 @@ function handleModeChange(value: boolean) {
 
 function handleReset() {
   showConfirm({
-    title: '确认重置',
-    message: '确定要重置为默认数据吗？此操作将清除所有自定义数据，且不可恢复。',
-    confirmText: '重置',
-    cancelText: '取消'
+    title: t('modal.confirmReset'),
+    message: t('modal.confirmResetMessage'),
+    confirmText: t('modal.reset'),
+    cancelText: t('common.cancel')
   }).then((confirmed) => {
     if (confirmed) {
       emit('reset')
@@ -329,8 +332,8 @@ function handleReset() {
         updateJsonFromData()
       }
       showSuccess({
-        title: '重置成功',
-        message: '已恢复为默认数据'
+        title: t('modal.resetSuccess'),
+        message: t('modal.resetSuccessMessage')
       })
     }
   })
@@ -338,10 +341,10 @@ function handleReset() {
 
 function handleClearAll() {
   showConfirm({
-    title: '确认清理',
-    message: '确定要清理全部数据吗？此操作将删除所有数据（包括默认数据），且不可恢复。',
-    confirmText: '清理',
-    cancelText: '取消'
+    title: t('modal.confirmClearAll'),
+    message: t('modal.confirmClearAllMessage'),
+    confirmText: t('modal.clearAll'),
+    cancelText: t('common.cancel')
   }).then((confirmed) => {
     if (confirmed) {
       emit('update:customData', [])
@@ -353,8 +356,8 @@ function handleClearAll() {
         }, 2000)
       }
       showSuccess({
-        title: '清理成功',
-        message: '已清理全部数据'
+        title: t('modal.clearSuccess'),
+        message: t('modal.clearSuccessMessage')
       })
     }
   })

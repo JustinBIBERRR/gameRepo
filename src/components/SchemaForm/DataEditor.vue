@@ -109,11 +109,14 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import SchemaTable from './SchemaTable.vue'
 import SchemaForm from './SchemaForm.vue'
 import GlobalModal from '../GlobalModal.vue'
 import type { GameDataSchema } from '../../schemas/types'
 import { useModal } from '../../composables/useModal'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   schema: GameDataSchema
@@ -162,8 +165,8 @@ const capacityLimit = computed(() => props.capacityLimit || null)
 function handleAdd() {
   if (isAtCapacityLimit.value) {
     showError({
-      title: '已达上限',
-      message: `数据条数已达 ${capacityLimit.value} 条上限，请删除部分数据后再添加`
+      title: t('modal.limitReached'),
+      message: t('modal.limitReachedMessage', { count: capacityLimit.value })
     })
     return
   }
@@ -181,10 +184,10 @@ function handleDelete(item: Record<string, any>) {
   const itemName = item[primaryKey] || '该项'
   
   showConfirm({
-    title: '确认删除',
-    message: `确定要删除"${itemName}"吗？此操作不可恢复。`,
-    confirmText: '删除',
-    cancelText: '取消'
+    title: t('modal.confirmDelete'),
+    message: t('modal.confirmDeleteMessage', { name: itemName }),
+    confirmText: t('common.delete'),
+    cancelText: t('common.cancel')
   }).then((confirmed) => {
     if (confirmed) {
       const newData = props.customData.filter(d => {
@@ -192,8 +195,8 @@ function handleDelete(item: Record<string, any>) {
       })
       emit('update:customData', newData)
       showSuccess({
-        title: '删除成功',
-        message: '已删除数据'
+        title: t('modal.deleteSuccess'),
+        message: t('modal.deleteSuccessData')
       })
     }
   })
@@ -212,8 +215,8 @@ function handleSubmit(data: Record<string, any>) {
       newData[index] = { ...data }
       emit('update:customData', newData)
       showSuccess({
-        title: '保存成功',
-        message: '数据已更新'
+        title: t('modal.saveSuccess'),
+        message: t('modal.dataUpdated')
       })
     }
   } else {
@@ -225,9 +228,10 @@ function handleSubmit(data: Record<string, any>) {
     )
     
     if (exists) {
+      const fieldLabel = props.schema.fields.find(f => f.key === primaryKey)?.label || t('modal.primaryKeyLabel')
       showError({
-        title: '保存失败',
-        message: `${props.schema.fields.find(f => f.key === primaryKey)?.label || '主键'}已存在`
+        title: t('modal.saveFailed'),
+        message: t('modal.duplicateKeyMessage', { field: fieldLabel })
       })
       return
     }
@@ -235,8 +239,8 @@ function handleSubmit(data: Record<string, any>) {
     // 检查容量限制
     if (isAtCapacityLimit.value) {
       showError({
-        title: '已达上限',
-        message: `数据条数已达 ${capacityLimit.value} 条上限，请删除部分数据后再添加`
+        title: t('modal.limitReached'),
+        message: t('modal.limitReachedMessage', { count: capacityLimit.value })
       })
       return
     }
@@ -244,8 +248,8 @@ function handleSubmit(data: Record<string, any>) {
     const newData = [...props.customData, data]
     emit('update:customData', newData)
     showSuccess({
-      title: '保存成功',
-      message: '数据已添加'
+      title: t('modal.saveSuccess'),
+      message: t('modal.dataAdded')
     })
   }
   
@@ -269,17 +273,17 @@ function handleModeChange(value: boolean) {
 
 function handleReset() {
   showConfirm({
-    title: '确认重置',
-    message: '确定要重置为默认数据吗？此操作将清除所有自定义数据，且不可恢复。',
-    confirmText: '重置',
-    cancelText: '取消'
+    title: t('modal.confirmReset'),
+    message: t('modal.confirmResetMessage'),
+    confirmText: t('modal.reset'),
+    cancelText: t('common.cancel')
   }).then((confirmed) => {
     if (confirmed) {
       emit('reset')
       useCustom.value = false
       showSuccess({
-        title: '重置成功',
-        message: '已恢复为默认数据'
+        title: t('modal.resetSuccess'),
+        message: t('modal.resetSuccessMessage')
       })
     }
   })
@@ -300,8 +304,8 @@ function handleExportJSON() {
   URL.revokeObjectURL(url)
   
   showSuccess({
-    title: '导出成功',
-    message: '数据已导出为 JSON 文件'
+    title: t('modal.exportSuccess'),
+    message: t('modal.exportSuccessMessage')
   })
 }
 
@@ -344,18 +348,18 @@ async function handleFileSelect(event: Event) {
     
     // 显示确认对话框
     const confirmed = await showConfirm({
-      title: '确认导入',
-      message: `即将导入 ${importedData.length} 条数据，这将覆盖现有自定义数据。确定要继续吗？`,
-      confirmText: '导入',
-      cancelText: '取消'
+      title: t('modal.confirmImport'),
+      message: t('modal.confirmImportMessage', { count: importedData.length }),
+      confirmText: t('modal.import'),
+      cancelText: t('common.cancel')
     })
     
     if (confirmed) {
       emit('update:customData', importedData)
       useCustom.value = true
       showSuccess({
-        title: '导入成功',
-        message: `已导入 ${importedData.length} 条数据`
+        title: t('modal.importSuccess'),
+        message: t('modal.importSuccessMessage', { count: importedData.length })
       })
     }
     
@@ -363,8 +367,8 @@ async function handleFileSelect(event: Event) {
     input.value = ''
   } catch (error: any) {
     showError({
-      title: '导入失败',
-      message: error.message || '无法解析 JSON 文件'
+      title: t('modal.importFailed'),
+      message: error.message || t('modal.importFailedMessage')
     })
     input.value = ''
   }

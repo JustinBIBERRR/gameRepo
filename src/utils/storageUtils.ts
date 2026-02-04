@@ -9,6 +9,7 @@ const STORAGE_KEYS = {
   HERO_GAME_STATS: 'heroGameStats',
   MOVIE_GAME_STATS: 'movieGameStats',
   VISUAL_GAME_STATS: 'visualGameStats',
+  LISTEN_SONG_GAME_STATS: 'listenSongGameStats',
   // 成就系统
   ACHIEVEMENTS: 'achievements',
   // 游戏历史记录
@@ -61,7 +62,7 @@ export interface Achievement {
 }
 
 export interface GameHistoryEntry {
-  gameType: 'city' | 'hero' | 'movie' | 'visual'
+  gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong'
   date: number
   won: boolean
   attempts: number
@@ -108,6 +109,12 @@ export interface GameSettings {
       gridRows?: number
       gridCols?: number
     }
+    listenSong?: {
+      enableTimer?: boolean
+      timerDuration?: number
+      maxAttempts?: number
+      showInitialHint?: boolean
+    }
   }
 }
 
@@ -120,7 +127,7 @@ export interface GameConfig {
 }
 
 export interface TimerState {
-  gameType: 'city' | 'hero' | 'movie' | 'visual'
+  gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong'
   startTime: number        // 倒计时开始时间戳
   remainingSeconds: number // 剩余秒数
   isRunning: boolean       // 是否正在运行
@@ -134,10 +141,11 @@ export interface CustomGameData<T> {
 }
 
 export interface GameVisibility {
-  city: boolean            // 城市游戏是否在首页显示
-  hero: boolean            // 英雄游戏是否在首页显示
-  movie: boolean           // 电影游戏是否在首页显示
-  visual: boolean          // 看图猜测游戏是否在首页显示
+  city: boolean
+  hero: boolean
+  movie: boolean
+  visual: boolean
+  listenSong: boolean
 }
 
 export interface SettingsMeta {
@@ -235,22 +243,22 @@ function initGameStats(): GameStats {
 /**
  * 获取游戏统计数据
  */
-export function getGameStats(gameType: 'city' | 'hero' | 'movie' | 'visual'): GameStats {
-  const key = gameType === 'city'
-    ? STORAGE_KEYS.CITY_GAME_STATS
-    : gameType === 'hero'
-    ? STORAGE_KEYS.HERO_GAME_STATS
-    : gameType === 'movie'
-    ? STORAGE_KEYS.MOVIE_GAME_STATS
-    : STORAGE_KEYS.VISUAL_GAME_STATS
-  return getLocalStorage(key, initGameStats())
+export function getGameStats(gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong'): GameStats {
+  const keyMap: Record<typeof gameType, string> = {
+    city: STORAGE_KEYS.CITY_GAME_STATS,
+    hero: STORAGE_KEYS.HERO_GAME_STATS,
+    movie: STORAGE_KEYS.MOVIE_GAME_STATS,
+    visual: STORAGE_KEYS.VISUAL_GAME_STATS,
+    listenSong: STORAGE_KEYS.LISTEN_SONG_GAME_STATS
+  }
+  return getLocalStorage(keyMap[gameType], initGameStats())
 }
 
 /**
  * 更新游戏统计数据
  */
 export function updateGameStats(
-  gameType: 'city' | 'hero' | 'movie' | 'visual',
+  gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong',
   won: boolean,
   attempts: number
 ): GameStats {
@@ -289,14 +297,14 @@ export function updateGameStats(
   const totalAttempts = stats.averageAttempts * (stats.totalGames - 1) + attempts
   stats.averageAttempts = Math.round((totalAttempts / stats.totalGames) * 10) / 10
 
-  const key = gameType === 'city'
-    ? STORAGE_KEYS.CITY_GAME_STATS
-    : gameType === 'hero'
-    ? STORAGE_KEYS.HERO_GAME_STATS
-    : gameType === 'movie'
-    ? STORAGE_KEYS.MOVIE_GAME_STATS
-    : STORAGE_KEYS.VISUAL_GAME_STATS
-  setLocalStorage(key, stats)
+  const keyMap: Record<typeof gameType, string> = {
+    city: STORAGE_KEYS.CITY_GAME_STATS,
+    hero: STORAGE_KEYS.HERO_GAME_STATS,
+    movie: STORAGE_KEYS.MOVIE_GAME_STATS,
+    visual: STORAGE_KEYS.VISUAL_GAME_STATS,
+    listenSong: STORAGE_KEYS.LISTEN_SONG_GAME_STATS
+  }
+  setLocalStorage(keyMap[gameType], stats)
 
   // 保存游戏历史
   addGameHistory(gameType, won, attempts)
@@ -307,7 +315,7 @@ export function updateGameStats(
 /**
  * 添加游戏历史记录
  */
-function addGameHistory(gameType: 'city' | 'hero' | 'movie' | 'visual', won: boolean, attempts: number): void {
+function addGameHistory(gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong', won: boolean, attempts: number): void {
   const history = getGameHistory()
   const entry: GameHistoryEntry = {
     gameType,
@@ -432,23 +440,23 @@ export function clearAllData(): void {
 /**
  * 清除特定游戏的数据
  */
-export function clearGameData(gameType: 'city' | 'hero' | 'movie' | 'visual'): void {
-  const key = gameType === 'city'
-    ? STORAGE_KEYS.CITY_GAME_STATS
-    : gameType === 'hero'
-    ? STORAGE_KEYS.HERO_GAME_STATS
-    : gameType === 'movie'
-    ? STORAGE_KEYS.MOVIE_GAME_STATS
-    : STORAGE_KEYS.VISUAL_GAME_STATS
-  localStorage.removeItem(key)
-  const sessionKey = gameType === 'city'
-    ? 'cityGuessGame'
-    : gameType === 'hero'
-    ? 'heroGuessGame'
-    : gameType === 'movie'
-    ? 'movieGuessGame'
-    : 'visualGuessGame'
-  sessionStorage.removeItem(sessionKey)
+export function clearGameData(gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong'): void {
+  const keyMap: Record<typeof gameType, string> = {
+    city: STORAGE_KEYS.CITY_GAME_STATS,
+    hero: STORAGE_KEYS.HERO_GAME_STATS,
+    movie: STORAGE_KEYS.MOVIE_GAME_STATS,
+    visual: STORAGE_KEYS.VISUAL_GAME_STATS,
+    listenSong: STORAGE_KEYS.LISTEN_SONG_GAME_STATS
+  }
+  localStorage.removeItem(keyMap[gameType])
+  const sessionKeyMap: Record<typeof gameType, string> = {
+    city: 'cityGuessGame',
+    hero: 'heroGuessGame',
+    movie: 'movieGuessGame',
+    visual: 'visualGuessGame',
+    listenSong: 'listenSongGuessGame'
+  }
+  sessionStorage.removeItem(sessionKeyMap[gameType])
 }
 
 /**
@@ -484,7 +492,7 @@ export function saveGameSettings(settings: GameSettings): void {
 /**
  * 获取游戏配置（优先返回游戏类型覆盖，否则返回全局默认值）
  */
-export function getGameConfig(gameType: 'city' | 'hero' | 'movie' | 'visual'): GameConfig {
+export function getGameConfig(gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong'): GameConfig {
   const settings = getGameSettings()
   const override = settings.overrides[gameType]
 
@@ -495,16 +503,18 @@ export function getGameConfig(gameType: 'city' | 'hero' | 'movie' | 'visual'): G
     showInitialHint: override?.showInitialHint ?? settings.defaults.showInitialHint
   }
 
-  // 看图猜测：默认 3 次提示、9 宫格
   if (gameType === 'visual') {
     config.maxAttempts = override?.maxAttempts ?? 3
   }
 
-  // 电影游戏特有的配置
   if (gameType === 'movie') {
     const movieOverride = settings.overrides.movie
     config.timerDuration = movieOverride?.timerDuration ?? 30
     config.maxPlaybackPerSegment = movieOverride?.maxPlaybackPerSegment ?? settings.defaults.maxPlaybackPerSegment ?? 1
+  }
+
+  if (gameType === 'listenSong') {
+    config.maxAttempts = override?.maxAttempts ?? 5
   }
 
   return config
@@ -539,7 +549,8 @@ function initGameVisibility(): GameVisibility {
     city: true,
     hero: true,
     movie: true,
-    visual: true
+    visual: true,
+    listenSong: true
   }
 }
 
@@ -547,7 +558,15 @@ function initGameVisibility(): GameVisibility {
  * 获取游戏可见性配置
  */
 export function getGameVisibility(): GameVisibility {
-  return getLocalStorage(STORAGE_KEYS.GAME_VISIBILITY, initGameVisibility())
+  const stored = getLocalStorage<Partial<GameVisibility>>(STORAGE_KEYS.GAME_VISIBILITY, {})
+  const defaults = initGameVisibility()
+  return {
+    city: stored.city ?? defaults.city,
+    hero: stored.hero ?? defaults.hero,
+    movie: stored.movie ?? defaults.movie,
+    visual: stored.visual ?? defaults.visual,
+    listenSong: stored.listenSong ?? defaults.listenSong
+  }
 }
 
 /**
@@ -560,7 +579,7 @@ export function saveGameVisibility(visibility: GameVisibility): void {
 /**
  * 更新单个游戏的可见性
  */
-export function updateGameVisibility(gameType: 'city' | 'hero' | 'movie' | 'visual', visible: boolean): void {
+export function updateGameVisibility(gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong', visible: boolean): void {
   const visibility = getGameVisibility()
   visibility[gameType] = visible
   saveGameVisibility(visibility)

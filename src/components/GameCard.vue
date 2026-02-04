@@ -9,8 +9,8 @@
         </div>
         <!-- 标题和描述 -->
         <div class="flex-1 min-w-0">
-          <h3 class="text-xl font-bold text-gray-900 mb-2">{{ game.title }}</h3>
-          <p class="text-gray-600 text-sm leading-relaxed">{{ game.description }}</p>
+          <h3 class="text-xl font-bold text-gray-900 mb-2">{{ t(game.title) }}</h3>
+          <p class="text-gray-600 text-sm leading-relaxed">{{ t(game.description) }}</p>
         </div>
       </div>
       <!-- 开始游戏按钮 - 固定在底部 -->
@@ -19,7 +19,7 @@
           :to="game.path"
           class="block w-full text-center bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 min-h-[44px] flex items-center justify-center"
         >
-          开始游戏
+          {{ t('home.startGame') }}
           <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
@@ -30,6 +30,9 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   game: {

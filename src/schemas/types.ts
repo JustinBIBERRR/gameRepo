@@ -12,9 +12,11 @@ export interface FieldSchema {
   required?: boolean       // 是否必填
   options?: string[]       // select 类型的选项
   placeholder?: string     // 占位提示
+  accept?: string          // 文件类型时使用的 accept 属性，如 audio/*、video/mp4
   validation?: {           // 验证规则
     min?: number
     max?: number
+    maxSize?: number       // 文件类型最大字节数，如 5*1024*1024 表示 5MB
     pattern?: string
     message?: string
   }
@@ -97,7 +99,12 @@ export function validateField(field: FieldSchema, value: any): string | null {
         }
         break
       case 'file':
-        if (!(value instanceof File)) {
+        if (value instanceof File) {
+          if (field.validation?.maxSize !== undefined && value.size > field.validation.maxSize) {
+            const mb = Math.round(field.validation.maxSize / 1024 / 1024)
+            return `${field.label}不能超过 ${mb}MB`
+          }
+        } else if (field.required) {
           return field.validation?.message || `${field.label}必须是文件`
         }
         break

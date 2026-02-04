@@ -93,6 +93,15 @@ TBD - created by archiving change refactor-settings-admin. Update Purpose after 
 - **AND** 主键为 id 字段
 - **AND** 每个字段有对应的类型和验证规则
 
+#### Scenario: 听歌识曲数据 Schema
+- **WHEN** 系统定义听歌识曲数据 Schema
+- **THEN** 包含字段：id、lyrics（必填）、answer（必填）、audioClip、lang、rate、pitch、hints
+- **AND** 主键为 id 字段，默认为自增或 UUID
+- **AND** `lyrics`、`answer` 为字符串类型并限制长度不超过 200 字符
+- **AND** `audioClip` 使用文件选择器并存储为 IndexedDB File 引用，单个文件大小不超过 5MB
+- **AND** `lang`、`rate`、`pitch` 为可选参数并提供默认值（如 `zh-CN`、1.0、1.0）
+- **AND** `hints` 为字符串数组，最多允许 5 条提示
+
 ### Requirement: 数据管理界面
 系统 SHALL 提供基于 Schema 的数据管理界面，支持数据的增删改查。
 

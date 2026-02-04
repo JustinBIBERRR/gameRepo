@@ -5,8 +5,9 @@
       <div class="bg-white rounded-lg shadow-lg p-6 md:p-8">
         <!-- 游戏头部（标题、倒计时、提示、进度条） -->
         <GameHeader
-          title="王者荣耀人物猜测"
-          description="系统随机选择了一个王者荣耀英雄，你有"
+          :title="t('games.hero.title')"
+          :description="t('game.heroDescPrefix')"
+          :description-suffix="t('game.attemptsSuffix')"
           :attempts="attempts"
           :max-attempts="maxAttempts"
           :game-over="gameOver"
@@ -155,7 +156,10 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import Navigation from '../components/Navigation.vue'
+
+const { t } = useI18n()
 import GameHeader from '../components/GameHeader.vue'
 import Autocomplete from '../components/Autocomplete.vue'
 import HeroGrid from '../components/HeroGrid.vue'
@@ -221,10 +225,10 @@ function handleTimerTimeout() {
     updateGameStats('hero', false, attempts.value)
     
     showConfirm({
-      title: '时间到',
-      message: '倒计时已结束，游戏失败！',
-      confirmText: '再来一局',
-      cancelText: '回到首页'
+      title: t('game.timeUp'),
+      message: t('game.timeUpMessage'),
+      confirmText: t('game.playAgain'),
+      cancelText: t('game.backToHome')
     }).then((result) => {
       if (result) {
         restartGame()
@@ -354,7 +358,7 @@ function handleGuess() {
     if (newlyUnlocked.length > 0) {
       setTimeout(() => {
         celebrationType.value = 'achievement'
-        celebrationTitle.value = '成就解锁！'
+        celebrationTitle.value = t('game.achievementUnlocked')
         celebrationMessage.value = newlyUnlocked.map(a => a.name).join('、')
         showCelebration.value = true
       }, 2500)
@@ -417,10 +421,10 @@ function handleGuess() {
 
 function clearAndRestart() {
   showConfirm({
-    title: '清除游戏数据',
-    message: '确定要清除当前游戏数据并重新开始吗？',
-    confirmText: '确定清除',
-    cancelText: '取消'
+    title: t('game.clearGameDataTitle'),
+    message: t('game.clearGameDataMessage'),
+    confirmText: t('game.confirmClear'),
+    cancelText: t('common.cancel')
   }).then((result) => {
     if (result) {
       // 清除 sessionStorage

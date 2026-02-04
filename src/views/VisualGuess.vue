@@ -15,9 +15,9 @@
 
         <template v-else>
         <GameHeader
-          title="看图猜测物品"
-          description="系统随机选择了一件物品，你有"
-          description-suffix="次提示机会！"
+          :title="t('games.visual.title')"
+          :description="t('game.visualDescPrefix')"
+          :description-suffix="t('game.visualAttemptsSuffix')"
           :attempts="hintLevel"
           :max-attempts="maxAttempts"
           :game-over="gameOver"
@@ -29,7 +29,7 @@
           :restore-tip-message="restoreTipMessage"
           :show-initial-hint="showCategoryHint && !!categoryHint"
           :initial-hint="categoryHint"
-          hint-prefix="这是一个"
+          :hint-prefix="t('game.visualHintPrefix')"
           hint-suffix=""
           @clear="clearAndRestart"
         />
@@ -164,7 +164,10 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import Navigation from '../components/Navigation.vue'
+
+const { t } = useI18n()
 import GameHeader from '../components/GameHeader.vue'
 import Autocomplete from '../components/Autocomplete.vue'
 import Celebration from '../components/Celebration.vue'
@@ -324,10 +327,10 @@ function handleTimerTimeout() {
     gameOver.value = true
     updateGameStats('visual', false, hintLevel.value)
     showConfirm({
-      title: '时间到',
-      message: '倒计时已结束，游戏失败！',
-      confirmText: '再来一局',
-      cancelText: '回到首页'
+      title: t('game.timeUp'),
+      message: t('game.timeUpMessage'),
+      confirmText: t('game.playAgain'),
+      cancelText: t('game.backToHome')
     }).then((result) => {
       if (result) restartGame()
       else router.push('/')
@@ -377,7 +380,7 @@ function handleGuess() {
     const stats = updateGameStats('visual', true, hintLevel.value)
     checkAndUpdateAchievements('visual', stats)
     celebrationType.value = 'success'
-    celebrationTitle.value = '恭喜！'
+    celebrationTitle.value = t('game.congrats')
     celebrationMessage.value = `你用了 ${hintLevel.value} 次提示就找到了答案！`
     showCelebration.value = true
   } else {
@@ -388,7 +391,7 @@ function handleGuess() {
       clearTimerState()
       updateGameStats('visual', false, hintLevel.value)
       celebrationType.value = 'failure'
-      celebrationTitle.value = '再试试！'
+      celebrationTitle.value = t('game.tryAgain')
       celebrationMessage.value = `答案是 ${targetItem.value!.name}，下次一定能猜中！`
       showCelebration.value = true
     }
@@ -399,10 +402,10 @@ function handleGuess() {
 
 function clearAndRestart() {
   showConfirm({
-    title: '清除游戏数据',
-    message: '确定要清除当前游戏数据并重新开始吗？',
-    confirmText: '确定清除',
-    cancelText: '取消'
+    title: t('game.clearGameDataTitle'),
+    message: t('game.clearGameDataMessage'),
+    confirmText: t('game.confirmClear'),
+    cancelText: t('common.cancel')
   }).then((result) => {
     if (!result) return
     // 延后到弹窗关闭并完成渲染后再清除和重启，避免第一次点击确认无反应

@@ -5,8 +5,9 @@
       <div class="bg-white rounded-lg shadow-lg p-6 md:p-8">
         <!-- 游戏头部（标题、倒计时、提示、进度条） -->
         <GameHeader
-          title="城市猜测游戏"
-          description="系统随机选择了一个国内城市，你有"
+          :title="t('games.city.title')"
+          :description="t('game.cityDescPrefix')"
+          :description-suffix="t('game.attemptsSuffix')"
           :attempts="attempts"
           :max-attempts="maxAttempts"
           :game-over="gameOver"
@@ -18,7 +19,7 @@
           :restore-tip-message="restoreTipMessage"
           :show-initial-hint="showInitialHint"
           :initial-hint="initialHint"
-          hint-prefix="这是一个"
+          :hint-prefix="t('game.cityHintPrefix')"
           :closeness="closenessPercentage"
           :closeness-text="closenessText"
           @clear="clearAndRestart"
@@ -44,7 +45,7 @@
               :no-match-message="noMatchMessage"
               :show-error="showInputError"
               :enabled="hasCityData"
-              placeholder="输入城市名称..."
+              :placeholder="t('game.placeholderCity')"
               @select="handleSelect"
             />
             <button
@@ -58,7 +59,7 @@
 
           <!-- 猜测历史 -->
           <div v-if="guessHistory.length > 0" class="space-y-4">
-            <h2 class="text-xl font-semibold text-gray-900">猜测历史</h2>
+            <h2 class="text-xl font-semibold text-gray-900">{{ t('game.guessHistory') }}</h2>
             <div
               v-for="(guess, index) in guessHistory"
               :key="index"
@@ -161,7 +162,10 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import Navigation from '../components/Navigation.vue'
+
+const { t } = useI18n()
 import GameHeader from '../components/GameHeader.vue'
 import Autocomplete from '../components/Autocomplete.vue'
 import Celebration from '../components/Celebration.vue'
@@ -227,10 +231,10 @@ function handleTimerTimeout() {
     updateGameStats('city', false, attempts.value)
     
     showConfirm({
-      title: '时间到',
-      message: '倒计时已结束，游戏失败！',
-      confirmText: '再来一局',
-      cancelText: '回到首页'
+      title: t('game.timeUp'),
+      message: t('game.timeUpMessage'),
+      confirmText: t('game.playAgain'),
+      cancelText: t('game.backToHome')
     }).then((result) => {
       if (result) {
         restartGame()
@@ -250,9 +254,7 @@ const suggestions = computed(() => {
   return searchCities(inputValue.value)
 })
 
-const noMatchMessage = computed(() => {
-  return '该城市不在游戏范围内，请输入主要城市（如省会、直辖市等）'
-})
+const noMatchMessage = computed(() => t('game.noMatchCity'))
 
 const canSubmit = computed(() => {
   if (!inputValue.value.trim()) return false
@@ -407,7 +409,7 @@ function handleGuess() {
     if (newlyUnlocked.length > 0) {
       setTimeout(() => {
         celebrationType.value = 'achievement'
-        celebrationTitle.value = '成就解锁！'
+        celebrationTitle.value = t('game.achievementUnlocked')
         celebrationMessage.value = newlyUnlocked.map(a => a.name).join('、')
         showCelebration.value = true
       }, 2500)
@@ -471,10 +473,10 @@ function handleGuess() {
 
 function clearAndRestart() {
   showConfirm({
-    title: '清除游戏数据',
-    message: '确定要清除当前游戏数据并重新开始吗？',
-    confirmText: '确定清除',
-    cancelText: '取消'
+    title: t('game.clearGameDataTitle'),
+    message: t('game.clearGameDataMessage'),
+    confirmText: t('game.confirmClear'),
+    cancelText: t('common.cancel')
   }).then((result) => {
     if (result) {
       // 清除 sessionStorage

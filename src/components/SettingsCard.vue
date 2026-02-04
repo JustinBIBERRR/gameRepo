@@ -13,14 +13,14 @@
         </div>
         <!-- 标题和描述 -->
         <div class="flex-1 min-w-0">
-          <h3 class="text-xl font-bold text-gray-900 mb-2">{{ game.title }}</h3>
+          <h3 class="text-xl font-bold text-gray-900 mb-2">{{ t(game.title) }}</h3>
           <p class="text-gray-600 text-sm leading-relaxed">{{ game.description }}</p>
         </div>
       </div>
       <!-- 快捷操作按钮 - hover 时显示 -->
       <div class="mt-auto pt-4">
         <div class="text-sm text-gray-500 text-center">
-          点击进入配置
+          {{ t('settings.clickToConfigure') }}
         </div>
       </div>
     </div>
@@ -30,7 +30,7 @@
       <span
         class="inline-flex px-2.5 py-1 text-xs font-medium rounded-md bg-slate-100 text-slate-700"
       >
-        游戏管理
+        {{ t('settings.gameManage') }}
       </span>
       <div
         class="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
@@ -38,7 +38,7 @@
       >
         <button
           class="p-2 rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-          :title="visible ? '隐藏游戏' : '显示游戏'"
+          :title="visible ? t('settings.hideGame') : t('settings.showGame')"
         >
         <svg
           v-if="visible"
@@ -81,7 +81,10 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { updateGameVisibility } from '../utils/storageUtils'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   game: {
@@ -91,12 +94,12 @@ const props = defineProps<{
     icon: () => any
     iconColor?: 'blue' | 'purple' | 'green' | 'orange' | 'red'
   }
-  gameType: 'city' | 'hero' | 'movie' | 'visual'
+  gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong'
   visible: boolean
 }>()
 
 const emit = defineEmits<{
-  visibilityChange: [gameType: 'city' | 'hero' | 'movie' | 'visual', visible: boolean]
+  visibilityChange: [gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong', visible: boolean]
 }>()
 
 const router = useRouter()

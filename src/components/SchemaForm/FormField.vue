@@ -94,7 +94,7 @@
         <input
           ref="fileInputRef"
           type="file"
-          accept="video/mp4,video/*"
+          :accept="field.accept || 'video/mp4,video/*'"
           class="hidden"
           @change="handleFileChange"
         />
@@ -104,11 +104,11 @@
           </svg>
           <div class="text-center">
             <p class="text-sm font-medium text-blue-700 group-hover:text-blue-800">
-              <span v-if="!filePreview">点击选择视频文件</span>
+              <span v-if="!filePreview">{{ field.accept?.includes('audio') ? '点击选择音频文件' : '点击选择视频文件' }}</span>
               <span v-else>更换文件</span>
             </p>
             <p class="text-xs text-gray-500 mt-1">
-              {{ field.placeholder || '支持 MP4 格式' }}
+              {{ field.placeholder || (field.accept?.includes('audio') ? '支持 MP3、WAV 等格式' : '支持 MP4 格式') }}
             </p>
           </div>
         </div>

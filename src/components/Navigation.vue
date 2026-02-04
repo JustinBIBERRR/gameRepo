@@ -4,16 +4,35 @@
       <div class="flex justify-between h-16">
         <div class="flex items-center">
           <router-link to="/" class="text-xl font-bold text-gray-900 hover:text-blue-600 transition-colors">
-            游戏平台
+            {{ t('nav.platformName') }}
           </router-link>
         </div>
         <div class="flex items-center gap-2">
+          <!-- 语言切换 -->
+          <div class="flex items-center rounded-md border border-gray-200 overflow-hidden">
+            <button
+              type="button"
+              :class="locale === 'zh-CN' ? 'bg-gray-100 text-gray-900' : 'bg-white text-gray-600 hover:bg-gray-50'"
+              class="px-2.5 py-1.5 text-sm font-medium transition-colors"
+              @click="setLocale('zh-CN')"
+            >
+              {{ t('nav.langZh') }}
+            </button>
+            <button
+              type="button"
+              :class="locale === 'en' ? 'bg-gray-100 text-gray-900' : 'bg-white text-gray-600 hover:bg-gray-50'"
+              class="px-2.5 py-1.5 text-sm font-medium transition-colors"
+              @click="setLocale('en')"
+            >
+              {{ t('nav.langEn') }}
+            </button>
+          </div>
           <!-- 管理入口（仅显示齿轮图标） -->
           <router-link
             to="/settings"
             class="text-gray-700 hover:bg-gray-100 p-2 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
             :class="{ 'bg-gray-100': route.path.startsWith('/settings') }"
-            title="管理"
+            :title="t('nav.settingsTitle')"
           >
             <svg
               class="w-5 h-5"
@@ -42,7 +61,7 @@
               @click="toggleDropdown"
               class="text-gray-700 hover:bg-gray-100 p-2 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
               :class="{ 'bg-gray-100': isDropdownOpen || isAnyGameActive }"
-              title="游戏选择"
+              :title="t('nav.gameSelectTitle')"
             >
               <component :is="currentGameIcon" class="!w-5 !h-5" />
             </button>
@@ -63,7 +82,7 @@
                   :class="{ 'bg-gray-100': isActive(game.path) }"
                 >
                   <component :is="game.icon" class="!w-5 !h-5 flex-shrink-0" />
-                  <span>{{ game.name }}</span>
+                  <span>{{ t(game.title) }}</span>
                 </router-link>
               </div>
             </Transition>
@@ -75,6 +94,8 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+import { setSavedLocale } from '../locales'
 import { allGamesConfig } from '../config/games'
 import { getGameVisibility } from '../utils/storageUtils'
 
@@ -82,22 +103,23 @@ const route = useRoute()
 const dropdownRef = ref<HTMLElement | null>(null)
 const isDropdownOpen = ref(false)
 
+const { t, locale } = useI18n()
+
+function setLocale(lang: string) {
+  locale.value = lang
+  setSavedLocale(lang)
+}
+
 // 根据可见性配置过滤游戏，并转换为导航需要的格式
 const games = computed(() => {
   const visibility = getGameVisibility()
   return allGamesConfig
     .filter(game => visibility[game.gameType])
-    .map(game => {
-      // 创建小尺寸图标（w-5 h-5），替换原来的 w-6 h-6
-      return {
-        name: game.title,
-        path: game.path,
-        icon: () => {
-          // 直接调用原始图标函数，然后在模板中通过 class 覆盖尺寸
-          return game.icon()
-        }
-      }
-    })
+    .map(game => ({
+      title: game.title,
+      path: game.path,
+      icon: () => game.icon()
+    }))
 })
 
 function isActive(path: string) {

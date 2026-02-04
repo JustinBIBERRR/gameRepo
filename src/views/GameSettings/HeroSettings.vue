@@ -11,19 +11,19 @@
           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
           </svg>
-          返回配置管理
+          {{ t('settings.backToSettings') }}
         </router-link>
       </div>
 
       <!-- 页面标题 -->
       <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">英雄猜测配置</h1>
-        <p class="text-gray-600">配置游戏参数和数据管理</p>
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ t('settings.heroPageTitle') }}</h1>
+        <p class="text-gray-600">{{ t('settings.heroPageDesc') }}</p>
       </div>
 
       <!-- 游戏参数配置 -->
       <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 class="text-xl font-semibold text-gray-900 mb-6">游戏参数</h2>
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">{{ t('settings.gameParams') }}</h2>
         <GameConfigPanel
           :config="config"
           @update:config="handleConfigUpdate"
@@ -47,7 +47,10 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import Navigation from '../../components/Navigation.vue'
+
+const { t } = useI18n()
 import GameConfigPanel from '../../components/GameConfigPanel.vue'
 import DataManager from '../../components/DataManager.vue'
 import { heroSchema } from '../../schemas/heroSchema'

@@ -4,8 +4,8 @@
     <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
       <div class="flex items-start justify-between mb-4">
         <div class="flex-1">
-          <h3 class="text-lg font-semibold text-gray-900 mb-1">倒计时设置</h3>
-          <p class="text-sm text-gray-500">控制游戏是否启用倒计时功能</p>
+          <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ t('config.timerTitle') }}</h3>
+          <p class="text-sm text-gray-500">{{ t('config.timerDesc') }}</p>
         </div>
         <label class="relative inline-flex items-center cursor-pointer">
           <input
@@ -21,7 +21,7 @@
       <!-- 倒计时时长配置 -->
       <div v-if="localConfig.enableTimer" class="mt-4 pt-4 border-t border-gray-100">
         <label class="block text-sm font-medium text-gray-700 mb-3">
-          倒计时时长（分钟）
+          {{ t('config.timerDurationLabel') }}
         </label>
         <div class="flex items-center gap-2">
           <button
@@ -51,15 +51,15 @@
             </svg>
           </button>
         </div>
-        <p class="mt-2 text-xs text-gray-500">范围：1-60 分钟</p>
+        <p class="mt-2 text-xs text-gray-500">{{ t('config.timerRange') }}</p>
       </div>
     </div>
 
     <!-- 尝试次数配置卡片 -->
     <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
       <div class="mb-4">
-        <h3 class="text-lg font-semibold text-gray-900 mb-1">尝试次数设置</h3>
-        <p class="text-sm text-gray-500">设置玩家最多可以尝试的次数</p>
+        <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ t('config.attemptsTitle') }}</h3>
+        <p class="text-sm text-gray-500">{{ t('config.attemptsDesc') }}</p>
       </div>
       <div class="flex items-center gap-2">
         <button
@@ -89,15 +89,15 @@
           </svg>
         </button>
       </div>
-      <p class="mt-2 text-xs text-gray-500">范围：3-10 次</p>
+      <p class="mt-2 text-xs text-gray-500">{{ t('config.attemptsRange') }}</p>
     </div>
 
     <!-- 初始提示配置卡片 -->
     <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
       <div class="flex items-start justify-between">
         <div class="flex-1">
-          <h3 class="text-lg font-semibold text-gray-900 mb-1">初始提示</h3>
-          <p class="text-sm text-gray-500">是否在游戏开始时显示初始提示信息</p>
+          <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ t('config.initialHintTitle') }}</h3>
+          <p class="text-sm text-gray-500">{{ t('config.initialHintDesc') }}</p>
         </div>
         <label class="relative inline-flex items-center cursor-pointer">
           <input
@@ -114,8 +114,8 @@
     <!-- 电影游戏特有的配置 -->
     <div v-if="showMovieConfig" class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
       <div class="mb-4">
-        <h3 class="text-lg font-semibold text-gray-900 mb-1">片段播放次数</h3>
-        <p class="text-sm text-gray-500">每个视频片段最多可以播放的次数</p>
+        <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ t('config.playbackTitle') }}</h3>
+        <p class="text-sm text-gray-500">{{ t('config.playbackDesc') }}</p>
       </div>
       <div class="flex items-center gap-2">
         <button
@@ -145,13 +145,16 @@
           </svg>
         </button>
       </div>
-      <p class="mt-2 text-xs text-gray-500">范围：1-10 次</p>
+      <p class="mt-2 text-xs text-gray-500">{{ t('config.playbackRange') }}</p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import type { GameConfig } from '../utils/storageUtils'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   config: GameConfig

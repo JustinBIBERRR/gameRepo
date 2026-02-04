@@ -20,12 +20,12 @@
     
     <!-- 名称 -->
     <div class="text-sm font-semibold text-center mb-1" :class="textClass">
-      {{ achievement.name }}
+      {{ achievementName }}
     </div>
     
     <!-- 描述 -->
     <div class="text-xs text-center mb-2" :class="descriptionClass">
-      {{ achievement.description }}
+      {{ achievementDescription }}
     </div>
     
     <!-- 进度条（未解锁时显示） -->
@@ -52,7 +52,7 @@
         v-if="isHovered && achievement.unlockedAt"
         class="absolute bottom-full mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap z-20"
       >
-        解锁于 {{ unlockDate }}
+        {{ t('achievements.unlockedAt', { date: unlockDate }) }}
         <div class="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
       </div>
     </Transition>
@@ -60,12 +60,26 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import type { Achievement } from '../utils/storageUtils'
+
+const { t, locale } = useI18n()
 
 const props = defineProps<{
   achievement: Achievement
   showUnlockAnimation?: boolean
 }>()
+
+const achievementName = computed(() => {
+  const key = `achievements.${props.achievement.id}.name`
+  const msg = t(key)
+  return msg !== key ? msg : props.achievement.name
+})
+const achievementDescription = computed(() => {
+  const key = `achievements.${props.achievement.id}.description`
+  const msg = t(key)
+  return msg !== key ? msg : props.achievement.description
+})
 
 const emit = defineEmits<{
   'animation-end': []
@@ -107,7 +121,8 @@ const descriptionClass = computed(() => {
 const unlockDate = computed(() => {
   if (!props.achievement.unlockedAt) return ''
   const date = new Date(props.achievement.unlockedAt)
-  return date.toLocaleDateString('zh-CN', {
+  const localeCode = locale.value === 'zh-CN' ? 'zh-CN' : 'en'
+  return date.toLocaleDateString(localeCode, {
     year: 'numeric',
     month: 'short',
     day: 'numeric'
