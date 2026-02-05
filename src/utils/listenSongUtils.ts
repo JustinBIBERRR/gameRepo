@@ -1,9 +1,13 @@
 import { getAllSongs, getSongWithAudio } from './listenSongStorage'
 import type { ListenSongItem } from './listenSongStorage'
+import { defaultListenSongs } from '../data/listenSongDefaults'
 
-/** 仅返回含有效播放用音频的题目 */
+/** 仅返回含有效播放用音频的题目；无入库数据时使用默认歌曲，可直接开始游戏 */
 export async function getSongsForGame(): Promise<ListenSongItem[]> {
-  const all = await getAllSongs()
+  let all = await getAllSongs()
+  if (all.length === 0) {
+    all = defaultListenSongs.map((s) => ({ ...s, createdAt: Date.now() }))
+  }
   const result: ListenSongItem[] = []
   for (const s of all) {
     const { item, audioBlob } = await getSongWithAudio(s.id)

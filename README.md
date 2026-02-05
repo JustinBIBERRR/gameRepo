@@ -108,6 +108,7 @@ src/
 
 - 推送 `main` 分支后由 GitHub Actions 自动构建并部署到 GitHub Pages。
 - 访问地址：https://justinbiberrr.github.io/gameRepo/
+- **热更新**：若使用 CDN 或自建服务器，建议对 `index.html` 设置 `Cache-Control: no-cache`（或短 max-age），以便用户部署后能拉取到带新 hash 的 JS/CSS；应用内会在版本变化时仅清理游玩数据，保留设置与用户上传（视频/图片/听歌）。
 
 ---
 

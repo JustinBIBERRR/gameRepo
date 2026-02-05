@@ -62,7 +62,7 @@
       "description": "系统随机选择一件物品（生活用品、品牌logo、国旗、专辑封面等），你有5次提示机会。通过局部细节→轮廓剪影→30%→50%→70%区域逐步猜测。"
     },
     "listenSong": {
-      "title": "听歌识曲 AI 朗读版",
+      "title": "听歌识曲 by AI",
       "description": "系统随机选择一首 AI 生成歌，播放后你有多次机会猜测。揭晓时展示歌词与歌手。"
     }
   },
@@ -91,7 +91,7 @@
     "moviePageDesc": "配置游戏参数和数据管理",
     "visualPageTitle": "看图猜测物品配置",
     "visualPageDesc": "配置游戏参数和数据管理",
-    "listenSongPageTitle": "听歌识曲 AI 朗读版配置",
+    "listenSongPageTitle": "听歌识曲 by AI 配置",
     "listenSongPageDesc": "配置游戏参数和歌曲数据",
     "partyPageTitle": "年会活动配置",
     "partyPageDesc": "配置数据过期、随机奖惩与随机抽人名单",

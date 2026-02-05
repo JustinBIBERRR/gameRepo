@@ -4,6 +4,8 @@
  */
 
 const STORAGE_KEYS = {
+  // 应用版本号（用于部署后热更新时仅清理游玩数据，保留设置与用户上传）
+  APP_VERSION: 'appVersion',
   // 游戏统计数据
   CITY_GAME_STATS: 'cityGameStats',
   HERO_GAME_STATS: 'heroGameStats',
@@ -35,6 +37,29 @@ const STORAGE_KEYS = {
   PARTY_REWARDS_PUNISHMENTS: 'partyRewardsPunishments',
   PARTY_PERSONNEL: 'partyPersonnel'
 } as const
+
+/** 版本更新时需要清除的 localStorage 键（仅游玩数据与记录，不包含设置与用户上传） */
+const VERSION_UPDATE_CLEAR_LOCAL_KEYS: string[] = [
+  STORAGE_KEYS.CITY_GAME_STATS,
+  STORAGE_KEYS.HERO_GAME_STATS,
+  STORAGE_KEYS.MOVIE_GAME_STATS,
+  STORAGE_KEYS.VISUAL_GAME_STATS,
+  STORAGE_KEYS.LISTEN_SONG_GAME_STATS,
+  STORAGE_KEYS.ACHIEVEMENTS,
+  STORAGE_KEYS.GAME_HISTORY,
+  STORAGE_KEYS.GAME_STATS,
+  STORAGE_KEYS.SETTINGS_MIGRATED
+]
+
+/** 版本更新时需要清除的 sessionStorage 键（当前游戏状态、倒计时等） */
+const VERSION_UPDATE_CLEAR_SESSION_KEYS: string[] = [
+  STORAGE_KEYS.GAME_TIMER_STATE,
+  'cityGuessGame',
+  'heroGuessGame',
+  'movieGuessGame',
+  'visualGuessGame',
+  'listenSongGuessGame'
+]
 
 export interface GameStats {
   totalGames: number
@@ -787,6 +812,25 @@ export function switchToCustomData<T>(gameType: 'city' | 'hero' | 'movie' | 'vis
  */
 export function resetToDefaultData(gameType: 'city' | 'hero' | 'movie' | 'visual'): void {
   clearCustomGameData(gameType)
+}
+
+/**
+ * 版本更新时的数据清理：仅清除游玩数据与记录，保留设置与用户上传（localStorage 中的
+ * gameSettings、自定义数据，IndexedDB 中的电影/听歌文件不触碰）。
+ * 部署后用户加载到新版本时自动执行，无需清缓存或无痕。
+ */
+export function runVersionUpdateDataCleanup(currentVersion: string): void {
+  try {
+    const storedVersion = localStorage.getItem(STORAGE_KEYS.APP_VERSION)
+    if (storedVersion === currentVersion) {
+      return
+    }
+    VERSION_UPDATE_CLEAR_LOCAL_KEYS.forEach((key) => localStorage.removeItem(key))
+    VERSION_UPDATE_CLEAR_SESSION_KEYS.forEach((key) => sessionStorage.removeItem(key))
+    localStorage.setItem(STORAGE_KEYS.APP_VERSION, currentVersion)
+  } catch (e) {
+    console.error('Version update data cleanup failed:', e)
+  }
 }
 
 /**

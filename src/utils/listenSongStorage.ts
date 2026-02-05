@@ -1,7 +1,9 @@
 /**
  * 听歌识曲数据存储
- * 使用 IndexedDB 存储歌曲元数据与揭晓音频
+ * 使用 IndexedDB 存储歌曲元数据与揭晓音频；未入库时使用默认歌曲与打包音频，可直接开始游戏
  */
+
+import { defaultListenSongs, defaultListenSongAudioUrl } from '../data/listenSongDefaults'
 
 export interface ListenSongItem {
   id: string
@@ -68,21 +70,31 @@ export async function getAllSongs(): Promise<ListenSongItem[]> {
 
 export async function getSongWithAudio(id: string): Promise<{ item: ListenSongItem; audioBlob: Blob | null }> {
   const database = await initDB()
-  return new Promise((resolve, reject) => {
+  const stored = await new Promise<StoredSong | undefined>((resolve, reject) => {
     const tx = database.transaction([STORE_NAME], 'readonly')
     const store = tx.objectStore(STORE_NAME)
     const request = store.get(id)
-    request.onsuccess = () => {
-      const stored = request.result as StoredSong | undefined
-      if (!stored) {
-        resolve({ item: {} as ListenSongItem, audioBlob: null })
-        return
-      }
-      const { audioBlob, ...item } = stored
-      resolve({ item, audioBlob: audioBlob ?? null })
-    }
+    request.onsuccess = () => resolve(request.result as StoredSong | undefined)
     request.onerror = () => reject(request.error)
   })
+  if (stored) {
+    const { audioBlob, ...item } = stored
+    return { item, audioBlob: audioBlob ?? null }
+  }
+  // 未入库时使用默认歌曲：从打包音频 URL 拉取并返回，便于直接开始游戏
+  const defaultSong = defaultListenSongs.find((s) => s.id === id)
+  if (defaultSong) {
+    try {
+      const res = await fetch(defaultListenSongAudioUrl)
+      if (!res.ok) return { item: { ...defaultSong, createdAt: Date.now() }, audioBlob: null }
+      const audioBlob = await res.blob()
+      const item: ListenSongItem = { ...defaultSong, createdAt: Date.now() }
+      return { item, audioBlob }
+    } catch {
+      return { item: { ...defaultSong, createdAt: Date.now() }, audioBlob: null }
+    }
+  }
+  return { item: {} as ListenSongItem, audioBlob: null }
 }
 
 export async function saveSong(

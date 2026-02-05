@@ -4,8 +4,14 @@ import { fileURLToPath, URL } from 'node:url'
 import AutoImport from 'unplugin-auto-import/vite'
 import { visualizer } from 'rollup-plugin-visualizer'
 
+// 构建时注入应用版本号（用于部署后检测新版本，仅清理游玩数据、保留设置与用户上传）
+const appVersion = `${process.env.npm_package_version ?? '1.0.0'}.${Date.now()}`
+
 // https://vitejs.dev/config/
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(appVersion)
+  },
   plugins: [
     vue(),
     AutoImport({

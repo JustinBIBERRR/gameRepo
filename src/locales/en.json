@@ -62,7 +62,7 @@
       "description": "A random item is chosen (everyday objects, logos, flags, album covers). You get 5 hints from detail → silhouette → 30% → 50% → 70%."
     },
     "listenSong": {
-      "title": "Listen Song AI",
+      "title": "Listen Song by AI ",
       "description": "A random AI-generated song is played. You have several guesses. Reveal shows lyrics and artist."
     }
   },
@@ -91,7 +91,7 @@
     "moviePageDesc": "Configure game parameters and data",
     "visualPageTitle": "Visual Guess settings",
     "visualPageDesc": "Configure game parameters and data",
-    "listenSongPageTitle": "Listen Song AI settings",
+    "listenSongPageTitle": "Listen Song by AI settings",
     "listenSongPageDesc": "Configure game parameters and song data",
     "partyPageTitle": "Party & events",
     "partyPageDesc": "Data expiry, rewards/penalties and draw list",

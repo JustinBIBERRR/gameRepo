@@ -46,7 +46,7 @@
                 <div class="visual-hint-shell absolute inset-0 w-full h-full">
                   <img
                     :src="gameImageUrl"
-                    class="visual-hint-img visual-hint-blur-full absolute inset-0 w-full h-full object-cover"
+                    class="visual-hint-img visual-hint-blur-full absolute inset-0 w-full h-full object-contain"
                     alt=""
                     aria-hidden
                     @error="onImageError"
@@ -57,7 +57,7 @@
                   v-for="(regionIndex, i) in revealedRegions"
                   :key="'region-' + i + '-' + regionIndex"
                   :src="gameImageUrl"
-                  class="visual-hint-img absolute inset-0 w-full h-full object-cover pointer-events-none"
+                  class="visual-hint-img absolute inset-0 w-full h-full object-contain pointer-events-none"
                   :style="getRevealRegionStyle(regionIndex, i)"
                   alt=""
                   aria-hidden
