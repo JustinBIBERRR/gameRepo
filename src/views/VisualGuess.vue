@@ -17,7 +17,7 @@
         <GameHeader
           :title="t('games.visual.title')"
           :description="t('game.visualDescPrefix')"
-          :description-suffix="t('game.visualAttemptsSuffix')"
+          :show-remaining-attempts="false"
           :attempts="hintLevel"
           :max-attempts="maxAttempts"
           :game-over="gameOver"

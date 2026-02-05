@@ -7,7 +7,7 @@
         <GameHeader
           :title="t('games.movie.title')"
           :description="t('game.movieDescPrefix')"
-          :description-suffix="t('game.attemptsSuffix')"
+          :show-remaining-attempts="false"
           :attempts="attempts"
           :max-attempts="maxAttempts"
           :game-over="gameOver"

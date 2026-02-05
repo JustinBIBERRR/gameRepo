@@ -7,7 +7,7 @@
         <GameHeader
           :title="t('games.hero.title')"
           :description="t('game.heroDescPrefix')"
-          :description-suffix="t('game.attemptsSuffix')"
+          :show-remaining-attempts="false"
           :attempts="attempts"
           :max-attempts="maxAttempts"
           :game-over="gameOver"

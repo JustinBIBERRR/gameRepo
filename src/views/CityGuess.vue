@@ -7,7 +7,7 @@
         <GameHeader
           :title="t('games.city.title')"
           :description="t('game.cityDescPrefix')"
-          :description-suffix="t('game.attemptsSuffix')"
+          :show-remaining-attempts="false"
           :attempts="attempts"
           :max-attempts="maxAttempts"
           :game-over="gameOver"

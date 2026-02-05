@@ -47,23 +47,23 @@
   "games": {
     "city": {
       "title": "城市猜测",
-      "description": "系统随机选择一个国内城市，你有5次机会猜测。每次猜测后会显示距离、方位和城市特点。"
+      "description": "系统随机选择一个国内城市。每次猜测后会显示距离、方位和城市特点。"
     },
     "hero": {
       "title": "王者荣耀人物猜测",
-      "description": "系统随机选择一个王者荣耀英雄，你有5次机会猜测。通过职业、年代、国籍、人类、性别等属性提示来找到答案。"
+      "description": "系统随机选择一个王者荣耀英雄。通过职业、年代、国籍、人类、性别等属性提示来找到答案。"
     },
     "movie": {
       "title": "听片段猜电影",
-      "description": "系统随机选择一部电影，你有8次机会猜测。通过听15秒音频片段来找到答案。"
+      "description": "系统随机选择一部电影。通过听15秒音频片段来找到答案。"
     },
     "visual": {
       "title": "看图猜测物品",
-      "description": "系统随机选择一件物品（生活用品、品牌logo、国旗、专辑封面等），你有5次提示机会。通过局部细节→轮廓剪影→30%→50%→70%区域逐步猜测。"
+      "description": "系统随机选择一件物品（生活用品、品牌logo、国旗、专辑封面等）。点击格子选择要查看的区域，逐次揭开更多细节来猜测。"
     },
     "listenSong": {
       "title": "听歌识曲 by AI",
-      "description": "系统随机选择一首 AI 生成歌，播放后你有多次机会猜测。揭晓时展示歌词与歌手。"
+      "description": "系统随机选择一首 AI 生成歌，播放后可多次猜测。揭晓时展示歌词与歌手。"
     }
   },
   "settings": {
@@ -134,14 +134,13 @@
     "submitGuess": "提交猜测",
     "guessHistory": "猜测历史",
     "backToHome": "返回首页",
-    "cityDescPrefix": "系统随机选择了一个国内城市，你有",
+    "cityDescPrefix": "系统随机选择了一个国内城市。",
     "cityHintPrefix": "这是一个",
     "placeholderCity": "输入城市名称...",
     "noMatchCity": "该城市不在游戏范围内，请输入主要城市（如省会、直辖市等）",
-    "heroDescPrefix": "系统随机选择了一个英雄，你有",
-    "movieDescPrefix": "系统随机选择了一部电影，你有",
-    "visualDescPrefix": "系统随机选择了一件物品，你有",
-    "visualAttemptsSuffix": "次提示机会！",
+    "heroDescPrefix": "系统随机选择了一个英雄。",
+    "movieDescPrefix": "系统随机选择了一部电影。",
+    "visualDescPrefix": "系统随机选择了一件物品。",
     "visualHintPrefix": "这是一个",
     "timeUp": "时间到",
     "timeUpMessage": "倒计时已结束，游戏失败！",
@@ -155,7 +154,7 @@
     "confirmClear": "确定清除",
     "noVideoTitle": "视频资源未配置",
     "noVideoMessage": "当前电影的视频资源未配置，无法播放音频。请在设置页面配置本地视频文件，或在电影数据文件中添加有效的视频URL。",
-    "listenSongDescPrefix": "系统随机选择了一首歌，你有",
+    "listenSongDescPrefix": "系统随机选择了一首歌。",
     "listenSongNoData": "暂无歌曲数据",
     "listenSongNoDataMessage": "请先在设置页面添加至少一首歌曲。",
     "listenSongNotSupported": "当前浏览器不支持语音朗读",

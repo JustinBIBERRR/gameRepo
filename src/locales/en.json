@@ -47,23 +47,23 @@
   "games": {
     "city": {
       "title": "City Guess",
-      "description": "A random city is chosen. You have 5 guesses. After each guess you see distance, direction and city hints."
+      "description": "A random city is chosen. After each guess you see distance, direction and city hints."
     },
     "hero": {
       "title": "Hero Guess",
-      "description": "A random hero is chosen. You have 5 guesses using hints like role, era, nationality, and gender."
+      "description": "A random hero is chosen. Use hints like role, era, nationality, and gender to find the answer."
     },
     "movie": {
       "title": "Movie Guess",
-      "description": "A random movie is chosen. You have 8 guesses. Listen to a 15-second audio clip to find the answer."
+      "description": "A random movie is chosen. Listen to a 15-second audio clip to find the answer."
     },
     "visual": {
       "title": "Visual Guess",
-      "description": "A random item is chosen (everyday objects, logos, flags, album covers). You get 5 hints from detail → silhouette → 30% → 50% → 70%."
+      "description": "A random item is chosen (everyday objects, logos, flags, album covers). Click grid cells to reveal regions and guess."
     },
     "listenSong": {
       "title": "Listen Song by AI ",
-      "description": "A random AI-generated song is played. You have several guesses. Reveal shows lyrics and artist."
+      "description": "A random AI-generated song is played. Guess to find the answer. Reveal shows lyrics and artist."
     }
   },
   "settings": {
@@ -134,14 +134,13 @@
     "submitGuess": "Submit guess",
     "guessHistory": "Guess history",
     "backToHome": "Back to home",
-    "cityDescPrefix": "A random city is chosen. You have ",
+    "cityDescPrefix": "A random city is chosen.",
     "cityHintPrefix": "This is a ",
     "placeholderCity": "Enter city name...",
     "noMatchCity": "City not in game range. Enter a major city (e.g. provincial capital).",
-    "heroDescPrefix": "A random hero is chosen. You have ",
-    "movieDescPrefix": "A random movie is chosen. You have ",
-    "visualDescPrefix": "A random item is chosen. You have ",
-    "visualAttemptsSuffix": " hint chances!",
+    "heroDescPrefix": "A random hero is chosen.",
+    "movieDescPrefix": "A random movie is chosen.",
+    "visualDescPrefix": "A random item is chosen.",
     "visualHintPrefix": "This is a ",
     "timeUp": "Time's up",
     "timeUpMessage": "Countdown ended. Game over!",
@@ -155,7 +154,7 @@
     "confirmClear": "Clear",
     "noVideoTitle": "No video",
     "noVideoMessage": "This movie has no video configured. Configure a local file in settings or add a valid video URL.",
-    "listenSongDescPrefix": "A random song is chosen. You have ",
+    "listenSongDescPrefix": "A random song is chosen.",
     "listenSongNoData": "No songs",
     "listenSongNoDataMessage": "Add at least one song in settings to start.",
     "listenSongNotSupported": "Speech synthesis not supported in this browser",

@@ -20,7 +20,7 @@
           <GameHeader
             :title="t('games.listenSong.title')"
             :description="t('game.listenSongDescPrefix')"
-            :description-suffix="t('game.attemptsSuffix')"
+            :show-remaining-attempts="false"
             :attempts="attempts"
             :max-attempts="maxAttempts"
             :game-over="gameOver"
