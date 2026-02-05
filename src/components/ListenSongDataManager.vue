@@ -33,7 +33,7 @@
           <tr>
             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">歌曲</th>
             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">答案</th>
-            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">语种</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">歌手</th>
             <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">操作</th>
           </tr>
         </thead>
@@ -41,7 +41,7 @@
           <tr v-for="song in filteredSongs" :key="song.id" class="hover:bg-gray-50">
             <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ song.answer }}</td>
             <td class="px-4 py-3 text-sm text-gray-600">{{ song.answer }}</td>
-            <td class="px-4 py-3 text-sm text-gray-600">{{ song.lang || 'default' }}</td>
+            <td class="px-4 py-3 text-sm text-gray-600">{{ song.artist || '—' }}</td>
             <td class="px-4 py-3 text-right">
               <button
                 @click="handleEdit(song)"
@@ -91,7 +91,7 @@ import {
   saveSong,
   deleteSong
 } from '../utils/listenSongStorage'
-import { defaultListenSongs } from '../data/listenSongDefaults'
+import { defaultListenSongs, defaultListenSongAudioUrl } from '../data/listenSongDefaults'
 import type { ListenSongItem } from '../utils/listenSongStorage'
 import { useModal } from '../composables/useModal'
 
@@ -109,14 +109,28 @@ const filteredSongs = computed(() => {
   return songs.value.filter(
     (s) =>
       s.answer.toLowerCase().includes(q) ||
+      (s.artist && s.artist.toLowerCase().includes(q)) ||
       s.lyrics.toLowerCase().includes(q) ||
       (s.hints && s.hints.some((h) => h.toLowerCase().includes(q)))
   )
 })
 
+async function importDefaultSong() {
+  const audioRes = await fetch(defaultListenSongAudioUrl)
+  const audioBlob = await audioRes.blob()
+  const audioFile = new File([audioBlob], 'specialPerson.mp3', { type: 'audio/mpeg' })
+  for (const item of defaultListenSongs) {
+    await saveSong(item, audioFile)
+  }
+}
+
 async function loadSongs() {
   try {
     songs.value = await getAllSongs()
+    if (songs.value.length === 0) {
+      await importDefaultSong()
+      songs.value = await getAllSongs()
+    }
   } catch (e) {
     console.error('加载歌曲失败:', e)
     showError({ title: '加载失败', message: '无法加载歌曲列表' })
@@ -135,9 +149,7 @@ function handleEdit(song: ListenSongItem) {
     id: song.id,
     lyrics: song.lyrics,
     answer: song.answer,
-    lang: song.lang || 'default',
-    rate: song.rate ?? 1,
-    pitch: song.pitch ?? 1,
+    artist: song.artist ?? '',
     hints: song.hints ?? []
   }
   showModal.value = true
@@ -145,9 +157,7 @@ function handleEdit(song: ListenSongItem) {
 
 async function handleImportDefaults() {
   try {
-    for (const item of defaultListenSongs) {
-      await saveSong(item)
-    }
+    await importDefaultSong()
     await loadSongs()
     showSuccess({ title: '已导入', message: `已导入 ${defaultListenSongs.length} 首示例歌曲` })
   } catch (e) {
@@ -173,17 +183,20 @@ async function handleDelete(id: string) {
 
 async function handleSubmit(data: Record<string, unknown>) {
   const audioFile = data.audioClip instanceof File ? data.audioClip : null
+  const isNew = !editingItem.value
+  if (isNew && !audioFile) {
+    showError({ title: '保存失败', message: '新建歌曲时请上传 AI 生成歌（MP3）' })
+    return
+  }
   const item: Omit<ListenSongItem, 'createdAt'> = {
     id: String(data.id),
     lyrics: String(data.lyrics),
     answer: String(data.answer),
-    lang: data.lang ? String(data.lang) : undefined,
-    rate: typeof data.rate === 'number' ? data.rate : undefined,
-    pitch: typeof data.pitch === 'number' ? data.pitch : undefined,
+    artist: String(data.artist ?? ''),
     hints: Array.isArray(data.hints) ? (data.hints as string[]) : []
   }
   try {
-    await saveSong(item, audioFile || undefined)
+    await saveSong(item, audioFile instanceof File ? audioFile : undefined)
     await loadSongs()
     closeModal()
     showSuccess({ title: '保存成功', message: '歌曲已保存' })

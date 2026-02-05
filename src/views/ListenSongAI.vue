@@ -35,31 +35,27 @@
           />
 
           <div v-if="!gameOver && !gameWon" class="space-y-6">
-            <!-- 朗读控制 -->
+            <!-- 播放控制 -->
             <div class="flex flex-wrap items-center gap-4">
+              <audio ref="audioEl" :src="playbackAudioUrl ?? undefined" controls class="max-w-full" />
               <button
-                v-if="speechReader.isSupported"
-                @click="handlePlaySpeech"
-                :disabled="speechReader.isSpeaking.value"
-                class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-green-400 font-medium flex items-center gap-2"
+                v-if="playbackAudioUrl"
+                @click="handlePlay"
+                class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium flex items-center gap-2"
               >
-                <svg v-if="speechReader.isSpeaking.value" class="w-5 h-5 animate-pulse" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
                 </svg>
-                <svg v-else class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
-                </svg>
-                {{ speechReader.isSpeaking.value ? '朗读中...' : t('game.listenSongPlay') }}
+                {{ t('game.listenSongPlay') }}
               </button>
               <button
-                v-if="speechReader.isSupported && targetSong"
-                @click="handleReplaySpeech"
-                :disabled="speechReader.isSpeaking.value"
+                v-if="playbackAudioUrl && targetSong"
+                @click="handleReplay"
                 class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg"
               >
                 {{ t('game.listenSongReplay') }}
               </button>
-              <p v-if="!speechReader.isSupported" class="text-amber-600">{{ t('game.listenSongNotSupported') }}</p>
+              <p v-if="targetSong && !playbackAudioUrl" class="text-amber-600">{{ t('game.listenSongNoPlaybackAudio') }}</p>
             </div>
 
             <!-- 提示 -->
@@ -104,21 +100,18 @@
             </div>
           </div>
 
-          <!-- 揭晓：成功或失败 -->
+          <!-- 揭晓：仅展示歌词与歌手 -->
           <Transition name="fade">
             <div v-if="gameOver || gameWon" class="text-center py-8">
               <div class="text-6xl mb-4">{{ gameWon ? '🎉' : '😢' }}</div>
               <h2 class="text-3xl font-bold mb-2" :class="gameWon ? 'text-green-600' : 'text-red-600'">
                 {{ gameWon ? t('game.congrats') : t('game.tryAgain') }}
               </h2>
-              <p class="text-gray-600 mb-4">
+              <p class="text-gray-600 mb-2">
                 答案是 <span class="font-bold text-blue-600">{{ targetSong?.answer }}</span>
               </p>
-              <!-- 揭晓音频 -->
-              <div v-if="audioUrl" class="mb-6">
-                <audio :src="audioUrl" controls class="mx-auto max-w-md" />
-              </div>
-              <p v-else-if="targetSong" class="text-gray-500 mb-4">{{ t('game.listenSongNoAudio') }}</p>
+              <p v-if="targetSong?.artist" class="text-gray-600 mb-4">歌手：<span class="font-medium">{{ targetSong.artist }}</span></p>
+              <div v-if="targetSong?.lyrics" class="text-left max-w-xl mx-auto mb-6 p-4 bg-gray-50 rounded-lg whitespace-pre-wrap text-gray-700">{{ targetSong.lyrics }}</div>
               <button
                 @click="restartGame"
                 class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
@@ -137,7 +130,6 @@
 import { useI18n } from 'vue-i18n'
 import Navigation from '../components/Navigation.vue'
 import GameHeader from '../components/GameHeader.vue'
-import { useSpeechReader } from '../composables/useSpeechReader'
 import { useTimer } from '../composables/useTimer'
 import {
   getSongsForGame,
@@ -158,8 +150,8 @@ import type { ListenSongItem } from '../utils/listenSongStorage'
 const SESSION_KEY = 'listenSongGuessGame'
 
 const { t } = useI18n()
-const speechReader = useSpeechReader()
 
+const audioEl = ref<HTMLAudioElement | null>(null)
 const songs = ref<ListenSongItem[]>([])
 const targetSong = ref<ListenSongItem | null>(null)
 const inputValue = ref('')
@@ -167,7 +159,7 @@ const attempts = ref(0)
 const gameOver = ref(false)
 const gameWon = ref(false)
 const visibleHints = ref<string[]>([])
-const audioUrl = ref<string | null>(null)
+const playbackAudioUrl = ref<string | null>(null)
 
 const config = getGameConfig('listenSong')
 const maxAttempts = config.maxAttempts
@@ -180,28 +172,28 @@ const canSubmit = computed(() => inputValue.value.trim().length > 0)
 const showRestoreTip = ref(false)
 const restoreTipMessage = ref('')
 
+function stopPlayback() {
+  audioEl.value?.pause()
+}
+
 function handleTimerTimeout() {
   gameOver.value = true
   gameWon.value = false
-  speechReader.stop()
+  stopPlayback()
   doReveal()
 }
 
 const timer = useTimer(enableTimer ? timerDuration : 0, 'listenSong', handleTimerTimeout)
 
-function handlePlaySpeech() {
-  if (!targetSong.value) return
-  speechReader.stop()
-  speechReader.play({
-    text: targetSong.value.lyrics,
-    lang: targetSong.value.lang && targetSong.value.lang !== 'default' ? targetSong.value.lang : 'zh-CN',
-    rate: (targetSong.value.rate && targetSong.value.rate > 0) ? targetSong.value.rate : 1,
-    pitch: (targetSong.value.pitch && targetSong.value.pitch > 0) ? targetSong.value.pitch : 1
-  })
+function handlePlay() {
+  audioEl.value?.play()
 }
 
-function handleReplaySpeech() {
-  handlePlaySpeech()
+function handleReplay() {
+  if (audioEl.value) {
+    audioEl.value.currentTime = 0
+    audioEl.value.play()
+  }
 }
 
 function revealNextHint() {
@@ -217,13 +209,13 @@ function handleGuess() {
   if (ok) {
     gameWon.value = true
     gameOver.value = true
-    speechReader.stop()
+    stopPlayback()
     updateGameStats('listenSong', true, attempts.value)
     doReveal()
   } else if (attempts.value >= maxAttempts) {
     gameOver.value = true
     gameWon.value = false
-    speechReader.stop()
+    stopPlayback()
     updateGameStats('listenSong', false, attempts.value)
     doReveal()
   }
@@ -232,23 +224,14 @@ function handleGuess() {
 function handleReveal() {
   gameOver.value = true
   gameWon.value = false
-  speechReader.stop()
+  stopPlayback()
   if (attempts.value > 0) {
     updateGameStats('listenSong', false, attempts.value)
   }
   doReveal()
 }
 
-async function doReveal() {
-  if (!targetSong.value) return
-  try {
-    const { audioBlob } = await getSongWithAudio(targetSong.value.id)
-    if (audioBlob) {
-      audioUrl.value = URL.createObjectURL(audioBlob)
-    }
-  } catch {
-    audioUrl.value = null
-  }
+function doReveal() {
   persistState()
 }
 
@@ -291,6 +274,21 @@ function restoreState() {
   }
 }
 
+async function setPlaybackAudio(song: ListenSongItem) {
+  if (playbackAudioUrl.value) {
+    URL.revokeObjectURL(playbackAudioUrl.value)
+    playbackAudioUrl.value = null
+  }
+  try {
+    const { audioBlob } = await getSongWithAudio(song.id)
+    if (audioBlob) {
+      playbackAudioUrl.value = URL.createObjectURL(audioBlob)
+    }
+  } catch {
+    playbackAudioUrl.value = null
+  }
+}
+
 function startNewRound() {
   const picked = pickRandomSong(songs.value)
   targetSong.value = picked
@@ -299,19 +297,21 @@ function startNewRound() {
   gameOver.value = false
   gameWon.value = false
   visibleHints.value = picked?.hints?.[0] ? [picked.hints[0]] : []
-  if (audioUrl.value) {
-    URL.revokeObjectURL(audioUrl.value)
+  if (picked) {
+    setPlaybackAudio(picked)
+  } else if (playbackAudioUrl.value) {
+    URL.revokeObjectURL(playbackAudioUrl.value)
+    playbackAudioUrl.value = null
   }
-  audioUrl.value = null
   if (enableTimer) timer.reset(timerDuration)
   if (enableTimer) timer.start()
   persistState()
 }
 
 function restartGame() {
-  if (audioUrl.value) {
-    URL.revokeObjectURL(audioUrl.value)
-    audioUrl.value = null
+  if (playbackAudioUrl.value) {
+    URL.revokeObjectURL(playbackAudioUrl.value)
+    playbackAudioUrl.value = null
   }
   clearTimerState()
   sessionStorage.removeItem(SESSION_KEY)
@@ -319,8 +319,8 @@ function restartGame() {
 }
 
 function clearAndRestart() {
-  speechReader.stop()
-  if (audioUrl.value) URL.revokeObjectURL(audioUrl.value)
+  stopPlayback()
+  if (playbackAudioUrl.value) URL.revokeObjectURL(playbackAudioUrl.value)
   clearTimerState()
   sessionStorage.removeItem(SESSION_KEY)
   startNewRound()
@@ -332,11 +332,13 @@ onMounted(async () => {
   restoreState()
   if (!targetSong.value) {
     startNewRound()
+  } else {
+    await setPlaybackAudio(targetSong.value)
   }
 })
 
 onUnmounted(() => {
-  speechReader.stop()
-  if (audioUrl.value) URL.revokeObjectURL(audioUrl.value)
+  stopPlayback()
+  if (playbackAudioUrl.value) URL.revokeObjectURL(playbackAudioUrl.value)
 })
 </script>

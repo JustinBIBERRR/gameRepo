@@ -63,7 +63,7 @@
     },
     "listenSong": {
       "title": "听歌识曲 AI 朗读版",
-      "description": "系统随机选择一首歌曲，AI 朗读黄金歌词，你有5次机会猜测。揭晓后可播放原曲片段。"
+      "description": "系统随机选择一首 AI 生成歌，播放后你有多次机会猜测。揭晓时展示歌词与歌手。"
     }
   },
   "settings": {
@@ -159,10 +159,11 @@
     "listenSongNoData": "暂无歌曲数据",
     "listenSongNoDataMessage": "请先在设置页面添加至少一首歌曲。",
     "listenSongNotSupported": "当前浏览器不支持语音朗读",
-    "listenSongPlay": "开始朗读",
-    "listenSongReplay": "再读一遍",
+    "listenSongPlay": "开始播放",
+    "listenSongReplay": "再播一遍",
     "listenSongReveal": "揭晓答案",
     "listenSongNoAudio": "暂无原曲片段",
+    "listenSongNoPlaybackAudio": "暂无播放音频",
     "listenSongPlaceholder": "输入歌曲名称...",
     "noMoviesTitle": "没有电影",
     "noMoviesMessage": "请先在设置页面注册至少一部电影才能开始游戏。",

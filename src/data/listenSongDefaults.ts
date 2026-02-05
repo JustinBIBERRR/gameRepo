@@ -1,31 +1,18 @@
 import type { ListenSongItem } from '../utils/listenSongStorage'
 
+/** 默认示例音频（bundled），导入时 fetch 并写入 IndexedDB */
+import defaultAudioUrl from './specialPerson.mp3'
+
+export const defaultListenSongAudioUrl = defaultAudioUrl
+
+/** 唯一默认示例：方大同《特别的人》 */
 export const defaultListenSongs: Omit<ListenSongItem, 'createdAt'>[] = [
   {
-    id: 'daoxiang',
-    lyrics: '不要哭让萤火虫带着你逃跑，乡间的歌谣永远的依靠，回家吧回到最初的美好',
-    answer: '稻香',
-    lang: 'default',
-    rate: 1,
-    pitch: 1,
-    hints: ['周杰伦', '2个字']
-  },
-  {
-    id: 'qingtian',
-    lyrics: '有没有口罩一个给我，释怀说了太多就成真不了，也许时间是一种解药',
-    answer: '晴天',
-    lang: 'yue',
-    rate: 1,
-    pitch: 1,
-    hints: ['周杰伦', '2个字']
-  },
-  {
-    id: 'dongfengpo',
-    lyrics: '一盏离愁孤单伫立在窗口，我在门后假装你人还没走，旧地如重游月圆更寂寞',
-    answer: '东风破',
-    lang: 'ja',
-    rate: 0.9,
-    pitch: 1,
-    hints: ['周杰伦', '三个字']
+    id: 'special-person',
+    lyrics:
+      '懂一個人也許要忍耐\n要經過了意外\n才瞭解所謂的愛\n今後的歲月 讓我們一起瞭解\n多少天長地久\n有幾回細水長流',
+    answer: '特别的人',
+    artist: '方大同',
+    hints: ['方大同', '四个字']
   }
 ]

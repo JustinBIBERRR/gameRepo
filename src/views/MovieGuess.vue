@@ -93,6 +93,7 @@
                 :duration="15"
                 :audio-only="true"
                 :auto-play="false"
+                @duration="onVideoDurationLoaded"
               />
             </div>
           </div>
@@ -216,6 +217,7 @@
               :duration="15"
               :audio-only="false"
               :auto-play="false"
+              @duration="onVideoDurationLoaded"
             />
             <div v-if="reviewingTimePoint === null" class="text-center py-8 text-gray-500">
               <p>点击下方的历史记录或拖动时间轴来选择要回顾的片段</p>
@@ -290,6 +292,20 @@ import { getMovieFiles } from '../utils/movieStorage'
 import { selectPlaybackMethod } from '../utils/moviePlayback'
 import { videoPreloader } from '../utils/videoPreloader'
 import type { LocalMovieFiles } from '../utils/movieStorage'
+
+// 默认数据中的打包视频：来自 src/data/*.mp4，由 Vite 打包为可用 URL
+const localVideoModules = import.meta.glob<string>('@/data/*.mp4', {
+  eager: true,
+  as: 'url'
+})
+function getLocalVideoUrl(pathOrFilename: string): string {
+  if (!pathOrFilename) return ''
+  const basename = pathOrFilename.replace(/^.*[/\\]/, '')
+  const key = Object.keys(localVideoModules).find((k) =>
+    k.endsWith(basename) || k.endsWith('/' + basename)
+  )
+  return key ? localVideoModules[key] : ''
+}
 
 const router = useRouter()
 const { confirm: showConfirm } = useModal()
@@ -390,6 +406,18 @@ async function loadMovieFiles() {
   try {
     const files = await getMovieFiles(targetMovie.value.id)
     movieFiles.value = files
+
+    // 默认数据中的打包视频（如 data/mry.mp4）：无 IndexedDB 文件时用路径解析为打包 URL
+    if (!files && targetMovie.value.videoType === 'local' && targetMovie.value.videoUrl) {
+      const resolvedUrl = getLocalVideoUrl(targetMovie.value.videoUrl) || targetMovie.value.videoUrl
+      if (resolvedUrl) {
+        currentVideoType.value = 'local'
+        currentVideoUrl.value = resolvedUrl
+        currentVideoFile.value = null
+        await updatePlaybackSource(selectedTimePoint.value)
+        return
+      }
+    }
     
     // 如果视频已经预加载，直接使用，无需等待
     if (files && files.sourceFile && videoPreloader.isPreloaded(targetMovie.value.id)) {
@@ -457,7 +485,18 @@ async function updatePlaybackSource(timePoint: number) {
     }
   }
   
-  // 如果没有本地文件或选择失败，使用在线API（如果有）
+  // 默认数据中的打包视频（无 IndexedDB，用路径解析）
+  if (!movieFiles.value && targetMovie.value.videoType === 'local' && targetMovie.value.videoUrl) {
+    const resolvedUrl = getLocalVideoUrl(targetMovie.value.videoUrl) || targetMovie.value.videoUrl
+    if (resolvedUrl) {
+      currentVideoType.value = 'local'
+      currentVideoUrl.value = resolvedUrl
+      currentVideoFile.value = null
+      return
+    }
+  }
+
+  // 如果没有本地文件或选择失败，使用在线 API（如果有）
   if (targetMovie.value.videoUrl) {
     currentVideoType.value = 'api'
     currentVideoUrl.value = targetMovie.value.videoUrl
@@ -474,6 +513,13 @@ async function updatePlaybackSource(timePoint: number) {
 async function handleTimePointChange(seconds: number) {
   selectedTimePoint.value = seconds
   await updatePlaybackSource(seconds)
+}
+
+// 视频元数据加载后更新电影时长（打包视频等无预加载时从实际视频读取）
+function onVideoDurationLoaded(seconds: number) {
+  if (targetMovie.value && Number.isFinite(seconds) && seconds > 0) {
+    targetMovie.value.duration = Math.floor(seconds)
+  }
 }
 
 // 处理播放音频

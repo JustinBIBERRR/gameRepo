@@ -5,9 +5,46 @@
       <span v-if="field.required" class="text-red-500">*</span>
     </label>
     
-    <!-- 字符串类型 -->
+    <!-- 图片地址（带预览与上传） -->
+    <div v-if="field.type === 'string' && field.key === 'imageFullUrl'" class="space-y-2">
+      <div v-if="imagePreviewUrl" class="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+        <template v-if="!imagePreviewError">
+          <img
+            :src="imagePreviewUrl"
+            alt="预览"
+            class="w-16 h-16 object-cover rounded border border-gray-300 flex-shrink-0"
+            @error="imagePreviewError = true"
+          />
+        </template>
+        <div v-else class="w-16 h-16 flex items-center justify-center bg-gray-200 rounded border border-gray-300 flex-shrink-0 text-gray-500 text-xs">
+          加载失败
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <input
+          v-model="localValue"
+          type="text"
+          :placeholder="field.placeholder"
+          :class="inputClass"
+          class="flex-1 min-w-0"
+          @blur="validate"
+        />
+        <label class="flex-shrink-0 inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg cursor-pointer transition-colors">
+          <input
+            ref="imageFileInputRef"
+            type="file"
+            accept="image/*"
+            class="hidden"
+            @change="handleImageUpload"
+          />
+          上传图片
+        </label>
+      </div>
+    </div>
+
+    <!-- 普通字符串类型 -->
     <input
-      v-if="field.type === 'string'"
+      v-else-if="field.type === 'string'"
       v-model="localValue"
       type="text"
       :placeholder="field.placeholder"
@@ -176,6 +213,18 @@ const numberStringValue = ref<string>(
 const error = ref<string | null>(null)
 const filePreview = ref<File | null>(null)
 const fileInputRef = ref<HTMLInputElement | null>(null)
+const imageFileInputRef = ref<HTMLInputElement | null>(null)
+const imagePreviewError = ref(false)
+
+// 图片地址字段：仅对 http(s) 或 data: 显示预览
+const imagePreviewUrl = computed(() => {
+  if (props.field.key !== 'imageFullUrl' || props.field.type !== 'string') return ''
+  const v = props.modelValue
+  if (typeof v !== 'string' || !v.trim()) return ''
+  const trimmed = v.trim()
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:')) return trimmed
+  return ''
+})
 
 const inputClass = computed(() => {
   const base = 'w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors'
@@ -261,6 +310,21 @@ function clearFile() {
   validate()
 }
 
+function handleImageUpload(event: Event) {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file || !file.type.startsWith('image/')) return
+  const reader = new FileReader()
+  reader.onload = () => {
+    const dataUrl = reader.result as string
+    emit('update:modelValue', dataUrl)
+    imagePreviewError.value = false
+    validate()
+  }
+  reader.readAsDataURL(file)
+  if (imageFileInputRef.value) imageFileInputRef.value.value = ''
+}
+
 function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 Bytes'
   const k = 1024
@@ -286,8 +350,14 @@ watch(() => props.modelValue, (newValue) => {
     } else {
       filePreview.value = null
     }
+  } else if (props.field.key === 'imageFullUrl') {
+    imagePreviewError.value = false
   }
 }, { immediate: true })
+
+watch(imagePreviewUrl, () => {
+  imagePreviewError.value = false
+})
 
 // 初始化时验证（延迟执行，避免在组件挂载前验证）
 watch(() => props.field, () => {

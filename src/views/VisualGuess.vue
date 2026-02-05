@@ -222,6 +222,20 @@ const categoryHint = computed(() => {
   return hint || null
 })
 
+// 默认数据图片：来自 src/data/img，用 @ 别名由 Vite 打包为可用 URL；主持人自定义数据可为 http(s) 或 data URL，此处统一解析后展示
+const localImgModules = import.meta.glob<string>('@/data/img/*', {
+  eager: true,
+  as: 'url'
+})
+const getLocalImageUrl = (pathOrFilename: string): string => {
+  if (!pathOrFilename) return ''
+  const basename = pathOrFilename.replace(/^.*[/\\]/, '')
+  const key = Object.keys(localImgModules).find((k) =>
+    k.endsWith(basename) || k.endsWith('/' + basename)
+  )
+  return key ? localImgModules[key] : ''
+}
+
 // 每局只加载一次图片并锁定为 blob URL，避免同一 URL 多次请求返回不同图片（如 loremflickr 随机图）
 const gameImageUrl = ref('')
 const resourceReady = ref(false)
@@ -237,15 +251,24 @@ function revokeGameImageUrl() {
 
 watch(
   () => targetItem.value?.images?.full,
-  async (url) => {
+  async (rawUrl) => {
     revokeGameImageUrl()
-    if (!url) return
+    if (!rawUrl) return
     resourceReady.value = false
+    // 三种来源：① 默认打包资源 path → getLocalImageUrl；② 自定义 http(s) URL；③ 主持人上传的 data URL
+    const url =
+      rawUrl.startsWith('http') ? rawUrl : getLocalImageUrl(rawUrl) || rawUrl
+    if (!url) return
     try {
-      const res = await fetch(url)
-      if (!res.ok) throw new Error(res.statusText)
-      const blob = await res.blob()
-      gameImageUrl.value = URL.createObjectURL(blob)
+      if (url.startsWith('http')) {
+        const res = await fetch(url)
+        if (!res.ok) throw new Error(res.statusText)
+        const blob = await res.blob()
+        gameImageUrl.value = URL.createObjectURL(blob)
+      } else {
+        // 打包资源 URL 或 data URL 直接使用
+        gameImageUrl.value = url
+      }
       resourceReady.value = true
     } catch {
       gameImageUrl.value = url

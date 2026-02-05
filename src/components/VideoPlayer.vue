@@ -68,7 +68,8 @@
           :src="videoObjectUrl"
           :class="{ 'fixed -left-[9999px] -top-[9999px] opacity-0': audioOnly }"
           class="w-full rounded-lg"
-          :preload="props.movieId && videoPreloader.isPreloaded(props.movieId) ? 'auto' : 'metadata'"
+          :preload="(props.movieId && videoPreloader.isPreloaded(props.movieId)) || props.videoUrl ? 'auto' : 'metadata'"
+          playsinline
           @loadedmetadata="handleLoadedMetadata"
           @timeupdate="handleTimeUpdate"
           @ended="handleEnded"
@@ -133,6 +134,10 @@ const props = withDefaults(defineProps<Props>(), {
   audioOnly: false,
   autoPlay: false
 })
+
+const emit = defineEmits<{
+  duration: [seconds: number]
+}>()
 
 const videoElement = ref<HTMLVideoElement | null>(null)
 const isPlaying = ref(false)
@@ -453,7 +458,11 @@ async function seek(time: number) {
 // 处理视频元数据加载
 function handleLoadedMetadata() {
   if (videoElement.value) {
-    videoDuration.value = videoElement.value.duration
+    const d = videoElement.value.duration
+    if (Number.isFinite(d) && d > 0) {
+      videoDuration.value = d
+      emit('duration', d)
+    }
     isLoading.value = false
     loadingProgress.value = 100
     

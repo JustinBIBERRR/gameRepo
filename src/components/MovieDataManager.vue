@@ -84,6 +84,15 @@
                 已就绪
               </span>
               <span
+                v-else-if="fileStatus[movie.id] === 'default'"
+                class="inline-flex items-center gap-1 text-green-600"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                默认资源
+              </span>
+              <span
                 v-else-if="fileStatus[movie.id] === 'error'"
                 class="inline-flex items-center gap-1 text-red-600"
               >
@@ -96,6 +105,7 @@
             </td>
             <td class="px-3 py-3 text-right text-sm font-medium w-24">
               <div class="flex items-center justify-end gap-2 whitespace-nowrap">
+                <span v-if="!userMovieIds.has(movie.id)" class="text-gray-400 text-xs mr-1">默认</span>
                 <button
                   @click="handleEditMovie(movie)"
                   class="text-blue-600 hover:text-blue-900 flex-shrink-0 px-1"
@@ -145,8 +155,11 @@
 <script setup lang="ts">
 import GlobalModal from './GlobalModal.vue'
 import MovieForm from './MovieForm.vue'
+import { getAllMovies } from '../utils/movieUtils'
+import type { Movie } from '../utils/movieUtils'
 import {
   getAllUserMovies,
+  getUserMovie,
   deleteUserMovie,
   saveUserMovie,
   getMovieFiles,
@@ -162,13 +175,14 @@ import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
 const { confirm: showConfirm, success: showSuccess, error: showError } = useModal()
 
-const movies = ref<UserMovie[]>([])
+const movies = ref<Movie[]>([])
+const userMovieIds = ref<Set<string>>(new Set())
 const searchQuery = ref('')
 const showEditModal = ref(false)
 const editingMovie = ref<UserMovie | null>(null)
 const savingMovie = ref(false)
 const loadingMovies = ref<Record<string, boolean>>({})
-const fileStatus = ref<Record<string, 'ready' | 'error' | 'loading'>>({})
+const fileStatus = ref<Record<string, 'ready' | 'error' | 'loading' | 'default'>>({})
 
 const filteredMovies = computed(() => {
   if (!searchQuery.value.trim()) {
@@ -185,10 +199,12 @@ const filteredMovies = computed(() => {
   })
 })
 
-// 加载电影列表并预加载所有电影文件
+// 加载电影列表（与游戏一致：默认数据 + 用户数据，优先用户）
 async function loadMovies() {
   try {
-    movies.value = await getAllUserMovies()
+    movies.value = await getAllMovies()
+    const userMovies = await getAllUserMovies()
+    userMovieIds.value = new Set(userMovies.map((m) => m.id))
     // 预加载所有电影文件（确保游戏时无需等待）
     await preloadAllMovies()
   } catch (error) {
@@ -204,6 +220,12 @@ async function loadMovies() {
 async function preloadAllMovies() {
   const preloadPromises = movies.value.map(async (movie) => {
     try {
+      // 默认数据中的打包视频（无 IndexedDB 条目）
+      if (!userMovieIds.value.has(movie.id) && movie.videoType === 'local' && movie.videoUrl) {
+        fileStatus.value[movie.id] = 'default'
+        loadingMovies.value[movie.id] = false
+        return
+      }
       const files = await getMovieFiles(movie.id)
       if (files && files.sourceFile) {
         // 设置加载状态
@@ -249,14 +271,23 @@ function handleAddMovie() {
   showEditModal.value = true
 }
 
-function handleEditMovie(movie: UserMovie) {
-  editingMovie.value = { ...movie }
+async function handleEditMovie(movie: Movie | UserMovie) {
+  const full = await getUserMovie(movie.id)
+  editingMovie.value = full ? { ...full } : { ...movie, nameVariants: movie.nameVariants || [], createdAt: Date.now() }
   showEditModal.value = true
 }
 
 async function handleDeleteMovie(movieId: string) {
   const movie = movies.value.find(m => m.id === movieId)
   const movieName = movie?.name || '该电影'
+
+  if (!userMovieIds.value.has(movieId)) {
+    showError({
+      title: '无法删除',
+      message: '默认电影无法删除，可编辑并上传自己的视频后覆盖使用。'
+    })
+    return
+  }
   
   showConfirm({
     title: t('modal.confirmDelete'),
@@ -352,7 +383,9 @@ async function handleFormSubmit(formData: {
       hint: formData.hint,
       nameVariants: [],
       duration: Math.floor(videoDuration), // 保存为整数秒
-      createdAt: editingMovie.value?.createdAt || Date.now()
+      createdAt: (editingMovie.value && 'createdAt' in editingMovie.value)
+        ? editingMovie.value.createdAt
+        : Date.now()
     }
     
     // 保存电影信息

@@ -1,8 +1,24 @@
-import { getAllSongs } from './listenSongStorage'
+import { getAllSongs, getSongWithAudio } from './listenSongStorage'
 import type { ListenSongItem } from './listenSongStorage'
 
-export function getSongsForGame(): Promise<ListenSongItem[]> {
-  return getAllSongs()
+/** 仅返回含有效播放用音频的题目 */
+export async function getSongsForGame(): Promise<ListenSongItem[]> {
+  const all = await getAllSongs()
+  const result: ListenSongItem[] = []
+  for (const s of all) {
+    const { item, audioBlob } = await getSongWithAudio(s.id)
+    if (audioBlob) {
+      result.push({
+        id: item.id,
+        lyrics: item.lyrics,
+        answer: item.answer,
+        artist: item.artist ?? '',
+        hints: item.hints,
+        createdAt: item.createdAt
+      })
+    }
+  }
+  return result
 }
 
 export function pickRandomSong(songs: ListenSongItem[]): ListenSongItem | null {
@@ -17,6 +33,9 @@ export function normalizeAnswer(s: string): string {
     .toLowerCase()
 }
 
+/** 输入中必须包含歌曲名（answer）即判对，歌手（artist）可选 */
 export function checkAnswer(userInput: string, answer: string): boolean {
-  return normalizeAnswer(userInput) === normalizeAnswer(answer)
+  const normInput = normalizeAnswer(userInput)
+  const normAnswer = normalizeAnswer(answer)
+  return normInput.includes(normAnswer)
 }

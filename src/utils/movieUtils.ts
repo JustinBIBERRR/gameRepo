@@ -22,8 +22,23 @@ export interface Movie {
   year?: number
 }
 
-// 默认电影数据
-const defaultMoviesData = (moviesDataRaw as any).movies || []
+// 默认电影数据（确保为数组；若 JSON 未正确加载则使用内联回退）
+const defaultMoviesDataRaw = (moviesDataRaw as any)?.movies
+const defaultMoviesData = Array.isArray(defaultMoviesDataRaw) && defaultMoviesDataRaw.length > 0
+  ? defaultMoviesDataRaw
+  : [
+      {
+        id: 'meirenyu',
+        name: '美人鱼',
+        nameVariants: ['美人鱼', 'Mermaid', '周星驰美人鱼'],
+        duration: 5580,
+        videoUrl: 'data/mry.mp4',
+        videoType: 'local',
+        apiProvider: 'bilibili',
+        year: 2016,
+        description: '周星驰导演的奇幻喜剧，讲述人鱼与人类的爱情故事'
+      }
+    ] as any[]
 
 // 缓存用户电影列表
 let cachedMovies: Movie[] | null = null
@@ -32,11 +47,10 @@ let cachedMovies: Movie[] | null = null
  * 获取所有电影（优先自定义数据，然后用户注册的电影，最后默认数据）
  */
 export async function getAllMovies(): Promise<Movie[]> {
+  // 1. 检查是否有自定义数据（失败则继续用默认）
   try {
-    // 1. 检查是否有自定义数据
     const customData = getCustomGameData<MovieData>('movie')
-    if (customData && customData.useCustom && customData.items.length > 0) {
-      // 使用自定义数据
+    if (customData && customData.useCustom && Array.isArray(customData.items) && customData.items.length > 0) {
       cachedMovies = customData.items.map(item => ({
         id: item.id,
         name: item.name,
@@ -50,24 +64,33 @@ export async function getAllMovies(): Promise<Movie[]> {
       }))
       return cachedMovies
     }
-    
-    // 2. 从IndexedDB读取用户注册的电影
-    const userMovies = await getAllUserMovies()
-    if (userMovies.length > 0) {
-      cachedMovies = userMovies.map(movie => ({
-        id: movie.id,
-        name: movie.name,
-        nameVariants: movie.nameVariants,
-        duration: movie.duration,
-        hint: movie.hint,
-        description: movie.description,
-        year: movie.year,
-        videoType: 'local' as const
-      }))
-      return cachedMovies
-    }
-    
-    // 3. 使用默认数据
+  } catch (e) {
+    console.warn('读取自定义电影数据失败，使用默认数据:', e)
+  }
+
+  // 2. 从 IndexedDB 读取用户注册的电影（失败时回退到默认数据）
+  let userMovies: Awaited<ReturnType<typeof getAllUserMovies>> = []
+  try {
+    userMovies = await getAllUserMovies()
+  } catch (e) {
+    console.warn('读取用户电影列表失败，使用默认数据:', e)
+  }
+  if (userMovies.length > 0) {
+    cachedMovies = userMovies.map(movie => ({
+      id: movie.id,
+      name: movie.name,
+      nameVariants: movie.nameVariants,
+      duration: movie.duration,
+      hint: movie.hint,
+      description: movie.description,
+      year: movie.year,
+      videoType: 'local' as const
+    }))
+    return cachedMovies
+  }
+
+  // 3. 使用默认数据（含本地打包视频，如 data/mry.mp4）
+  try {
     cachedMovies = defaultMoviesData.map((movie: any) => ({
       id: movie.id,
       name: movie.name,
@@ -77,11 +100,12 @@ export async function getAllMovies(): Promise<Movie[]> {
       description: movie.description,
       year: movie.year,
       videoType: movie.videoType || 'api',
-      apiProvider: movie.apiProvider || 'bilibili'
+      apiProvider: movie.apiProvider || 'bilibili',
+      videoUrl: movie.videoUrl || undefined
     }))
     return cachedMovies || []
   } catch (error) {
-    console.error('获取电影列表失败:', error)
+    console.error('使用默认电影数据失败:', error)
     return []
   }
 }

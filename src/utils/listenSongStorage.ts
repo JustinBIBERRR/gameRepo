@@ -7,9 +7,7 @@ export interface ListenSongItem {
   id: string
   lyrics: string
   answer: string
-  lang?: string
-  rate?: number
-  pitch?: number
+  artist: string
   hints?: string[]
   createdAt: number
 }
@@ -54,7 +52,14 @@ export async function getAllSongs(): Promise<ListenSongItem[]> {
     const store = tx.objectStore(STORE_NAME)
     const request = store.getAll()
     request.onsuccess = () => {
-      const items = (request.result as StoredSong[]).map(({ audioBlob: _b, ...item }) => item)
+      const items = (request.result as StoredSong[]).map(({ audioBlob: _b, ...raw }) => ({
+        id: raw.id,
+        lyrics: raw.lyrics,
+        answer: raw.answer,
+        artist: raw.artist ?? '',
+        hints: raw.hints,
+        createdAt: raw.createdAt
+      }))
       resolve(items)
     }
     request.onerror = () => reject(request.error)
@@ -106,9 +111,7 @@ export async function saveSong(
     id: String(item.id),
     lyrics: String(item.lyrics),
     answer: String(item.answer),
-    lang: item.lang ? String(item.lang) : undefined,
-    rate: typeof item.rate === 'number' ? item.rate : undefined,
-    pitch: typeof item.pitch === 'number' ? item.pitch : undefined,
+    artist: String(item.artist ?? ''),
     hints: hintsPlain,
     createdAt: (item as ListenSongItem).createdAt ?? existing?.createdAt ?? now
   }

@@ -1,11 +1,9 @@
 import { GameDataSchema } from './types'
 
-const LANG_OPTIONS = ['default', 'zh-CN', 'yue', 'ja', 'en']
-
 export const listenSongSchema: GameDataSchema = {
   id: 'listenSong',
   name: '听歌识曲',
-  description: '歌曲数据配置，包含歌词、答案、揭晓音频等',
+  description: '歌曲数据配置，包含歌词、答案、歌手、AI 生成歌（MP3）等',
   primaryKey: 'id',
   fields: [
     {
@@ -13,7 +11,7 @@ export const listenSongSchema: GameDataSchema = {
       label: '歌曲ID',
       type: 'string',
       required: true,
-      placeholder: '例如：daoxiang',
+      placeholder: '例如：special-person',
       validation: {
         min: 1,
         max: 100,
@@ -23,14 +21,14 @@ export const listenSongSchema: GameDataSchema = {
     },
     {
       key: 'lyrics',
-      label: '黄金歌词',
+      label: '歌词',
       type: 'string',
       required: true,
-      placeholder: '用于 AI 朗读的歌词文本',
+      placeholder: '揭晓时展示的歌词文本',
       validation: {
         min: 1,
-        max: 200,
-        message: '歌词不能为空且不超过200字符'
+        max: 500,
+        message: '歌词不能为空且不超过500字符'
       }
     },
     {
@@ -38,7 +36,7 @@ export const listenSongSchema: GameDataSchema = {
       label: '答案（歌曲名称）',
       type: 'string',
       required: true,
-      placeholder: '例如：稻香',
+      placeholder: '例如：特别的人',
       validation: {
         min: 1,
         max: 100,
@@ -46,40 +44,28 @@ export const listenSongSchema: GameDataSchema = {
       }
     },
     {
-      key: 'audioClip',
-      label: '揭晓音频',
-      type: 'file',
-      required: false,
-      accept: 'audio/*',
-      placeholder: '5-10秒原曲高潮片段（MP3/WAV，不超过5MB）',
+      key: 'artist',
+      label: '歌手',
+      type: 'string',
+      required: true,
+      placeholder: '例如：方大同',
       validation: {
-        maxSize: 5 * 1024 * 1024,
-        message: '请上传音频文件'
+        min: 1,
+        max: 100,
+        message: '歌手不能为空且不超过100字符'
       }
     },
     {
-      key: 'lang',
-      label: '朗读语种',
-      type: 'select',
+      key: 'audioClip',
+      label: 'AI 生成歌（MP3）',
+      type: 'file',
       required: false,
-      options: LANG_OPTIONS,
-      placeholder: '默认/普通话/粤语/日语/英语'
-    },
-    {
-      key: 'rate',
-      label: '语速',
-      type: 'number',
-      required: false,
-      placeholder: '1.0 为正常，0 表示默认',
-      validation: { min: 0, max: 2, message: '语速范围 0-2' }
-    },
-    {
-      key: 'pitch',
-      label: '音调',
-      type: 'number',
-      required: false,
-      placeholder: '1.0 为正常，0 表示默认',
-      validation: { min: 0, max: 2, message: '音调范围 0-2' }
+      accept: 'audio/mpeg,audio/mp3,audio/*',
+      placeholder: '游戏内播放的 AI 生成歌（MP3，不超过5MB）；新建时必传',
+      validation: {
+        maxSize: 5 * 1024 * 1024,
+        message: '请上传 MP3 音频文件（不超过5MB）'
+      }
     },
     {
       key: 'hints',

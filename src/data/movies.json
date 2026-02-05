@@ -1,136 +1,15 @@
 {
   "movies": [
     {
-      "id": "nezha",
-      "name": "哪吒之魔童降世",
-      "nameVariants": ["哪吒", "哪吒之魔童降世", "魔童降世", "哪吒魔童降世"],
-      "duration": 6660,
-      "videoUrl": "",
-      "videoType": "api",
+      "id": "meirenyu",
+      "name": "美人鱼",
+      "nameVariants": ["美人鱼", "Mermaid", "周星驰美人鱼"],
+      "duration": 5580,
+      "videoUrl": "data/mry.mp4",
+      "videoType": "local",
       "apiProvider": "bilibili",
-      "year": 2019,
-      "description": "国产动画电影，讲述哪吒的成长故事"
-    },
-    {
-      "id": "wujian",
-      "name": "无间道",
-      "nameVariants": ["无间道", "无间道1", "无间道第一部"],
-      "duration": 6060,
-      "videoUrl": "",
-      "videoType": "api",
-      "apiProvider": "bilibili",
-      "year": 2002,
-      "description": "香港警匪片经典之作"
-    },
-    {
-      "id": "yaoshen",
-      "name": "我不是药神",
-      "nameVariants": ["我不是药神", "药神", "Dying to Survive"],
-      "duration": 7020,
-      "videoUrl": "",
-      "videoType": "api",
-      "apiProvider": "bilibili",
-      "year": 2018,
-      "description": "现实主义题材电影，讲述药品代购的故事"
-    },
-    {
-      "id": "zhanlang2",
-      "name": "战狼2",
-      "nameVariants": ["战狼2", "战狼二", "Wolf Warriors 2"],
-      "duration": 7380,
-      "videoUrl": "",
-      "videoType": "api",
-      "apiProvider": "bilibili",
-      "year": 2017,
-      "description": "军事动作片，讲述中国军人的故事"
-    },
-    {
-      "id": "liulang",
-      "name": "流浪地球",
-      "nameVariants": ["流浪地球", "The Wandering Earth", "流浪地球1"],
-      "duration": 7500,
-      "videoUrl": "",
-      "videoType": "api",
-      "apiProvider": "bilibili",
-      "year": 2019,
-      "description": "科幻电影，讲述地球逃离太阳系的故事"
-    },
-    {
-      "id": "honghai",
-      "name": "红海行动",
-      "nameVariants": ["红海行动", "Operation Red Sea"],
-      "duration": 8280,
-      "videoUrl": "",
-      "videoType": "api",
-      "apiProvider": "bilibili",
-      "year": 2018,
-      "description": "军事动作片，讲述中国海军撤侨行动"
-    },
-    {
-      "id": "tangrenjie",
-      "name": "唐人街探案",
-      "nameVariants": ["唐人街探案", "唐人街探案1", "Detective Chinatown"],
-      "duration": 7200,
-      "videoUrl": "",
-      "videoType": "api",
-      "apiProvider": "bilibili",
-      "year": 2015,
-      "description": "悬疑喜剧片，讲述唐人街探案的故事"
-    },
-    {
-      "id": "xialuote",
-      "name": "夏洛特烦恼",
-      "nameVariants": ["夏洛特烦恼", "Goodbye Mr. Loser"],
-      "duration": 6240,
-      "videoUrl": "",
-      "videoType": "api",
-      "apiProvider": "bilibili",
-      "year": 2015,
-      "description": "喜剧电影，讲述穿越重生的故事"
-    },
-    {
-      "id": "feicheng",
-      "name": "非诚勿扰",
-      "nameVariants": ["非诚勿扰", "If You Are the One"],
-      "duration": 7680,
-      "videoUrl": "",
-      "videoType": "api",
-      "apiProvider": "bilibili",
-      "year": 2008,
-      "description": "爱情喜剧片，讲述征婚的故事"
-    },
-    {
-      "id": "rangzidan",
-      "name": "让子弹飞",
-      "nameVariants": ["让子弹飞", "Let the Bullets Fly"],
-      "duration": 7920,
-      "videoUrl": "",
-      "videoType": "api",
-      "apiProvider": "bilibili",
-      "year": 2010,
-      "description": "黑色幽默电影，讲述民国时期的故事"
-    },
-    {
-      "id": "daminghu",
-      "name": "大明湖",
-      "nameVariants": ["大明湖", "大明湖畔"],
-      "duration": 6000,
-      "videoUrl": "",
-      "videoType": "api",
-      "apiProvider": "bilibili",
-      "year": 2011,
-      "description": "古装喜剧片"
-    },
-    {
-      "id": "xihu",
-      "name": "西游降魔篇",
-      "nameVariants": ["西游降魔篇", "Journey to the West"],
-      "duration": 6600,
-      "videoUrl": "",
-      "videoType": "api",
-      "apiProvider": "bilibili",
-      "year": 2013,
-      "description": "奇幻喜剧片，改编自西游记"
+      "year": 2016,
+      "description": "周星驰导演的奇幻喜剧，讲述人鱼与人类的爱情故事"
     }
   ]
 }

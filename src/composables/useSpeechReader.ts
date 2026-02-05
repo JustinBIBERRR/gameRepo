@@ -15,6 +15,13 @@ export function useSpeechReader() {
   const isSpeaking = ref(false)
   const voices = ref<SpeechSynthesisVoice[]>([])
 
+  function normalizeVoiceLang(lang?: string): string {
+    if (!lang || lang === 'default') return 'zh-CN'
+    if (lang === 'yue') return 'zh-HK'
+    if (lang === 'zh') return 'zh-CN'
+    return lang
+  }
+
   function loadVoices() {
     if (!isSupported) return
     const v = window.speechSynthesis.getVoices()
@@ -32,7 +39,22 @@ export function useSpeechReader() {
 
   function findVoice(lang: string): SpeechSynthesisVoice | undefined {
     const list = voices.value.length ? voices.value : loadVoices() ?? []
-    const preferred = list.find((v) => v.lang.startsWith(lang) || lang.startsWith(v.lang.split('-')[0]))
+    const normalized = normalizeVoiceLang(lang)
+    let preferred = list.find((v) => v.lang === normalized)
+    if (!preferred && normalized === 'zh-HK') {
+      const lower = (s: string) => s.toLowerCase()
+      preferred =
+        list.find((v) => lower(v.lang).includes('yue')) ||
+        list.find((v) => lower(v.name).includes('cantonese')) ||
+        list.find((v) => v.name.includes('粤语'))
+    }
+    if (!preferred) {
+      preferred = list.find((v) => v.lang.startsWith(normalized))
+    }
+    if (!preferred) {
+      const base = normalized.split('-')[0]
+      preferred = list.find((v) => v.lang.split('-')[0] === base)
+    }
     return preferred ?? list.find((v) => v.lang.startsWith('zh')) ?? list[0]
   }
 
@@ -44,7 +66,8 @@ export function useSpeechReader() {
     const utterance = new SpeechSynthesisUtterance(text)
     utterance.rate = Math.max(0.5, Math.min(2, options.rate ?? 1))
     utterance.pitch = Math.max(0.5, Math.min(2, options.pitch ?? 1))
-    const lang = options.lang && options.lang !== 'default' ? options.lang : 'zh-CN'
+    const rawLang = options.lang && options.lang !== 'default' ? options.lang : 'zh-CN'
+    const lang = normalizeVoiceLang(rawLang)
     utterance.lang = lang
     if (options.voice) {
       utterance.voice = options.voice

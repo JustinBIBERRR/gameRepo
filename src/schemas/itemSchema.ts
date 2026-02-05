@@ -43,10 +43,10 @@ export const itemSchema: GameDataSchema = {
     },
     {
       key: 'imageFullUrl',
-      label: '图片URL',
+      label: '图片地址',
       type: 'string',
       required: true,
-      placeholder: 'https://... 或 placehold.co/400x300?text=名称'
+      placeholder: '默认数据用 img/文件名.png；自定义可填 https://... 或 data: 开头的 base64'
     },
     {
       key: 'description',

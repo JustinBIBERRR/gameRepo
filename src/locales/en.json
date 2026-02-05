@@ -63,7 +63,7 @@
     },
     "listenSong": {
       "title": "Listen Song AI",
-      "description": "A random song is chosen. AI reads the golden lyrics. You have 5 guesses. Play original clip after reveal."
+      "description": "A random AI-generated song is played. You have several guesses. Reveal shows lyrics and artist."
     }
   },
   "settings": {
@@ -163,6 +163,7 @@
     "listenSongReplay": "Replay",
     "listenSongReveal": "Reveal answer",
     "listenSongNoAudio": "No original clip",
+    "listenSongNoPlaybackAudio": "No playback audio",
     "listenSongPlaceholder": "Enter song name...",
     "noMoviesTitle": "No movies",
     "noMoviesMessage": "Add at least one movie in settings to start.",
