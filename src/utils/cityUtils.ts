@@ -1,4 +1,4 @@
-import citiesData from '../data/cities.json'
+import citiesData from '../data/json/cities.json'
 import { matchByPinyin } from './pinyinUtils'
 import { getCustomGameData } from './storageUtils'
 import type { CityData } from '../schemas/citySchema'

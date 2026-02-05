@@ -5,7 +5,7 @@
       "name": "美人鱼",
       "nameVariants": ["美人鱼", "Mermaid", "周星驰美人鱼"],
       "duration": 5580,
-      "videoUrl": "data/mry.mp4",
+      "videoUrl": "videos/mry.mp4",
       "videoType": "local",
       "apiProvider": "bilibili",
       "year": 2016,

@@ -54,7 +54,7 @@ const { t } = useI18n()
 import GameConfigPanel from '../../components/GameConfigPanel.vue'
 import DataManager from '../../components/DataManager.vue'
 import { citySchema } from '../../schemas/citySchema'
-import citiesData from '../../data/cities.json'
+import citiesData from '../../data/json/cities.json'
 import { getGameConfig, saveGameSettings, getGameSettings } from '../../utils/storageUtils'
 import {
   getCustomGameData,

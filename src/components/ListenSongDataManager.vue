@@ -91,7 +91,7 @@ import {
   saveSong,
   deleteSong
 } from '../utils/listenSongStorage'
-import { defaultListenSongs, defaultListenSongAudioUrl } from '../data/listenSongDefaults'
+import { defaultListenSongs } from '../data/listenSongDefaults'
 import type { ListenSongItem } from '../utils/listenSongStorage'
 import { useModal } from '../composables/useModal'
 
@@ -116,11 +116,13 @@ const filteredSongs = computed(() => {
 })
 
 async function importDefaultSong() {
-  const audioRes = await fetch(defaultListenSongAudioUrl)
-  const audioBlob = await audioRes.blob()
-  const audioFile = new File([audioBlob], 'specialPerson.mp3', { type: 'audio/mpeg' })
   for (const item of defaultListenSongs) {
-    await saveSong(item, audioFile)
+    const { audioUrl, ...songItem } = item
+    const audioRes = await fetch(audioUrl)
+    const audioBlob = await audioRes.blob()
+    const ext = audioUrl.includes('.mp3') ? 'mp3' : 'mp3'
+    const audioFile = new File([audioBlob], `${songItem.id}.${ext}`, { type: 'audio/mpeg' })
+    await saveSong(songItem, audioFile)
   }
 }
 

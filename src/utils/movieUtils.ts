@@ -5,7 +5,7 @@
 
 import { getAllUserMovies } from './movieStorage'
 import { getCustomGameData } from './storageUtils'
-import moviesDataRaw from '../data/movies.json'
+import moviesDataRaw from '../data/json/movies.json'
 import type { MovieData } from '../schemas/movieSchema'
 
 // 兼容旧的Movie接口（用于游戏逻辑）
@@ -32,7 +32,7 @@ const defaultMoviesData = Array.isArray(defaultMoviesDataRaw) && defaultMoviesDa
         name: '美人鱼',
         nameVariants: ['美人鱼', 'Mermaid', '周星驰美人鱼'],
         duration: 5580,
-        videoUrl: 'data/mry.mp4',
+        videoUrl: 'videos/mry.mp4',
         videoType: 'local',
         apiProvider: 'bilibili',
         year: 2016,
@@ -89,7 +89,7 @@ export async function getAllMovies(): Promise<Movie[]> {
     return cachedMovies
   }
 
-  // 3. 使用默认数据（含本地打包视频，如 data/mry.mp4）
+  // 3. 使用默认数据（含本地打包视频，如 videos/mry.mp4）
   try {
     cachedMovies = defaultMoviesData.map((movie: any) => ({
       id: movie.id,

@@ -54,7 +54,7 @@ const { t } = useI18n()
 import GameConfigPanel from '../../components/GameConfigPanel.vue'
 import DataManager from '../../components/DataManager.vue'
 import { heroSchema } from '../../schemas/heroSchema'
-import heroesData from '../../data/heroes.json'
+import heroesData from '../../data/json/heroes.json'
 import { getGameConfig, saveGameSettings, getGameSettings } from '../../utils/storageUtils'
 import {
   getCustomGameData,

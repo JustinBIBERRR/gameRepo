@@ -3,7 +3,7 @@
  * 使用 IndexedDB 存储歌曲元数据与揭晓音频；未入库时使用默认歌曲与打包音频，可直接开始游戏
  */
 
-import { defaultListenSongs, defaultListenSongAudioUrl } from '../data/listenSongDefaults'
+import { defaultListenSongs } from '../data/listenSongDefaults'
 
 export interface ListenSongItem {
   id: string
@@ -83,9 +83,9 @@ export async function getSongWithAudio(id: string): Promise<{ item: ListenSongIt
   }
   // 未入库时使用默认歌曲：从打包音频 URL 拉取并返回，便于直接开始游戏
   const defaultSong = defaultListenSongs.find((s) => s.id === id)
-  if (defaultSong) {
+  if (defaultSong && 'audioUrl' in defaultSong && defaultSong.audioUrl) {
     try {
-      const res = await fetch(defaultListenSongAudioUrl)
+      const res = await fetch(defaultSong.audioUrl)
       if (!res.ok) return { item: { ...defaultSong, createdAt: Date.now() }, audioBlob: null }
       const audioBlob = await res.blob()
       const item: ListenSongItem = { ...defaultSong, createdAt: Date.now() }

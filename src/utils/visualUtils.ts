@@ -1,4 +1,4 @@
-import itemsData from '../data/items.json'
+import itemsData from '../data/json/items.json'
 import { getCustomGameData } from './storageUtils'
 import { matchByPinyin, searchByPinyin } from './pinyinUtils'
 import type { ItemData } from '../schemas/itemSchema'

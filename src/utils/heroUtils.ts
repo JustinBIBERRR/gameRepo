@@ -1,4 +1,4 @@
-import heroesData from '../data/heroes.json'
+import heroesData from '../data/json/heroes.json'
 import { matchByPinyin, searchByPinyin } from './pinyinUtils'
 import { getCustomGameData } from './storageUtils'
 import type { HeroData } from '../schemas/heroSchema'

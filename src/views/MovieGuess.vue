@@ -294,7 +294,7 @@ import { videoPreloader } from '../utils/videoPreloader'
 import type { LocalMovieFiles } from '../utils/movieStorage'
 
 // 默认数据中的打包视频：来自 src/data/*.mp4，由 Vite 打包为可用 URL
-const localVideoModules = import.meta.glob<string>('@/data/*.mp4', {
+const localVideoModules = import.meta.glob<string>('@/data/videos/*.mp4', {
   eager: true,
   as: 'url'
 })
@@ -407,7 +407,7 @@ async function loadMovieFiles() {
     const files = await getMovieFiles(targetMovie.value.id)
     movieFiles.value = files
 
-    // 默认数据中的打包视频（如 data/mry.mp4）：无 IndexedDB 文件时用路径解析为打包 URL
+    // 默认数据中的打包视频（如 videos/mry.mp4）：无 IndexedDB 文件时用路径解析为打包 URL
     if (!files && targetMovie.value.videoType === 'local' && targetMovie.value.videoUrl) {
       const resolvedUrl = getLocalVideoUrl(targetMovie.value.videoUrl) || targetMovie.value.videoUrl
       if (resolvedUrl) {

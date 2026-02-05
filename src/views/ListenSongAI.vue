@@ -58,8 +58,8 @@
               <p v-if="targetSong && !playbackAudioUrl" class="text-amber-600">{{ t('game.listenSongNoPlaybackAudio') }}</p>
             </div>
 
-            <!-- 提示 -->
-            <div v-if="targetSong && targetSong.hints && targetSong.hints.length" class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <!-- 提示：仅在开启初始提示时显示 -->
+            <div v-if="showInitialHint && targetSong && targetSong.hints && targetSong.hints.length" class="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <div class="font-semibold text-blue-900 mb-2">💡 提示</div>
               <div class="space-y-1">
                 <div v-for="(h, i) in visibleHints" :key="i" class="text-blue-800">{{ h }}</div>
@@ -165,6 +165,7 @@ const config = getGameConfig('listenSong')
 const maxAttempts = config.maxAttempts
 const enableTimer = config.enableTimer
 const timerDuration = config.timerDuration * 60
+const showInitialHint = computed(() => getGameConfig('listenSong').showInitialHint)
 
 const hasSongs = computed(() => songs.value.length > 0)
 const canSubmit = computed(() => inputValue.value.trim().length > 0)
@@ -296,7 +297,8 @@ function startNewRound() {
   attempts.value = 0
   gameOver.value = false
   gameWon.value = false
-  visibleHints.value = picked?.hints?.[0] ? [picked.hints[0]] : []
+  const cfg = getGameConfig('listenSong')
+  visibleHints.value = cfg.showInitialHint && picked?.hints?.[0] ? [picked.hints[0]] : []
   if (picked) {
     setPlaybackAudio(picked)
   } else if (playbackAudioUrl.value) {
