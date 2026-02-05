@@ -1,6 +1,6 @@
-import citiesData from '@/data/cities.json'
-import heroesData from '@/data/heroes.json'
-import moviesData from '@/data/movies.json'
+import citiesData from '@/data/json/cities.json'
+import heroesData from '@/data/json/heroes.json'
+import moviesData from '@/data/json/movies.json'
 import { resetStorage } from './setupTest'
 
 // 固定随机种子，确保测试可重复
@@ -22,9 +22,10 @@ export function getMockHero() {
   return heroesData[0]
 }
 
-// 获取 Mock 电影数据
+// 获取 Mock 电影数据（movies.json 结构为 { movies: [...] }）
 export function getMockMovie() {
-  return moviesData[0]
+  const data = moviesData as { movies?: unknown[] }
+  return Array.isArray(data.movies) && data.movies.length > 0 ? data.movies[0] : undefined
 }
 
 // 重置所有存储

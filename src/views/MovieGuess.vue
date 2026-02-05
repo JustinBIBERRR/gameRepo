@@ -3,6 +3,17 @@
     <Navigation />
     <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="bg-white rounded-lg shadow-lg p-6 md:p-8">
+        <!-- 进入游戏前：加载电影资源（视频/音频），加载完成后再显示题目 -->
+        <div
+          v-if="targetMovie && !movieResourceReady"
+          class="flex flex-col items-center justify-center py-16 px-4"
+        >
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+          <p class="text-gray-600 font-medium">正在加载电影资源...</p>
+          <p class="text-sm text-gray-500 mt-1">加载完成后自动开始</p>
+        </div>
+
+        <template v-else-if="targetMovie && movieResourceReady">
         <!-- 游戏头部（标题、倒计时、提示、进度条） -->
         <GameHeader
           :title="t('games.movie.title')"
@@ -252,6 +263,7 @@
           :message="celebrationMessage"
           @close="showCelebration = false"
         />
+        </template>
       </div>
     </main>
   </div>
@@ -293,7 +305,7 @@ import { selectPlaybackMethod } from '../utils/moviePlayback'
 import { videoPreloader } from '../utils/videoPreloader'
 import type { LocalMovieFiles } from '../utils/movieStorage'
 
-// 默认数据中的打包视频：来自 src/data/*.mp4，由 Vite 打包为可用 URL
+// 默认数据中的打包视频：来自 src/data/videos/*.mp4，由 Vite 打包为可用 URL
 const localVideoModules = import.meta.glob<string>('@/data/videos/*.mp4', {
   eager: true,
   as: 'url'
@@ -301,10 +313,33 @@ const localVideoModules = import.meta.glob<string>('@/data/videos/*.mp4', {
 function getLocalVideoUrl(pathOrFilename: string): string {
   if (!pathOrFilename) return ''
   const basename = pathOrFilename.replace(/^.*[/\\]/, '')
-  const key = Object.keys(localVideoModules).find((k) =>
-    k.endsWith(basename) || k.endsWith('/' + basename)
+  const keys = Object.keys(localVideoModules)
+  const key = keys.find((k) =>
+    k.endsWith(basename) || k.endsWith('/' + basename) || k.endsWith('\\' + basename)
   )
-  return key ? localVideoModules[key] : ''
+  const resolvedKey = key ?? (keys.length === 1 ? keys[0] : null)
+  const url = resolvedKey ? localVideoModules[resolvedKey] : ''
+  // 仅返回可用的 URL（/、http、blob 等），不返回相对路径否则无法播放
+  return url && typeof url === 'string' && (url.startsWith('/') || url.startsWith('http') || url.startsWith('blob:') || url.startsWith('file:')) ? url : ''
+}
+
+/** 等待本地视频 URL 加载元数据并返回真实时长（秒） */
+function waitForLocalVideoReady(url: string): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement('video')
+    video.preload = 'metadata'
+    video.onloadedmetadata = () => {
+      const duration = video.duration
+      if (video.src.startsWith('blob:')) URL.revokeObjectURL(video.src)
+      video.src = ''
+      resolve(Number.isFinite(duration) && duration > 0 ? duration : 0)
+    }
+    video.onerror = () => {
+      if (video.src && video.src.startsWith('blob:')) URL.revokeObjectURL(video.src)
+      reject(new Error('视频加载失败'))
+    }
+    video.src = url
+  })
 }
 
 const router = useRouter()
@@ -348,6 +383,7 @@ const currentVideoFile = ref<File | null>(null)
 const currentVideoUrl = ref<string>('')
 const currentVideoType = ref<'api' | 'local'>('api')
 const isPlaying = ref(false) // 是否正在播放
+const movieResourceReady = ref(false) // 电影资源（视频/音频）已加载完成，可播放且有时长
 
 // 倒计时超时处理
 function handleTimerTimeout() {
@@ -402,27 +438,31 @@ const canPlayAudio = computed(() => {
 // 加载电影文件
 async function loadMovieFiles() {
   if (!targetMovie.value) return
-  
+  movieResourceReady.value = false
+
   try {
     const files = await getMovieFiles(targetMovie.value.id)
     movieFiles.value = files
 
     // 默认数据中的打包视频（如 videos/mry.mp4）：无 IndexedDB 文件时用路径解析为打包 URL
     if (!files && targetMovie.value.videoType === 'local' && targetMovie.value.videoUrl) {
-      const resolvedUrl = getLocalVideoUrl(targetMovie.value.videoUrl) || targetMovie.value.videoUrl
+      const resolvedUrl = getLocalVideoUrl(targetMovie.value.videoUrl)
       if (resolvedUrl) {
         currentVideoType.value = 'local'
         currentVideoUrl.value = resolvedUrl
         currentVideoFile.value = null
         await updatePlaybackSource(selectedTimePoint.value)
+        const duration = await waitForLocalVideoReady(resolvedUrl)
+        if (targetMovie.value && duration > 0) {
+          targetMovie.value.duration = Math.floor(duration)
+        }
+        movieResourceReady.value = true
         return
       }
     }
     
     // 如果视频已经预加载，直接使用，无需等待
     if (files && files.sourceFile && videoPreloader.isPreloaded(targetMovie.value.id)) {
-      // 视频已预加载，可以直接播放，无需等待
-      // 如果电影时长为0，从预加载的视频中获取
       if (!targetMovie.value.duration || targetMovie.value.duration === 0) {
         const preloadedDuration = videoPreloader.getVideoDuration(targetMovie.value.id)
         if (preloadedDuration && preloadedDuration > 0) {
@@ -430,34 +470,34 @@ async function loadMovieFiles() {
         }
       }
       await updatePlaybackSource(selectedTimePoint.value)
+      movieResourceReady.value = true
       return
     }
     
-    // 如果没有预加载，尝试预加载（但这种情况应该很少，因为配置页面已经预加载了）
+    // 如果没有预加载，等待预加载完成后再进入游戏
     if (files && files.sourceFile && !videoPreloader.isPreloaded(targetMovie.value.id)) {
-      // 异步预加载，不阻塞游戏开始
-      videoPreloader.preloadVideo(targetMovie.value.id, files.sourceFile).then(() => {
-        // 预加载完成后，更新时长
-        if (targetMovie.value && (!targetMovie.value.duration || targetMovie.value.duration === 0)) {
-          const preloadedDuration = videoPreloader.getVideoDuration(targetMovie.value.id)
-          if (preloadedDuration && preloadedDuration > 0) {
-            targetMovie.value.duration = Math.floor(preloadedDuration)
-          }
+      await videoPreloader.preloadVideo(targetMovie.value.id, files.sourceFile)
+      if (targetMovie.value && (!targetMovie.value.duration || targetMovie.value.duration === 0)) {
+        const preloadedDuration = videoPreloader.getVideoDuration(targetMovie.value.id)
+        if (preloadedDuration && preloadedDuration > 0) {
+          targetMovie.value.duration = Math.floor(preloadedDuration)
         }
-      }).catch(error => {
-        console.warn('预加载视频失败（不影响游戏）:', error)
-      })
+      }
+      await updatePlaybackSource(selectedTimePoint.value)
+      movieResourceReady.value = true
+      return
     }
     
-    // 根据智能选择设置播放源
+    // 根据智能选择设置播放源（其他情况：API 或无本地文件）
     await updatePlaybackSource(selectedTimePoint.value)
+    movieResourceReady.value = true
   } catch (error) {
     console.error('加载电影文件失败:', error)
-    // 如果加载失败，使用在线API（如果有）
-    if (targetMovie.value.videoUrl) {
+    if (targetMovie.value?.videoUrl) {
       currentVideoType.value = 'api'
       currentVideoUrl.value = targetMovie.value.videoUrl
     }
+    movieResourceReady.value = true
   }
 }
 
@@ -485,9 +525,9 @@ async function updatePlaybackSource(timePoint: number) {
     }
   }
   
-  // 默认数据中的打包视频（无 IndexedDB，用路径解析）
+  // 默认数据中的打包视频（无 IndexedDB，用路径解析为可播放 URL）
   if (!movieFiles.value && targetMovie.value.videoType === 'local' && targetMovie.value.videoUrl) {
-    const resolvedUrl = getLocalVideoUrl(targetMovie.value.videoUrl) || targetMovie.value.videoUrl
+    const resolvedUrl = getLocalVideoUrl(targetMovie.value.videoUrl)
     if (resolvedUrl) {
       currentVideoType.value = 'local'
       currentVideoUrl.value = resolvedUrl

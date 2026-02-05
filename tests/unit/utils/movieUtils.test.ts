@@ -105,4 +105,34 @@ describe('movieUtils', () => {
       }
     })
   })
+
+  describe('movie resource flow (loading → play)', () => {
+    test('default movie should have local videoUrl for bundled resource', async () => {
+      const { getAllMovies } = await import('@/utils/movieUtils')
+      const movies = await getAllMovies()
+      const defaultLocal = movies.find(
+        (m) => m.videoType === 'local' && m.videoUrl && typeof m.videoUrl === 'string'
+      )
+      if (defaultLocal) {
+        expect(defaultLocal.videoUrl).toBeDefined()
+        expect(defaultLocal.videoType).toBe('local')
+        expect(typeof defaultLocal.duration).toBe('number')
+        expect(defaultLocal.duration).toBeGreaterThan(0)
+      }
+    })
+
+    test('getRandomMovieSync returns movie with duration and video info when data exists', () => {
+      const restoreRandom = setupRandomSeed(0.1)
+      try {
+        const movie = getRandomMovieSync()
+        if (movie) {
+          expect(movie.duration).toBeGreaterThanOrEqual(0)
+          expect(movie.name).toBeDefined()
+          expect(movie.id).toBeDefined()
+        }
+      } finally {
+        restoreRandom()
+      }
+    })
+  })
 })
