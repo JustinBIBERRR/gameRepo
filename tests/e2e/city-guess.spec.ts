@@ -26,6 +26,9 @@ test.describe('City Guess Game E2E', () => {
         // 输入一个城市名称（使用真实数据）
         await input.fill('北京')
         await page.waitForTimeout(500)
+        // 按 Enter 选择第一项建议并关闭自动完成下拉，避免遮挡提交按钮
+        await input.press('Enter')
+        await page.waitForTimeout(300)
         
         // 查找提交按钮
         const submitSelectors = [
