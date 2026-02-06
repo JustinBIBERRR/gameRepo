@@ -217,7 +217,9 @@
     "initialHintDesc": "Show an initial hint at game start",
     "playbackTitle": "Plays per segment",
     "playbackDesc": "Max plays per video segment",
-    "playbackRange": "Range: 1–10"
+    "playbackRange": "Range: 1–10",
+    "avoidRepeatTitle": "Avoid repeated questions in one session",
+    "avoidRepeatDesc": "When on, questions won't repeat within one play session until the pool is exhausted."
   },
   "party": {
     "configInsufficientTitle": "Not configured",

@@ -134,6 +134,7 @@ import { useTimer } from '../composables/useTimer'
 import {
   getSongsForGame,
   pickRandomSong,
+  pickRandomSongAvoiding,
   checkAnswer
 } from '../utils/listenSongUtils'
 import { getSongWithAudio } from '../utils/listenSongStorage'
@@ -166,6 +167,9 @@ const maxAttempts = config.maxAttempts
 const enableTimer = config.enableTimer
 const timerDuration = config.timerDuration * 60
 const showInitialHint = computed(() => getGameConfig('listenSong').showInitialHint)
+const avoidRepeatInSession = config.avoidRepeatInSession
+
+const usedSongIds = ref<Set<string>>(new Set())
 
 const hasSongs = computed(() => songs.value.length > 0)
 const canSubmit = computed(() => inputValue.value.trim().length > 0)
@@ -291,7 +295,9 @@ async function setPlaybackAudio(song: ListenSongItem) {
 }
 
 function startNewRound() {
-  const picked = pickRandomSong(songs.value)
+  const picked = avoidRepeatInSession
+    ? pickRandomSongAvoiding(songs.value, usedSongIds.value)
+    : pickRandomSong(songs.value)
   targetSong.value = picked
   inputValue.value = ''
   attempts.value = 0
@@ -301,6 +307,9 @@ function startNewRound() {
   visibleHints.value = cfg.showInitialHint && picked?.hints?.[0] ? [picked.hints[0]] : []
   if (picked) {
     setPlaybackAudio(picked)
+    if (avoidRepeatInSession) {
+      usedSongIds.value.add(picked.id)
+    }
   } else if (playbackAudioUrl.value) {
     URL.revokeObjectURL(playbackAudioUrl.value)
     playbackAudioUrl.value = null
@@ -325,6 +334,7 @@ function clearAndRestart() {
   if (playbackAudioUrl.value) URL.revokeObjectURL(playbackAudioUrl.value)
   clearTimerState()
   sessionStorage.removeItem(SESSION_KEY)
+  usedSongIds.value = new Set()
   startNewRound()
 }
 

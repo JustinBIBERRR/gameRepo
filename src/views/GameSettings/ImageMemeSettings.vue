@@ -68,7 +68,8 @@ const config = ref<GameConfig>({
   timerDuration: 5,
   limitAttempts: false,
   maxAttempts: 5,
-  showInitialHint: false
+  showInitialHint: false,
+  avoidRepeatInSession: false
 })
 
 const defaultItemsForTable = computed<ImageMemeItem[]>(() => [...defaultImageMemeItems])
@@ -144,7 +145,9 @@ function handleConfigUpdate(newConfig: GameConfig) {
     enableTimer: newConfig.enableTimer,
     timerDuration: newConfig.timerDuration,
     limitAttempts: newConfig.limitAttempts,
-    maxAttempts: Number.isFinite(newConfig.maxAttempts) ? newConfig.maxAttempts : 5
+    maxAttempts: Number.isFinite(newConfig.maxAttempts) ? newConfig.maxAttempts : 5,
+    showInitialHint: newConfig.showInitialHint,
+    avoidRepeatInSession: newConfig.avoidRepeatInSession
   }
   saveGameSettings(settings)
 }
@@ -161,7 +164,9 @@ onMounted(() => {
     enableTimer: config.value.enableTimer,
     timerDuration: config.value.timerDuration,
     limitAttempts: config.value.limitAttempts,
-    maxAttempts: Number.isFinite(config.value.maxAttempts) ? config.value.maxAttempts : 5
+    maxAttempts: Number.isFinite(config.value.maxAttempts) ? config.value.maxAttempts : 5,
+    showInitialHint: config.value.showInitialHint,
+    avoidRepeatInSession: config.value.avoidRepeatInSession
   }
   saveGameSettings(settings)
   loadData()

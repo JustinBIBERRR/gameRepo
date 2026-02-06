@@ -30,6 +30,18 @@ export function pickRandomSong(songs: ListenSongItem[]): ListenSongItem | null {
   return songs[Math.floor(Math.random() * songs.length)]
 }
 
+/** 在同一 session 内避免重复歌曲；用完后重新循环 */
+export function pickRandomSongAvoiding(
+  songs: ListenSongItem[],
+  usedIds: Set<string>
+): ListenSongItem | null {
+  if (!songs.length) return null
+  const available = songs.filter((s) => !usedIds.has(s.id))
+  const pool = available.length > 0 ? available : songs
+  const idx = Math.floor(Math.random() * pool.length)
+  return pool[idx]
+}
+
 export function normalizeAnswer(s: string): string {
   return s
     .replace(/\s+/g, '')

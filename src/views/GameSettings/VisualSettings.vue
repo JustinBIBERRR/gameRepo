@@ -142,7 +142,8 @@ const config = ref<GameConfig>({
   timerDuration: 5,
   limitAttempts: false,
   maxAttempts: 3,
-  showInitialHint: true
+  showInitialHint: true,
+  avoidRepeatInSession: false
 })
 
 const defaultItems = ref<ItemData[]>(Array.isArray(itemsData) ? (itemsData as ItemData[]) : [])
@@ -227,6 +228,7 @@ function handleConfigUpdate(newConfig: GameConfig) {
     limitAttempts: newConfig.limitAttempts,
     maxAttempts: Number.isFinite(newConfig.maxAttempts) ? newConfig.maxAttempts : 5,
     showInitialHint: newConfig.showInitialHint,
+    avoidRepeatInSession: newConfig.avoidRepeatInSession,
     showCategoryHint: showCategoryHint.value,
     initialHint: initialHintText.value.trim() || undefined,
     gridRows: gridRows.value,

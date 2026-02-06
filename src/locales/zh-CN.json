@@ -218,7 +218,9 @@
     "initialHintDesc": "是否在游戏开始时显示初始提示信息",
     "playbackTitle": "片段播放次数",
     "playbackDesc": "每个视频片段最多可以播放的次数",
-    "playbackRange": "范围：1-10 次"
+    "playbackRange": "范围：1-10 次",
+    "avoidRepeatTitle": "同一游玩过程中不重复题目",
+    "avoidRepeatDesc": "开启后，在一次游玩 session 内不会再次抽到已玩过的题目，用完题库后才会重新循环"
   },
   "party": {
     "configInsufficientTitle": "配置不足",

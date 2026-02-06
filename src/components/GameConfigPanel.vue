@@ -126,6 +126,25 @@
       </div>
     </div>
 
+    <!-- 同一游玩过程中不重复题目 -->
+    <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
+      <div class="flex items-start justify-between">
+        <div class="flex-1">
+          <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ t('config.avoidRepeatTitle') }}</h3>
+          <p class="text-sm text-gray-500">{{ t('config.avoidRepeatDesc') }}</p>
+        </div>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input
+            v-model="localConfig.avoidRepeatInSession"
+            type="checkbox"
+            class="sr-only peer"
+            @change="handleChange"
+          />
+          <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+        </label>
+      </div>
+    </div>
+
     <!-- 电影游戏特有的配置 -->
     <div v-if="showMovieConfig" class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
       <div class="mb-4">
@@ -182,7 +201,7 @@ const emit = defineEmits<{
 
 function normalizeConfig(c: GameConfig): GameConfig {
   const max = Number.isFinite(c.maxAttempts) && c.maxAttempts >= 1 ? c.maxAttempts : 5
-  return { ...c, maxAttempts: max }
+  return { ...c, maxAttempts: max, avoidRepeatInSession: c.avoidRepeatInSession ?? false }
 }
 
 const localConfig = ref<GameConfig>(normalizeConfig({ ...props.config }))

@@ -50,7 +50,8 @@ const config = ref<GameConfig>({
   timerDuration: 5,
   limitAttempts: false,
   maxAttempts: 5,
-  showInitialHint: true
+  showInitialHint: true,
+  avoidRepeatInSession: false
 })
 
 function handleConfigUpdate(newConfig: GameConfig) {
@@ -62,7 +63,8 @@ function handleConfigUpdate(newConfig: GameConfig) {
     timerDuration: newConfig.timerDuration,
     limitAttempts: newConfig.limitAttempts,
     maxAttempts: Number.isFinite(newConfig.maxAttempts) ? newConfig.maxAttempts : 5,
-    showInitialHint: newConfig.showInitialHint
+    showInitialHint: newConfig.showInitialHint,
+    avoidRepeatInSession: newConfig.avoidRepeatInSession
   }
   saveGameSettings(settings)
 }
@@ -76,7 +78,8 @@ onMounted(() => {
     timerDuration: config.value.timerDuration,
     limitAttempts: config.value.limitAttempts,
     maxAttempts: Number.isFinite(config.value.maxAttempts) ? config.value.maxAttempts : 5,
-    showInitialHint: config.value.showInitialHint
+    showInitialHint: config.value.showInitialHint,
+    avoidRepeatInSession: config.value.avoidRepeatInSession
   }
   saveGameSettings(s)
 })

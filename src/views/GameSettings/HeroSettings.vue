@@ -70,7 +70,8 @@ const config = ref<GameConfig>({
   timerDuration: 5,
   limitAttempts: false,
   maxAttempts: 5,
-  showInitialHint: true
+  showInitialHint: true,
+  avoidRepeatInSession: false
 })
 
 const defaultHeroes = ref<HeroData[]>(heroesData as HeroData[])
@@ -138,7 +139,8 @@ function handleConfigUpdate(newConfig: GameConfig) {
     timerDuration: config.value.timerDuration,
     limitAttempts: config.value.limitAttempts,
     maxAttempts: Number.isFinite(config.value.maxAttempts) ? config.value.maxAttempts : 5,
-    showInitialHint: config.value.showInitialHint
+    showInitialHint: config.value.showInitialHint,
+    avoidRepeatInSession: config.value.avoidRepeatInSession
   }
   saveGameSettings(settings)
 }
@@ -157,7 +159,8 @@ onMounted(() => {
     timerDuration: config.value.timerDuration,
     limitAttempts: config.value.limitAttempts,
     maxAttempts: Number.isFinite(config.value.maxAttempts) ? config.value.maxAttempts : 5,
-    showInitialHint: config.value.showInitialHint
+    showInitialHint: config.value.showInitialHint,
+    avoidRepeatInSession: config.value.avoidRepeatInSession
   }
   saveGameSettings(settings)
 })

@@ -56,7 +56,8 @@ const config = ref<GameConfig>({
   limitAttempts: false,
   maxAttempts: 5,
   showInitialHint: true,
-  maxPlaybackPerSegment: 1
+  maxPlaybackPerSegment: 1,
+  avoidRepeatInSession: false
 })
 
 function handleConfigUpdate(newConfig: GameConfig) {
@@ -71,17 +72,15 @@ function handleConfigUpdate(newConfig: GameConfig) {
     limitAttempts: config.value.limitAttempts,
     maxAttempts: Number.isFinite(config.value.maxAttempts) ? config.value.maxAttempts : 5,
     showInitialHint: config.value.showInitialHint,
-    maxPlaybackPerSegment: config.value.maxPlaybackPerSegment
+    maxPlaybackPerSegment: config.value.maxPlaybackPerSegment,
+    avoidRepeatInSession: config.value.avoidRepeatInSession
   }
   saveGameSettings(settings)
 }
 
 onMounted(() => {
-  // 加载当前配置
   const currentConfig = getGameConfig('movie')
   config.value = { ...currentConfig }
-  
-  // 保存配置
   const settings = getGameSettings()
   if (!settings.overrides.movie) {
     settings.overrides.movie = {}
@@ -92,7 +91,8 @@ onMounted(() => {
     limitAttempts: config.value.limitAttempts,
     maxAttempts: Number.isFinite(config.value.maxAttempts) ? config.value.maxAttempts : 5,
     showInitialHint: config.value.showInitialHint,
-    maxPlaybackPerSegment: config.value.maxPlaybackPerSegment
+    maxPlaybackPerSegment: config.value.maxPlaybackPerSegment,
+    avoidRepeatInSession: config.value.avoidRepeatInSession
   }
   saveGameSettings(settings)
 })

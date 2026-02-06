@@ -106,6 +106,8 @@ export interface GameSettings {
     maxAttempts: number        // 启用限制时的最大尝试次数，默认5
     showInitialHint: boolean     // 是否显示初始提示，默认true
     maxPlaybackPerSegment?: number  // 每个片段最多播放次数（仅电影游戏），默认1
+    /** 是否在同一游玩过程中避免重复题目，默认 false（允许重复） */
+    avoidRepeatInSession?: boolean
   }
   overrides: {
     city?: {
@@ -114,6 +116,8 @@ export interface GameSettings {
       limitAttempts?: boolean
       maxAttempts?: number
       showInitialHint?: boolean
+      /** 是否在同一游玩过程中避免重复题目 */
+      avoidRepeatInSession?: boolean
     }
     hero?: {
       enableTimer?: boolean
@@ -121,6 +125,7 @@ export interface GameSettings {
       limitAttempts?: boolean
       maxAttempts?: number
       showInitialHint?: boolean
+      avoidRepeatInSession?: boolean
     }
     movie?: {
       enableTimer?: boolean
@@ -129,6 +134,7 @@ export interface GameSettings {
       maxAttempts?: number
       showInitialHint?: boolean
       maxPlaybackPerSegment?: number  // 每个片段最多播放次数
+      avoidRepeatInSession?: boolean
     }
     visual?: {
       enableTimer?: boolean
@@ -142,6 +148,7 @@ export interface GameSettings {
       /** 图片壳等分：行数、列数，如 2×2=4 格 */
       gridRows?: number
       gridCols?: number
+      avoidRepeatInSession?: boolean
     }
     listenSong?: {
       enableTimer?: boolean
@@ -149,6 +156,7 @@ export interface GameSettings {
       limitAttempts?: boolean
       maxAttempts?: number
       showInitialHint?: boolean
+      avoidRepeatInSession?: boolean
     }
     imageMeme?: {
       enableTimer?: boolean
@@ -156,6 +164,7 @@ export interface GameSettings {
       limitAttempts?: boolean
       maxAttempts?: number
       showInitialHint?: boolean
+      avoidRepeatInSession?: boolean
     }
   }
 }
@@ -168,6 +177,8 @@ export interface GameConfig {
   maxAttempts: number
   showInitialHint: boolean
   maxPlaybackPerSegment?: number  // 每个片段最多播放次数（仅电影游戏）
+  /** 是否在同一游玩过程中避免重复题目 */
+  avoidRepeatInSession: boolean
 }
 
 /** 运行时“无限次尝试”时的 maxAttempts 值 */
@@ -522,7 +533,8 @@ function initGameSettings(): GameSettings {
       limitAttempts: false,
       maxAttempts: 5,
       showInitialHint: true,
-      maxPlaybackPerSegment: 1  // 默认每个片段最多播放1次
+      maxPlaybackPerSegment: 1,  // 默认每个片段最多播放1次
+      avoidRepeatInSession: false
     },
     overrides: {}
   }
@@ -559,7 +571,10 @@ export function getGameConfig(gameType: 'city' | 'hero' | 'movie' | 'visual' | '
     timerDuration: override?.timerDuration ?? settings.defaults.timerDuration,
     limitAttempts: limitAttempts === true,
     maxAttempts: limitAttempts ? rawMaxAttempts : UNLIMITED_ATTEMPTS,
-    showInitialHint: gameType === 'imageMeme' ? false : (override && 'showInitialHint' in override ? override.showInitialHint : undefined) ?? settings.defaults.showInitialHint
+    showInitialHint: gameType === 'imageMeme' ? false : (override && 'showInitialHint' in override ? override.showInitialHint : undefined) ?? settings.defaults.showInitialHint,
+    avoidRepeatInSession: (override && 'avoidRepeatInSession' in override
+      ? override.avoidRepeatInSession
+      : settings.defaults.avoidRepeatInSession) ?? false
   }
 
   if (gameType === 'visual' && limitAttempts) {

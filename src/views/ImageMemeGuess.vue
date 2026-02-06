@@ -138,6 +138,7 @@ const config = getGameConfig('imageMeme')
 const enableTimer = config.enableTimer
 const maxAttempts = config.maxAttempts
 const limitAttempts = config.limitAttempts
+const avoidRepeatInSession = config.avoidRepeatInSession
 
 const usedIds = ref<Set<string>>(new Set())
 const currentItem = ref<ImageMemeItem | null>(null)
@@ -172,15 +173,18 @@ function resolveImageUrl(pathOrUrl: string): string {
 
 function pickNext() {
   const pool = items.value
-  let next = pickRandomUnusedItem(pool, usedIds.value)
+  const used = avoidRepeatInSession ? usedIds.value : new Set<string>()
+  let next = pickRandomUnusedItem(pool, used)
   currentItem.value = next
   gameImageUrl.value = ''
   imageError.value = false
   if (!next) return
   let url = resolveImageUrl(next.image)
   while (!url && next) {
-    usedIds.value.add(next.id)
-    next = pickRandomUnusedItem(pool, usedIds.value)
+    if (avoidRepeatInSession) {
+      usedIds.value.add(next.id)
+    }
+    next = pickRandomUnusedItem(pool, used)
     currentItem.value = next
     if (next) url = resolveImageUrl(next.image)
   }
@@ -193,15 +197,18 @@ function pickNext() {
 
 function onImageError() {
   imageError.value = true
-  const next = pickRandomUnusedItem(items.value, usedIds.value)
+  const used = avoidRepeatInSession ? usedIds.value : new Set<string>()
+  const next = pickRandomUnusedItem(items.value, used)
   if (next && next.id !== currentItem.value?.id) {
     currentItem.value = next
     gameImageUrl.value = resolveImageUrl(next.image) || ''
     imageError.value = !gameImageUrl.value
   }
   if (!gameImageUrl.value && currentItem.value) {
-    usedIds.value.add(currentItem.value.id)
-    const another = pickRandomUnusedItem(items.value, usedIds.value)
+    if (avoidRepeatInSession) {
+      usedIds.value.add(currentItem.value.id)
+    }
+    const another = pickRandomUnusedItem(items.value, used)
     if (another) {
       currentItem.value = another
       gameImageUrl.value = resolveImageUrl(another.image) || ''
@@ -229,7 +236,7 @@ function resetMemory() {
 }
 
 function nextRound() {
-  if (currentItem.value) usedIds.value.add(currentItem.value.id)
+  if (avoidRepeatInSession && currentItem.value) usedIds.value.add(currentItem.value.id)
   inputValue.value = ''
   showInputError.value = false
   attempts.value = 0
@@ -247,7 +254,9 @@ function handleGuess() {
   attempts.value++
   if (correct) {
     gameWon.value = true
-    usedIds.value.add(currentItem.value.id)
+    if (avoidRepeatInSession) {
+      usedIds.value.add(currentItem.value.id)
+    }
     updateGameStats('imageMeme', true, attempts.value)
     if (enableTimer) timer.pause()
   } else {
