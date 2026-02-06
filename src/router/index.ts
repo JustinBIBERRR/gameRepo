@@ -71,6 +71,16 @@ const router = createRouter({
       path: '/settings/listen-song',
       name: 'ListenSongSettings',
       component: () => import('../views/GameSettings/ListenSongSettings.vue')
+    },
+    {
+      path: '/image-meme-guess',
+      name: 'ImageMemeGuess',
+      component: () => import('../views/ImageMemeGuess.vue')
+    },
+    {
+      path: '/settings/image-meme',
+      name: 'ImageMemeSettings',
+      component: () => import('../views/GameSettings/ImageMemeSettings.vue')
     }
   ]
 })

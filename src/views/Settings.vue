@@ -87,7 +87,8 @@ const visibility = ref<GameVisibility>({
   hero: true,
   movie: true,
   visual: true,
-  listenSong: true
+  listenSong: true,
+  imageMeme: true
 })
 
 
@@ -100,7 +101,7 @@ const games = computed(() => {
   }))
 })
 
-function handleVisibilityChange(gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong', visible: boolean) {
+function handleVisibilityChange(gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong' | 'imageMeme', visible: boolean) {
   visibility.value[gameType] = visible
 }
 
@@ -113,7 +114,9 @@ onMounted(() => {
       if (type === 'city') return t('games.city.title')
       if (type === 'hero') return t('games.hero.title')
       if (type === 'movie') return t('games.movie.title')
-      return t('games.visual.title')
+      if (type === 'visual') return t('games.visual.title')
+      if (type === 'imageMeme') return t('games.imageMeme.title')
+      return type
     }).join(t('common.comma'))
     showSuccess({
       title: t('settings.expiredTitle'),

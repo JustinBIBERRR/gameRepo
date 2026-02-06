@@ -18,7 +18,10 @@ let taskQueue: PreloadTask[] = []
 
 function scheduleNextIdle(): void {
   if (taskQueue.length === 0) return
-  const cb = typeof requestIdleCallback !== 'undefined' ? requestIdleCallback : (fn: () => void) => setTimeout(fn, 0)
+  const cb =
+    typeof requestIdleCallback !== 'undefined'
+      ? (fn: () => void, opts?: IdleRequestOptions) => requestIdleCallback(fn, opts)
+      : (fn: () => void, _opts?: IdleRequestOptions) => setTimeout(fn, 0)
   cb(
     () => {
       const task = taskQueue.shift()

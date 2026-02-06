@@ -130,6 +130,7 @@ const heroStats = ref(getGameStats('hero'))
 const movieStats = ref(getGameStats('movie'))
 const visualStats = ref(getGameStats('visual'))
 const listenSongStats = ref(getGameStats('listenSong'))
+const imageMemeStats = ref(getGameStats('imageMeme'))
 const allAchievements = ref(getAchievements())
 
 // 刷新统计数据
@@ -139,15 +140,16 @@ function refreshStats() {
   movieStats.value = getGameStats('movie')
   visualStats.value = getGameStats('visual')
   listenSongStats.value = getGameStats('listenSong')
+  imageMemeStats.value = getGameStats('imageMeme')
   allAchievements.value = getAchievements()
 }
 
 const totalStats = computed(() => {
   return {
-    wins: cityStats.value.wins + heroStats.value.wins + movieStats.value.wins + visualStats.value.wins + listenSongStats.value.wins,
-    losses: cityStats.value.losses + heroStats.value.losses + movieStats.value.losses + visualStats.value.losses + listenSongStats.value.losses,
-    total: cityStats.value.totalGames + heroStats.value.totalGames + movieStats.value.totalGames + visualStats.value.totalGames + listenSongStats.value.totalGames,
-    bestStreak: Math.max(cityStats.value.bestStreak, heroStats.value.bestStreak, movieStats.value.bestStreak, visualStats.value.bestStreak, listenSongStats.value.bestStreak)
+    wins: cityStats.value.wins + heroStats.value.wins + movieStats.value.wins + visualStats.value.wins + listenSongStats.value.wins + imageMemeStats.value.wins,
+    losses: cityStats.value.losses + heroStats.value.losses + movieStats.value.losses + visualStats.value.losses + listenSongStats.value.losses + imageMemeStats.value.losses,
+    total: cityStats.value.totalGames + heroStats.value.totalGames + movieStats.value.totalGames + visualStats.value.totalGames + listenSongStats.value.totalGames + imageMemeStats.value.totalGames,
+    bestStreak: Math.max(cityStats.value.bestStreak, heroStats.value.bestStreak, movieStats.value.bestStreak, visualStats.value.bestStreak, listenSongStats.value.bestStreak, imageMemeStats.value.bestStreak)
   }
 })
 
@@ -167,9 +169,12 @@ const todayStats = computed(() => {
   const listenSongToday = listenSongStats.value.todayStats.date === new Date().toDateString()
     ? listenSongStats.value.todayStats
     : { games: 0, wins: 0 }
+  const imageMemeToday = imageMemeStats.value.todayStats.date === new Date().toDateString()
+    ? imageMemeStats.value.todayStats
+    : { games: 0, wins: 0 }
 
-  const games = cityToday.games + heroToday.games + movieToday.games + visualToday.games + listenSongToday.games
-  const wins = cityToday.wins + heroToday.wins + movieToday.wins + visualToday.wins + listenSongToday.wins
+  const games = cityToday.games + heroToday.games + movieToday.games + visualToday.games + listenSongToday.games + imageMemeToday.games
+  const wins = cityToday.wins + heroToday.wins + movieToday.wins + visualToday.wins + listenSongToday.wins + imageMemeToday.wins
 
   return {
     games,
@@ -197,7 +202,8 @@ function checkGameData() {
     sessionStorage.getItem('heroGuessGame') ||
     sessionStorage.getItem('movieGuessGame') ||
     sessionStorage.getItem('visualGuessGame') ||
-    sessionStorage.getItem('listenSongGuessGame')
+    sessionStorage.getItem('listenSongGuessGame') ||
+    sessionStorage.getItem('imageMemeGuessGame')
   )
 }
 
@@ -216,6 +222,7 @@ function clearSessionData() {
       sessionStorage.removeItem('movieGuessGame')
       sessionStorage.removeItem('visualGuessGame')
       sessionStorage.removeItem('listenSongGuessGame')
+      sessionStorage.removeItem('imageMemeGuessGame')
       
       // 重置统计数据
       stats.value = {

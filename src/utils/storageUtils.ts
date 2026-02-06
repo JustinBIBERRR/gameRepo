@@ -12,6 +12,7 @@ const STORAGE_KEYS = {
   MOVIE_GAME_STATS: 'movieGameStats',
   VISUAL_GAME_STATS: 'visualGameStats',
   LISTEN_SONG_GAME_STATS: 'listenSongGameStats',
+  IMAGE_MEME_GAME_STATS: 'imageMemeGameStats',
   // 成就系统
   ACHIEVEMENTS: 'achievements',
   // 游戏历史记录
@@ -29,6 +30,7 @@ const STORAGE_KEYS = {
   CUSTOM_HERO_DATA: 'customHeroData',
   CUSTOM_MOVIE_DATA: 'customMovieData',
   CUSTOM_VISUAL_DATA: 'customVisualData',
+  CUSTOM_IMAGE_MEME_DATA: 'customImageMemeData',
   // 游戏显示/隐藏状态
   GAME_VISIBILITY: 'gameVisibility',
   // Settings 元数据
@@ -45,6 +47,7 @@ const VERSION_UPDATE_CLEAR_LOCAL_KEYS: string[] = [
   STORAGE_KEYS.MOVIE_GAME_STATS,
   STORAGE_KEYS.VISUAL_GAME_STATS,
   STORAGE_KEYS.LISTEN_SONG_GAME_STATS,
+  STORAGE_KEYS.IMAGE_MEME_GAME_STATS,
   STORAGE_KEYS.ACHIEVEMENTS,
   STORAGE_KEYS.GAME_HISTORY,
   STORAGE_KEYS.GAME_STATS,
@@ -58,7 +61,8 @@ const VERSION_UPDATE_CLEAR_SESSION_KEYS: string[] = [
   'heroGuessGame',
   'movieGuessGame',
   'visualGuessGame',
-  'listenSongGuessGame'
+  'listenSongGuessGame',
+  'imageMemeGuessGame'
 ]
 
 export interface GameStats {
@@ -87,7 +91,7 @@ export interface Achievement {
 }
 
 export interface GameHistoryEntry {
-  gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong'
+  gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong' | 'imageMeme'
   date: number
   won: boolean
   attempts: number
@@ -146,6 +150,13 @@ export interface GameSettings {
       maxAttempts?: number
       showInitialHint?: boolean
     }
+    imageMeme?: {
+      enableTimer?: boolean
+      timerDuration?: number
+      limitAttempts?: boolean
+      maxAttempts?: number
+      showInitialHint?: boolean
+    }
   }
 }
 
@@ -163,7 +174,7 @@ export interface GameConfig {
 export const UNLIMITED_ATTEMPTS = Infinity
 
 export interface TimerState {
-  gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong'
+  gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong' | 'imageMeme'
   startTime: number        // 倒计时开始时间戳
   remainingSeconds: number // 剩余秒数
   isRunning: boolean       // 是否正在运行
@@ -182,6 +193,7 @@ export interface GameVisibility {
   movie: boolean
   visual: boolean
   listenSong: boolean
+  imageMeme: boolean
 }
 
 export interface SettingsMeta {
@@ -279,13 +291,14 @@ function initGameStats(): GameStats {
 /**
  * 获取游戏统计数据
  */
-export function getGameStats(gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong'): GameStats {
+export function getGameStats(gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong' | 'imageMeme'): GameStats {
   const keyMap: Record<typeof gameType, string> = {
     city: STORAGE_KEYS.CITY_GAME_STATS,
     hero: STORAGE_KEYS.HERO_GAME_STATS,
     movie: STORAGE_KEYS.MOVIE_GAME_STATS,
     visual: STORAGE_KEYS.VISUAL_GAME_STATS,
-    listenSong: STORAGE_KEYS.LISTEN_SONG_GAME_STATS
+    listenSong: STORAGE_KEYS.LISTEN_SONG_GAME_STATS,
+    imageMeme: STORAGE_KEYS.IMAGE_MEME_GAME_STATS
   }
   return getLocalStorage(keyMap[gameType], initGameStats())
 }
@@ -294,7 +307,7 @@ export function getGameStats(gameType: 'city' | 'hero' | 'movie' | 'visual' | 'l
  * 更新游戏统计数据
  */
 export function updateGameStats(
-  gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong',
+  gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong' | 'imageMeme',
   won: boolean,
   attempts: number
 ): GameStats {
@@ -338,7 +351,8 @@ export function updateGameStats(
     hero: STORAGE_KEYS.HERO_GAME_STATS,
     movie: STORAGE_KEYS.MOVIE_GAME_STATS,
     visual: STORAGE_KEYS.VISUAL_GAME_STATS,
-    listenSong: STORAGE_KEYS.LISTEN_SONG_GAME_STATS
+    listenSong: STORAGE_KEYS.LISTEN_SONG_GAME_STATS,
+    imageMeme: STORAGE_KEYS.IMAGE_MEME_GAME_STATS
   }
   setLocalStorage(keyMap[gameType], stats)
 
@@ -351,7 +365,7 @@ export function updateGameStats(
 /**
  * 添加游戏历史记录
  */
-function addGameHistory(gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong', won: boolean, attempts: number): void {
+function addGameHistory(gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong' | 'imageMeme', won: boolean, attempts: number): void {
   const history = getGameHistory()
   const entry: GameHistoryEntry = {
     gameType,
@@ -476,13 +490,14 @@ export function clearAllData(): void {
 /**
  * 清除特定游戏的数据
  */
-export function clearGameData(gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong'): void {
+export function clearGameData(gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong' | 'imageMeme'): void {
   const keyMap: Record<typeof gameType, string> = {
     city: STORAGE_KEYS.CITY_GAME_STATS,
     hero: STORAGE_KEYS.HERO_GAME_STATS,
     movie: STORAGE_KEYS.MOVIE_GAME_STATS,
     visual: STORAGE_KEYS.VISUAL_GAME_STATS,
-    listenSong: STORAGE_KEYS.LISTEN_SONG_GAME_STATS
+    listenSong: STORAGE_KEYS.LISTEN_SONG_GAME_STATS,
+    imageMeme: STORAGE_KEYS.IMAGE_MEME_GAME_STATS
   }
   localStorage.removeItem(keyMap[gameType])
   const sessionKeyMap: Record<typeof gameType, string> = {
@@ -490,7 +505,8 @@ export function clearGameData(gameType: 'city' | 'hero' | 'movie' | 'visual' | '
     hero: 'heroGuessGame',
     movie: 'movieGuessGame',
     visual: 'visualGuessGame',
-    listenSong: 'listenSongGuessGame'
+    listenSong: 'listenSongGuessGame',
+    imageMeme: 'imageMemeGuessGame'
   }
   sessionStorage.removeItem(sessionKeyMap[gameType])
 }
@@ -529,7 +545,7 @@ export function saveGameSettings(settings: GameSettings): void {
 /**
  * 获取游戏配置（优先返回游戏类型覆盖，否则返回全局默认值）
  */
-export function getGameConfig(gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong'): GameConfig {
+export function getGameConfig(gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong' | 'imageMeme'): GameConfig {
   const settings = getGameSettings()
   const override = settings.overrides[gameType]
   // 兼容旧数据：未设置 limitAttempts 时视为启用限制
@@ -543,7 +559,7 @@ export function getGameConfig(gameType: 'city' | 'hero' | 'movie' | 'visual' | '
     timerDuration: override?.timerDuration ?? settings.defaults.timerDuration,
     limitAttempts: limitAttempts === true,
     maxAttempts: limitAttempts ? rawMaxAttempts : UNLIMITED_ATTEMPTS,
-    showInitialHint: override?.showInitialHint ?? settings.defaults.showInitialHint
+    showInitialHint: gameType === 'imageMeme' ? false : (override && 'showInitialHint' in override ? override.showInitialHint : undefined) ?? settings.defaults.showInitialHint
   }
 
   if (gameType === 'visual' && limitAttempts) {
@@ -558,6 +574,13 @@ export function getGameConfig(gameType: 'city' | 'hero' | 'movie' | 'visual' | '
 
   if (gameType === 'listenSong' && limitAttempts) {
     config.maxAttempts = override?.maxAttempts ?? 5
+  }
+
+  if (gameType === 'imageMeme') {
+    // 看图猜梗默认不限制次数；若配置了 limitAttempts 则使用 maxAttempts
+    config.limitAttempts = override?.limitAttempts ?? false
+    config.maxAttempts = config.limitAttempts ? (override?.maxAttempts ?? 5) : UNLIMITED_ATTEMPTS
+    config.timerDuration = override?.timerDuration ?? settings.defaults.timerDuration
   }
 
   return config
@@ -593,7 +616,8 @@ function initGameVisibility(): GameVisibility {
     hero: true,
     movie: true,
     visual: true,
-    listenSong: true
+    listenSong: true,
+    imageMeme: true
   }
 }
 
@@ -608,7 +632,8 @@ export function getGameVisibility(): GameVisibility {
     hero: stored.hero ?? defaults.hero,
     movie: stored.movie ?? defaults.movie,
     visual: stored.visual ?? defaults.visual,
-    listenSong: stored.listenSong ?? defaults.listenSong
+    listenSong: stored.listenSong ?? defaults.listenSong,
+    imageMeme: stored.imageMeme ?? defaults.imageMeme
   }
 }
 
@@ -622,7 +647,7 @@ export function saveGameVisibility(visibility: GameVisibility): void {
 /**
  * 更新单个游戏的可见性
  */
-export function updateGameVisibility(gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong', visible: boolean): void {
+export function updateGameVisibility(gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong' | 'imageMeme', visible: boolean): void {
   const visibility = getGameVisibility()
   visibility[gameType] = visible
   saveGameVisibility(visibility)
@@ -719,21 +744,23 @@ export function savePartyPersonnel(items: PartyPersonnelItem[]): void {
 /**
  * 获取自定义游戏数据
  */
-export function getCustomGameData<T>(gameType: 'city' | 'hero' | 'movie' | 'visual'): CustomGameData<T> | null {
+export function getCustomGameData<T>(gameType: 'city' | 'hero' | 'movie' | 'visual' | 'imageMeme'): CustomGameData<T> | null {
   const key = gameType === 'city'
     ? STORAGE_KEYS.CUSTOM_CITY_DATA
     : gameType === 'hero'
     ? STORAGE_KEYS.CUSTOM_HERO_DATA
     : gameType === 'movie'
     ? STORAGE_KEYS.CUSTOM_MOVIE_DATA
-    : STORAGE_KEYS.CUSTOM_VISUAL_DATA
+    : gameType === 'visual'
+    ? STORAGE_KEYS.CUSTOM_VISUAL_DATA
+    : STORAGE_KEYS.CUSTOM_IMAGE_MEME_DATA
   return getLocalStorage<CustomGameData<T> | null>(key, null)
 }
 
 /**
  * 保存自定义游戏数据
  */
-export function saveCustomGameData<T>(gameType: 'city' | 'hero' | 'movie' | 'visual', data: CustomGameData<T>): void {
+export function saveCustomGameData<T>(gameType: 'city' | 'hero' | 'movie' | 'visual' | 'imageMeme', data: CustomGameData<T>): void {
   const meta = getSettingsMeta()
   const expirationMs = meta.dataExpirationDays * 24 * 60 * 60 * 1000
 
@@ -749,21 +776,25 @@ export function saveCustomGameData<T>(gameType: 'city' | 'hero' | 'movie' | 'vis
     ? STORAGE_KEYS.CUSTOM_HERO_DATA
     : gameType === 'movie'
     ? STORAGE_KEYS.CUSTOM_MOVIE_DATA
-    : STORAGE_KEYS.CUSTOM_VISUAL_DATA
+    : gameType === 'visual'
+    ? STORAGE_KEYS.CUSTOM_VISUAL_DATA
+    : STORAGE_KEYS.CUSTOM_IMAGE_MEME_DATA
   setLocalStorage(key, customData)
 }
 
 /**
  * 清除自定义游戏数据
  */
-export function clearCustomGameData(gameType: 'city' | 'hero' | 'movie' | 'visual'): void {
+export function clearCustomGameData(gameType: 'city' | 'hero' | 'movie' | 'visual' | 'imageMeme'): void {
   const key = gameType === 'city'
     ? STORAGE_KEYS.CUSTOM_CITY_DATA
     : gameType === 'hero'
     ? STORAGE_KEYS.CUSTOM_HERO_DATA
     : gameType === 'movie'
     ? STORAGE_KEYS.CUSTOM_MOVIE_DATA
-    : STORAGE_KEYS.CUSTOM_VISUAL_DATA
+    : gameType === 'visual'
+    ? STORAGE_KEYS.CUSTOM_VISUAL_DATA
+    : STORAGE_KEYS.CUSTOM_IMAGE_MEME_DATA
   localStorage.removeItem(key)
 }
 
@@ -771,13 +802,13 @@ export function clearCustomGameData(gameType: 'city' | 'hero' | 'movie' | 'visua
  * 检查并清除过期的自定义数据
  * @returns 返回被清除的游戏类型数组
  */
-export function checkAndClearExpiredData(): ('city' | 'hero' | 'movie' | 'visual')[] {
+export function checkAndClearExpiredData(): ('city' | 'hero' | 'movie' | 'visual' | 'imageMeme')[] {
   const meta = getSettingsMeta()
   const now = Date.now()
   const expirationMs = meta.dataExpirationDays * 24 * 60 * 60 * 1000
-  const clearedGames: ('city' | 'hero' | 'movie' | 'visual')[] = []
+  const clearedGames: ('city' | 'hero' | 'movie' | 'visual' | 'imageMeme')[] = []
 
-  for (const gameType of ['city', 'hero', 'movie', 'visual'] as const) {
+  for (const gameType of ['city', 'hero', 'movie', 'visual', 'imageMeme'] as const) {
     const data = getCustomGameData(gameType)
     if (data && data.useCustom && data.lastModified + expirationMs < now) {
       clearCustomGameData(gameType)
@@ -795,7 +826,7 @@ export function checkAndClearExpiredData(): ('city' | 'hero' | 'movie' | 'visual
 /**
  * 切换为使用自定义数据（复制默认数据）
  */
-export function switchToCustomData<T>(gameType: 'city' | 'hero' | 'movie' | 'visual', defaultData: T[]): CustomGameData<T> {
+export function switchToCustomData<T>(gameType: 'city' | 'hero' | 'movie' | 'visual' | 'imageMeme', defaultData: T[]): CustomGameData<T> {
   const customData: CustomGameData<T> = {
     useCustom: true,
     items: [...defaultData], // 深拷贝
@@ -810,7 +841,7 @@ export function switchToCustomData<T>(gameType: 'city' | 'hero' | 'movie' | 'vis
 /**
  * 重置为默认数据
  */
-export function resetToDefaultData(gameType: 'city' | 'hero' | 'movie' | 'visual'): void {
+export function resetToDefaultData(gameType: 'city' | 'hero' | 'movie' | 'visual' | 'imageMeme'): void {
   clearCustomGameData(gameType)
 }
 

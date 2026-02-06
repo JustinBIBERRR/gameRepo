@@ -64,6 +64,10 @@
     "listenSong": {
       "title": "Listen Song by AI ",
       "description": "A random AI-generated song is played. Guess to find the answer. Reveal shows lyrics and artist."
+    },
+    "imageMeme": {
+      "title": "Image Meme Guess",
+      "description": "Guess the answer from an image. One image, one answer; play again after a correct guess."
     }
   },
   "settings": {
@@ -93,6 +97,8 @@
     "visualPageDesc": "Configure game parameters and data",
     "listenSongPageTitle": "Listen Song by AI settings",
     "listenSongPageDesc": "Configure game parameters and song data",
+    "imageMemePageTitle": "Image Meme Guess settings",
+    "imageMemePageDesc": "Configure questions (image + answer). No hint switch.",
     "partyPageTitle": "Party & events",
     "partyPageDesc": "Data expiry, rewards/penalties and draw list",
     "dataExpiry": "Data expiry",
@@ -167,6 +173,17 @@
     "noMoviesTitle": "No movies",
     "noMoviesMessage": "Add at least one movie in settings to start.",
     "goToSettings": "Go to settings",
+    "imageMemeNoData": "No questions",
+    "imageMemeDescPrefix": "Guess the answer from the image. Enter and submit.",
+    "imageMemeOnlyOne": "Only 1 question in the pool.",
+    "imageMemeResetMemory": "Reset memory",
+    "imageMemeLoading": "Loading image...",
+    "imageMemeNoAvailable": "No available questions",
+    "imageMemePlaceholder": "Enter answer...",
+    "imageMemeWrong": "Wrong answer, try again",
+    "imageMemeCorrect": "Correct!",
+    "imageMemeOutOfAttempts": "Out of attempts",
+    "answerIs": "Answer is",
     "achievementUnlocked": "Achievement unlocked!",
     "congrats": "Congratulations!",
     "tryAgain": "Try again!"

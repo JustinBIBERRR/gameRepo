@@ -64,6 +64,10 @@
     "listenSong": {
       "title": "听歌识曲 by AI",
       "description": "系统随机选择一首 AI 生成歌，播放后可多次猜测。揭晓时展示歌词与歌手。"
+    },
+    "imageMeme": {
+      "title": "看图猜梗",
+      "description": "根据图片猜谜底，每题一图一答，猜对即可再来一局。"
     }
   },
   "settings": {
@@ -93,6 +97,8 @@
     "visualPageDesc": "配置游戏参数和数据管理",
     "listenSongPageTitle": "听歌识曲 by AI 配置",
     "listenSongPageDesc": "配置游戏参数和歌曲数据",
+    "imageMemePageTitle": "看图猜梗配置",
+    "imageMemePageDesc": "配置题目数据（图片 + 答案），无提示开关。",
     "partyPageTitle": "年会活动配置",
     "partyPageDesc": "配置数据过期、随机奖惩与随机抽人名单",
     "dataExpiry": "数据过期",
@@ -167,6 +173,18 @@
     "noMoviesTitle": "没有电影",
     "noMoviesMessage": "请先在设置页面注册至少一部电影才能开始游戏。",
     "goToSettings": "去设置",
+    "imageMemeNoData": "暂无题目",
+    "imageMemeDescPrefix": "根据图片猜谜底，输入答案提交。",
+    "imageMemeOnlyOne": "当前题库仅 1 题。",
+    "imageMemeResetMemory": "重置记忆",
+    "imageMemeLoading": "正在加载图片...",
+    "imageMemeNoAvailable": "暂无可用题目",
+    "imageMemePlaceholder": "输入谜底...",
+    "imageMemeWrong": "答案错误，请再试",
+    "imageMemeCorrect": "猜对了！",
+    "imageMemeOutOfAttempts": "次数用尽",
+    "answerIs": "答案是",
+    "submitGuess": "提交猜测",
     "achievementUnlocked": "成就解锁！",
     "congrats": "恭喜！",
     "tryAgain": "再试试！"

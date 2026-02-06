@@ -68,12 +68,12 @@ const props = defineProps<{
     icon: () => any
     iconColor?: 'blue' | 'purple' | 'green' | 'orange' | 'red'
   }
-  gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong'
+  gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong' | 'imageMeme'
   visible: boolean
 }>()
 
 const emit = defineEmits<{
-  visibilityChange: [gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong', visible: boolean]
+  visibilityChange: [gameType: 'city' | 'hero' | 'movie' | 'visual' | 'listenSong' | 'imageMeme', visible: boolean]
 }>()
 
 const router = useRouter()
