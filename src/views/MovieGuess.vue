@@ -109,18 +109,19 @@
             </div>
           </div>
 
-          <!-- 猜测输入 -->
+          <!-- 猜测输入（无联想下拉） -->
           <div class="mb-6">
             <h2 class="text-lg font-semibold text-gray-900 mb-4">猜测电影名称</h2>
-            <Autocomplete
+            <input
               v-model="inputValue"
-              :suggestions="suggestions"
-              :no-match-message="noMatchMessage"
-              :show-error="showInputError"
-              :enabled="hasMovieData"
+              type="text"
               placeholder="输入电影名称..."
-              @select="handleSelect"
+              autocomplete="off"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors text-sm"
+              :class="{ 'border-red-500 focus:ring-red-500 focus:border-red-500': showInputError }"
+              @keyup.enter="handleGuess"
             />
+            <p v-if="showInputError" class="mt-2 text-sm text-red-600">{{ noMatchMessage }}</p>
             <button
               @click="handleGuess"
               :disabled="!canSubmit"
@@ -275,7 +276,6 @@ import Navigation from '../components/Navigation.vue'
 
 const { t } = useI18n()
 import GameHeader from '../components/GameHeader.vue'
-import Autocomplete from '../components/Autocomplete.vue'
 import Celebration from '../components/Celebration.vue'
 import TimeRangeSelector from '../components/TimeRangeSelector.vue'
 import VideoPlayer from '../components/VideoPlayer.vue'
@@ -286,8 +286,6 @@ import {
   getRandomMovie,
   getMovieById,
   matchMovie,
-  searchMovies,
-  getAllMovieNames,
   formatTime,
   getAllMovies,
   type Movie
@@ -391,12 +389,6 @@ function handleTimerTimeout() {
 
 // 初始化倒计时（仅在启用时）
 const timer = useTimer(enableTimer.value ? timerDuration : 0, 'movie', handleTimerTimeout)
-
-const hasMovieData = computed(() => getAllMovieNames().length > 0)
-const suggestions = computed(() => {
-  if (!hasMovieData.value || !inputValue.value.trim()) return []
-  return searchMovies(inputValue.value).map(m => m.name)
-})
 
 const noMatchMessage = computed(() => {
   return '该电影不在游戏范围内，请输入正确的电影名称'
@@ -596,11 +588,6 @@ async function handlePlayAudio() {
     // 再次保存状态（更新播放状态）
     saveGameState()
   }, 15000) // 15秒
-}
-
-// 处理选择
-function handleSelect(movieName: string) {
-  inputValue.value = movieName
 }
 
 // 处理猜测

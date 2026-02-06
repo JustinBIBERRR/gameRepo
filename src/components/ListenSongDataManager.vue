@@ -7,14 +7,19 @@
         placeholder="搜索歌曲..."
         class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
       />
-      <div class="flex gap-2">
+      <div class="flex gap-2 items-center">
         <button
           v-if="songs.length === 0"
+          :disabled="importingDefaults"
           @click="handleImportDefaults"
-          class="px-4 py-2 text-sm font-medium text-green-600 bg-green-50 hover:bg-green-100 rounded-lg"
+          class="px-4 py-2 text-sm font-medium text-green-600 bg-green-50 hover:bg-green-100 rounded-lg disabled:opacity-60 disabled:cursor-not-allowed"
         >
           导入示例数据
         </button>
+        <div v-if="importingDefaults" class="flex items-center gap-2 text-sm text-green-600">
+          <div class="animate-spin rounded-full h-4 w-4 border-2 border-green-500 border-t-transparent" />
+          <span>{{ importProgressText }}</span>
+        </div>
         <button
           @click="handleAdd"
           class="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors flex items-center gap-2"
@@ -27,7 +32,17 @@
       </div>
     </div>
 
-    <div class="w-full overflow-x-auto border border-gray-200 rounded-lg">
+    <!-- 导入中遮罩 -->
+    <div
+      v-if="importingDefaults"
+      class="flex flex-col items-center justify-center py-12 px-4 rounded-lg border-2 border-dashed border-green-200 bg-green-50/80"
+    >
+      <div class="animate-spin rounded-full h-10 w-10 border-2 border-green-500 border-t-transparent mb-3" />
+      <p class="text-green-700 font-medium">{{ importProgressText }}</p>
+      <p class="text-sm text-green-600 mt-1">请稍候，正在写入本地存储...</p>
+    </div>
+
+    <div v-else class="w-full overflow-x-auto border border-gray-200 rounded-lg">
       <table class="w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
@@ -102,6 +117,22 @@ const searchQuery = ref('')
 const showModal = ref(false)
 const editingItem = ref<ListenSongItem | null>(null)
 const editingFormData = ref<Record<string, unknown> | undefined>(undefined)
+const importingDefaults = ref(false)
+const importProgress = ref({ current: 0, total: 0 })
+const STORAGE_KEY_HAD_DATA = 'listenSongHasHadDataOnce'
+/** 仅「从未有过数据」时自动导入；用户删光后或之后再次进入均不再自动导入 */
+function hasHadDataBefore(): boolean {
+  return localStorage.getItem(STORAGE_KEY_HAD_DATA) === '1'
+}
+function markHasHadData(): void {
+  localStorage.setItem(STORAGE_KEY_HAD_DATA, '1')
+}
+
+const importProgressText = computed(() => {
+  const { current, total } = importProgress.value
+  if (total <= 0) return '正在准备...'
+  return `正在导入示例数据 ${current}/${total}...`
+})
 
 const filteredSongs = computed(() => {
   if (!searchQuery.value.trim()) return songs.value
@@ -115,8 +146,11 @@ const filteredSongs = computed(() => {
   )
 })
 
-async function importDefaultSong() {
-  for (const item of defaultListenSongs) {
+async function importDefaultSong(onProgress?: (current: number, total: number) => void) {
+  const total = defaultListenSongs.length
+  for (let i = 0; i < defaultListenSongs.length; i++) {
+    onProgress?.(i + 1, total)
+    const item = defaultListenSongs[i]
     const { audioUrl, ...songItem } = item
     const audioRes = await fetch(audioUrl)
     const audioBlob = await audioRes.blob()
@@ -126,16 +160,37 @@ async function importDefaultSong() {
   }
 }
 
+/** 仅拉取列表，不自动导入；自动导入仅在 onMounted 首次无数据时执行一次 */
 async function loadSongs() {
   try {
     songs.value = await getAllSongs()
-    if (songs.value.length === 0) {
-      await importDefaultSong()
-      songs.value = await getAllSongs()
-    }
   } catch (e) {
     console.error('加载歌曲失败:', e)
     showError({ title: '加载失败', message: '无法加载歌曲列表' })
+  }
+}
+
+/** 仅当从未有过数据时执行一次默认数据导入；用户删光后不再自动导入 */
+async function runInitialAutoImportIfNeeded() {
+  if (songs.value.length > 0) {
+    markHasHadData()
+    return
+  }
+  if (hasHadDataBefore()) return
+  importingDefaults.value = true
+  importProgress.value = { current: 0, total: defaultListenSongs.length }
+  try {
+    await importDefaultSong((current, total) => {
+      importProgress.value = { current, total }
+    })
+    songs.value = await getAllSongs()
+    markHasHadData()
+  } catch (e) {
+    console.error('首次导入示例数据失败:', e)
+    showError({ title: '导入失败', message: '首次加载示例数据时出错' })
+  } finally {
+    importingDefaults.value = false
+    importProgress.value = { current: 0, total: 0 }
   }
 }
 
@@ -158,12 +213,19 @@ function handleEdit(song: ListenSongItem) {
 }
 
 async function handleImportDefaults() {
+  importingDefaults.value = true
+  importProgress.value = { current: 0, total: defaultListenSongs.length }
   try {
-    await importDefaultSong()
+    await importDefaultSong((current, total) => {
+      importProgress.value = { current, total }
+    })
     await loadSongs()
     showSuccess({ title: '已导入', message: `已导入 ${defaultListenSongs.length} 首示例歌曲` })
   } catch (e) {
     showError({ title: '导入失败', message: '导入示例数据时出错' })
+  } finally {
+    importingDefaults.value = false
+    importProgress.value = { current: 0, total: 0 }
   }
 }
 
@@ -215,5 +277,8 @@ function closeModal() {
   editingItem.value = null
 }
 
-onMounted(loadSongs)
+onMounted(async () => {
+  await loadSongs()
+  await runInitialAutoImportIfNeeded()
+})
 </script>
