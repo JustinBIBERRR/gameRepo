@@ -15,7 +15,7 @@
     "removed": "Removed"
   },
   "nav": {
-    "platformName": "Game Platform",
+    "platformName": "Party Mini-Games",
     "settingsTitle": "Settings",
     "gameSelectTitle": "Game selection",
     "lang": "Language",
@@ -23,8 +23,8 @@
     "langEn": "English"
   },
   "home": {
-    "welcome": "Welcome to Game Platform",
-    "subtitle": "An online platform with fun mini-games. Challenge your knowledge and reasoning!",
+    "welcome": "Welcome to Party Mini-Games",
+    "subtitle": "A collection of mini-games for year-end parties and team events. Guess cities, movies, songs, memes, and more—perfect for team fun!",
     "gameStats": "Game Stats",
     "clearData": "Clear data",
     "clearDataAria": "Clear session data",

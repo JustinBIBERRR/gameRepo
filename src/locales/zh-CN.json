@@ -15,7 +15,7 @@
     "removed": "已删除"
   },
   "nav": {
-    "platformName": "游戏平台",
+    "platformName": "年会小游戏大全",
     "settingsTitle": "管理",
     "gameSelectTitle": "游戏选择",
     "lang": "语言",
@@ -23,8 +23,8 @@
     "langEn": "English"
   },
   "home": {
-    "welcome": "欢迎来到游戏平台",
-    "subtitle": "一个集合了多种有趣小游戏的在线平台，挑战你的知识和推理能力！",
+    "welcome": "欢迎来到年会小游戏大全",
+    "subtitle": "专为年会、团建打造的互动小游戏合集。猜城市、听片段猜电影、听歌识曲、看图猜梗……团队一起玩，气氛拉满！",
     "gameStats": "游戏统计",
     "clearData": "清除数据",
     "clearDataAria": "清除会话数据",
