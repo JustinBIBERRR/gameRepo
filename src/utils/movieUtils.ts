@@ -89,25 +89,36 @@ export async function getAllMovies(): Promise<Movie[]> {
     return cachedMovies
   }
 
-  // 3. 使用默认数据（含本地打包视频，如 videos/mry.mp4）
-  try {
-    cachedMovies = defaultMoviesData.map((movie: any) => ({
-      id: movie.id,
-      name: movie.name,
-      nameVariants: movie.nameVariants || [],
-      duration: movie.duration || 0,
-      hint: movie.hint,
-      description: movie.description,
-      year: movie.year,
-      videoType: movie.videoType || 'api',
-      apiProvider: movie.apiProvider || 'bilibili',
-      videoUrl: movie.videoUrl || undefined
-    }))
-    return cachedMovies || []
-  } catch (error) {
-    console.error('使用默认电影数据失败:', error)
-    return []
-  }
+  // 无用户数据时返回空列表，不再自动回退默认数据；默认数据通过配置页「导入默认数据」按钮导入
+  cachedMovies = []
+  return []
+}
+
+/** 默认电影数据（用于「导入默认数据」），不参与 getAllMovies 回退 */
+export interface DefaultMovieItem {
+  id: string
+  name: string
+  nameVariants: string[]
+  duration: number
+  hint?: string
+  description?: string
+  year?: number
+  videoUrl?: string
+  videoType?: string
+}
+
+export function getDefaultMoviesData(): DefaultMovieItem[] {
+  return defaultMoviesData.map((m: any) => ({
+    id: m.id,
+    name: m.name,
+    nameVariants: m.nameVariants || [],
+    duration: m.duration || 0,
+    hint: m.hint,
+    description: m.description,
+    year: m.year,
+    videoUrl: m.videoUrl,
+    videoType: m.videoType
+  }))
 }
 
 /**

@@ -13,19 +13,43 @@
           显示 {{ filteredMovies.length }} / {{ movies.length }} 部电影
         </span>
       </div>
-      <button
-        @click="handleAddMovie"
-        class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex items-center gap-2"
-      >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
-        新增电影
-      </button>
+      <div class="flex gap-2 items-center">
+        <button
+          v-if="movies.length === 0"
+          :disabled="importingDefaults"
+          @click="handleImportDefaults"
+          class="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+        >
+          导入默认数据
+        </button>
+        <div v-if="importingDefaults" class="flex items-center gap-2 text-sm text-blue-600">
+          <div class="animate-spin rounded-full h-4 w-4 border-2 border-blue-500 border-t-transparent" />
+          <span>{{ importProgressText }}</span>
+        </div>
+        <button
+          @click="handleAddMovie"
+          class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex items-center gap-2"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          新增电影
+        </button>
+      </div>
+    </div>
+
+    <!-- 导入中遮罩 -->
+    <div
+      v-if="importingDefaults"
+      class="flex flex-col items-center justify-center py-12 px-4 rounded-lg border-2 border-dashed border-blue-200 bg-blue-50/80 mb-6"
+    >
+      <div class="animate-spin rounded-full h-10 w-10 border-2 border-blue-500 border-t-transparent mb-3" />
+      <p class="text-blue-700 font-medium">{{ importProgressText }}</p>
+      <p class="text-sm text-blue-600 mt-1">请稍候，正在写入本地存储...</p>
     </div>
 
     <!-- 电影列表表格 -->
-    <div class="w-full overflow-x-auto border border-gray-200 rounded-lg">
+    <div v-show="!importingDefaults" class="w-full overflow-x-auto border border-gray-200 rounded-lg">
       <table class="w-full divide-y divide-gray-200" style="table-layout: auto; width: 100%;">
         <thead class="bg-gray-50">
           <tr>
@@ -155,7 +179,7 @@
 <script setup lang="ts">
 import GlobalModal from './GlobalModal.vue'
 import MovieForm from './MovieForm.vue'
-import { getAllMovies } from '../utils/movieUtils'
+import { getAllMovies, getDefaultMoviesData } from '../utils/movieUtils'
 import type { Movie } from '../utils/movieUtils'
 import {
   getAllUserMovies,
@@ -168,6 +192,7 @@ import {
 } from '../utils/movieStorage'
 import { videoPreloader } from '../utils/videoPreloader'
 import { getVideoDuration } from '../utils/videoUtils'
+import { getLocalVideoUrl } from '../utils/videoUrlResolver'
 import type { UserMovie } from '../utils/movieStorage'
 import { useModal } from '../composables/useModal'
 import { useI18n } from 'vue-i18n'
@@ -183,6 +208,14 @@ const editingMovie = ref<UserMovie | null>(null)
 const savingMovie = ref(false)
 const loadingMovies = ref<Record<string, boolean>>({})
 const fileStatus = ref<Record<string, 'ready' | 'error' | 'loading' | 'default'>>({})
+const importingDefaults = ref(false)
+const importProgress = ref({ current: 0, total: 0 })
+
+const importProgressText = computed(() => {
+  const { current, total } = importProgress.value
+  if (total <= 0) return '正在准备...'
+  return `正在导入默认数据 ${current}/${total}...`
+})
 
 const filteredMovies = computed(() => {
   if (!searchQuery.value.trim()) {
@@ -199,13 +232,12 @@ const filteredMovies = computed(() => {
   })
 })
 
-// 加载电影列表（与游戏一致：默认数据 + 用户数据，优先用户）
+// 加载电影列表（仅用户数据，不再自动回退默认数据；默认通过「导入默认数据」加入）
 async function loadMovies() {
   try {
     movies.value = await getAllMovies()
     const userMovies = await getAllUserMovies()
     userMovieIds.value = new Set(userMovies.map((m) => m.id))
-    // 预加载所有电影文件（确保游戏时无需等待）
     await preloadAllMovies()
   } catch (error) {
     console.error('加载电影列表失败:', error)
@@ -213,6 +245,67 @@ async function loadMovies() {
       title: t('modal.loadFailed'),
       message: t('modal.loadFailedMessage')
     })
+  }
+}
+
+async function handleImportDefaults() {
+  const list = getDefaultMoviesData()
+  if (list.length === 0) return
+  importingDefaults.value = true
+  importProgress.value = { current: 0, total: list.length }
+  try {
+    for (let i = 0; i < list.length; i++) {
+      const item = list[i]
+      importProgress.value = { current: i + 1, total: list.length }
+      const userMovie: UserMovie = {
+        id: item.id,
+        name: item.name,
+        nameVariants: item.nameVariants ?? [],
+        duration: item.duration ?? 0,
+        hint: item.hint,
+        description: item.description,
+        year: item.year,
+        createdAt: Date.now()
+      }
+      await saveUserMovie(userMovie)
+      if (item.videoUrl) {
+        // 使用与游戏一致的解析：打包视频在 @/data/videos，需通过 getLocalVideoUrl 得到可请求 URL
+        const url =
+          item.videoUrl.startsWith('http') || item.videoUrl.startsWith('blob:')
+            ? item.videoUrl
+            : getLocalVideoUrl(item.videoUrl) ||
+              `${window.location.origin}${item.videoUrl.startsWith('/') ? item.videoUrl : '/' + item.videoUrl}`
+        if (!url) {
+          console.warn(`无法解析默认电影视频 URL: ${item.videoUrl}`)
+          continue
+        }
+        try {
+          const res = await fetch(url)
+          if (res.ok) {
+            const blob = await res.blob()
+            const file = new File([blob], `${item.id}.mp4`, { type: blob.type || 'video/mp4' })
+            await saveMovieFiles({
+              movieId: item.id,
+              sourceFile: file,
+              selectedAt: Date.now()
+            })
+          }
+        } catch (e) {
+          console.warn(`导入默认电影 ${item.name} 视频失败:`, e)
+        }
+      }
+    }
+    await loadMovies()
+    showSuccess({
+      title: '已导入',
+      message: `已导入 ${list.length} 部默认电影`
+    })
+  } catch (e) {
+    console.error('导入默认数据失败:', e)
+    showError({ title: '导入失败', message: '导入默认数据时出错' })
+  } finally {
+    importingDefaults.value = false
+    importProgress.value = { current: 0, total: 0 }
   }
 }
 
@@ -281,14 +374,6 @@ async function handleDeleteMovie(movieId: string) {
   const movie = movies.value.find(m => m.id === movieId)
   const movieName = movie?.name || '该电影'
 
-  if (!userMovieIds.value.has(movieId)) {
-    showError({
-      title: '无法删除',
-      message: '默认电影无法删除，可编辑并上传自己的视频后覆盖使用。'
-    })
-    return
-  }
-  
   showConfirm({
     title: t('modal.confirmDelete'),
     message: t('modal.confirmDeleteMovieMessage', { name: movieName }),
@@ -297,9 +382,7 @@ async function handleDeleteMovie(movieId: string) {
   }).then(async (confirmed) => {
     if (confirmed) {
       try {
-        // 删除IndexedDB中的文件
         await deleteMovieFiles(movieId)
-        // 删除电影信息
         await deleteUserMovie(movieId)
         // 卸载预加载的视频
         videoPreloader.unloadVideo(movieId)
