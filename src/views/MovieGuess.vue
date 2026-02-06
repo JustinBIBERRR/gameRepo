@@ -303,25 +303,8 @@ import { checkAndUpdateAchievements } from '../utils/achievementUtils'
 import { getMovieFiles } from '../utils/movieStorage'
 import { selectPlaybackMethod } from '../utils/moviePlayback'
 import { videoPreloader } from '../utils/videoPreloader'
+import { getLocalVideoUrl } from '../utils/videoUrlResolver'
 import type { LocalMovieFiles } from '../utils/movieStorage'
-
-// 默认数据中的打包视频：来自 src/data/videos/*.mp4，由 Vite 打包为可用 URL
-const localVideoModules = import.meta.glob<string>('@/data/videos/*.mp4', {
-  eager: true,
-  as: 'url'
-})
-function getLocalVideoUrl(pathOrFilename: string): string {
-  if (!pathOrFilename) return ''
-  const basename = pathOrFilename.replace(/^.*[/\\]/, '')
-  const keys = Object.keys(localVideoModules)
-  const key = keys.find((k) =>
-    k.endsWith(basename) || k.endsWith('/' + basename) || k.endsWith('\\' + basename)
-  )
-  const resolvedKey = key ?? (keys.length === 1 ? keys[0] : null)
-  const url = resolvedKey ? localVideoModules[resolvedKey] : ''
-  // 仅返回可用的 URL（/、http、blob 等），不返回相对路径否则无法播放
-  return url && typeof url === 'string' && (url.startsWith('/') || url.startsWith('http') || url.startsWith('blob:') || url.startsWith('file:')) ? url : ''
-}
 
 /** 等待本地视频 URL 加载元数据并返回真实时长（秒） */
 function waitForLocalVideoReady(url: string): Promise<number> {
@@ -444,8 +427,20 @@ async function loadMovieFiles() {
     const files = await getMovieFiles(targetMovie.value.id)
     movieFiles.value = files
 
-    // 默认数据中的打包视频（如 videos/mry.mp4）：无 IndexedDB 文件时用路径解析为打包 URL
+    // 默认数据中的打包视频（如 videos/mry.mp4）：优先使用空闲时已预加载的，几乎无等待
     if (!files && targetMovie.value.videoType === 'local' && targetMovie.value.videoUrl) {
+      if (videoPreloader.isPreloaded(targetMovie.value.id)) {
+        currentVideoType.value = 'local'
+        currentVideoUrl.value = videoPreloader.getPreloadedObjectUrl(targetMovie.value.id) ?? ''
+        currentVideoFile.value = null
+        const preloadedDuration = videoPreloader.getVideoDuration(targetMovie.value.id)
+        if (targetMovie.value && preloadedDuration && preloadedDuration > 0) {
+          targetMovie.value.duration = Math.floor(preloadedDuration)
+        }
+        await updatePlaybackSource(selectedTimePoint.value)
+        movieResourceReady.value = true
+        return
+      }
       const resolvedUrl = getLocalVideoUrl(targetMovie.value.videoUrl)
       if (resolvedUrl) {
         currentVideoType.value = 'local'

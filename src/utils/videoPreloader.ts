@@ -6,8 +6,8 @@
 interface PreloadedVideo {
   movieId: string
   videoElement: HTMLVideoElement
-  objectUrl: string
-  file: File
+  objectUrl: string  // 可为 blob URL 或打包/远程 URL
+  file?: File        // 仅 File 预加载时有
   isReady: boolean
   loadPromise: Promise<void>
   duration?: number  // 视频时长（秒）
@@ -20,7 +20,7 @@ class VideoPreloader {
   private loadingPromises: Map<string, Promise<void>> = new Map()
 
   /**
-   * 预加载视频
+   * 预加载视频（File 对象，如 IndexedDB 中的用户电影）
    */
   async preloadVideo(movieId: string, file: File, onProgress?: ProgressCallback): Promise<void> {
     // 如果已经预加载，直接返回
@@ -39,7 +39,7 @@ class VideoPreloader {
     }
 
     // 创建加载Promise
-    const loadPromise = this.doPreload(movieId, file, onProgress)
+    const loadPromise = this.doPreloadFile(movieId, file, onProgress)
     this.loadingPromises.set(movieId, loadPromise)
 
     try {
@@ -50,9 +50,32 @@ class VideoPreloader {
   }
 
   /**
-   * 执行预加载
+   * 按 URL 预加载视频（打包默认视频或静态 URL，5min 内片段体积可控）
    */
-  private async doPreload(movieId: string, file: File, onProgress?: ProgressCallback): Promise<void> {
+  async preloadVideoByUrl(movieId: string, url: string, onProgress?: ProgressCallback): Promise<void> {
+    if (!url || !url.trim()) return
+    if (this.preloadedVideos.has(movieId)) {
+      const existing = this.preloadedVideos.get(movieId)!
+      if (existing.objectUrl === url && existing.isReady) return
+      this.unloadVideo(movieId)
+    }
+    if (this.loadingPromises.has(movieId)) {
+      return this.loadingPromises.get(movieId)!
+    }
+
+    const loadPromise = this.doPreloadByUrl(movieId, url, onProgress)
+    this.loadingPromises.set(movieId, loadPromise)
+    try {
+      await loadPromise
+    } finally {
+      this.loadingPromises.delete(movieId)
+    }
+  }
+
+  /**
+   * 执行预加载（File）
+   */
+  private async doPreloadFile(movieId: string, file: File, onProgress?: ProgressCallback): Promise<void> {
     return new Promise((resolve, reject) => {
       // 创建Object URL
       const objectUrl = URL.createObjectURL(file)
@@ -122,6 +145,67 @@ class VideoPreloader {
   }
 
   /**
+   * 按 URL 执行预加载（打包/静态 URL，不 revoke）
+   */
+  private async doPreloadByUrl(movieId: string, url: string, onProgress?: ProgressCallback): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const videoElement = document.createElement('video')
+      videoElement.preload = 'auto'
+      videoElement.src = url
+      videoElement.style.display = 'none'
+      videoElement.style.position = 'absolute'
+      videoElement.style.visibility = 'hidden'
+      document.body.appendChild(videoElement)
+
+      const preloaded: PreloadedVideo = {
+        movieId,
+        videoElement,
+        objectUrl: url,
+        isReady: false,
+        loadPromise: Promise.resolve()
+      }
+
+      const handleProgress = () => {
+        if (videoElement.buffered.length > 0 && videoElement.duration) {
+          const bufferedEnd = videoElement.buffered.end(videoElement.buffered.length - 1)
+          const progress = (bufferedEnd / videoElement.duration) * 100
+          onProgress?.(progress)
+        }
+      }
+
+      const handleLoadedMetadata = () => {
+        preloaded.duration = videoElement.duration
+      }
+
+      const handleCanPlayThrough = () => {
+        preloaded.isReady = true
+        videoElement.removeEventListener('canplaythrough', handleCanPlayThrough)
+        videoElement.removeEventListener('progress', handleProgress)
+        videoElement.removeEventListener('loadedmetadata', handleLoadedMetadata)
+        videoElement.removeEventListener('error', handleError)
+        this.preloadedVideos.set(movieId, preloaded)
+        onProgress?.(100)
+        resolve()
+      }
+
+      const handleError = () => {
+        videoElement.removeEventListener('canplaythrough', handleCanPlayThrough)
+        videoElement.removeEventListener('progress', handleProgress)
+        videoElement.removeEventListener('loadedmetadata', handleLoadedMetadata)
+        videoElement.removeEventListener('error', handleError)
+        if (videoElement.parentNode) document.body.removeChild(videoElement)
+        reject(new Error('视频预加载失败'))
+      }
+
+      videoElement.addEventListener('canplaythrough', handleCanPlayThrough, { once: true })
+      videoElement.addEventListener('progress', handleProgress)
+      videoElement.addEventListener('loadedmetadata', handleLoadedMetadata, { once: true })
+      videoElement.addEventListener('error', handleError, { once: true })
+      videoElement.load()
+    })
+  }
+
+  /**
    * 获取预加载的视频元素
    */
   getPreloadedVideo(movieId: string): HTMLVideoElement | null {
@@ -152,18 +236,17 @@ class VideoPreloader {
   }
 
   /**
-   * 卸载视频（释放资源）
+   * 卸载视频（释放资源；仅对 blob: URL 调用 revokeObjectURL）
    */
   unloadVideo(movieId: string): void {
     const preloaded = this.preloadedVideos.get(movieId)
     if (preloaded) {
-      // 从DOM移除
       if (preloaded.videoElement.parentNode) {
         document.body.removeChild(preloaded.videoElement)
       }
-      // 释放Object URL
-      URL.revokeObjectURL(preloaded.objectUrl)
-      // 从Map移除
+      if (preloaded.objectUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(preloaded.objectUrl)
+      }
       this.preloadedVideos.delete(movieId)
     }
   }

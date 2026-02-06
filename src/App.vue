@@ -21,11 +21,17 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import GlobalLoading from './components/GlobalLoading.vue'
 import Modal from './components/Modal.vue'
 import PartyFloatingWidget from './components/PartyFloatingWidget.vue'
 import { modalState, handleConfirm, handleCancel } from './composables/useModal'
+import { startMovieIdlePreload } from './utils/movieIdlePreload'
 
 const { t } = useI18n()
+
+onMounted(() => {
+  startMovieIdlePreload()
+})
 </script>
