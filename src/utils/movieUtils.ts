@@ -84,7 +84,8 @@ export async function getAllMovies(): Promise<Movie[]> {
       hint: movie.hint,
       description: movie.description,
       year: movie.year,
-      videoType: 'local' as const
+      videoType: 'local' as const,
+      videoUrl: movie.videoUrl
     }))
     return cachedMovies
   }

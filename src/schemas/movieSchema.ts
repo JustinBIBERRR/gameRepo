@@ -54,13 +54,24 @@ export const movieSchema: GameDataSchema = {
       }
     },
     {
-      key: 'videoFile',
-      label: '电影文件',
-      type: 'file',
-      required: true,
-      placeholder: '请选择视频文件（MP4格式）',
+      key: 'videoUrl',
+      label: '视频地址（URL）',
+      type: 'string',
+      required: false,
+      placeholder: '例如：http://127.0.0.1:8080/mry.mp4 或留空后上传文件',
       validation: {
-        message: '请上传视频文件'
+        max: 2048,
+        message: '视频地址过长'
+      }
+    },
+    {
+      key: 'videoFile',
+      label: '电影文件（与 URL 二选一）',
+      type: 'file',
+      required: false,
+      placeholder: '请选择视频文件（MP4格式）或在上方填写 URL',
+      validation: {
+        message: '请填写视频地址或上传视频文件'
       }
     },
     {
@@ -104,7 +115,8 @@ export interface MovieData {
   name: string
   description?: string
   hint?: string
-  videoFile?: File | string  // File对象或文件路径/URL
+  videoUrl?: string         // 视频地址（优先使用，无需 blob）
+  videoFile?: File | string // 或本地上传的文件/路径
   nameVariants?: string[]
   duration?: number
   year?: number

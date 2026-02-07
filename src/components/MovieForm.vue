@@ -69,10 +69,24 @@
       </p>
     </div>
 
+    <!-- 视频地址（URL） -->
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-2">
+        视频地址（URL）
+      </label>
+      <input
+        v-model="formData.videoUrl"
+        type="url"
+        placeholder="例如：http://127.0.0.1:8080/mry.mp4（与下方文件二选一）"
+        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      />
+      <p class="mt-1 text-xs text-gray-500">填写后直接按 URL 加载，无需上传；与下方本地上传二选一。</p>
+    </div>
+
     <!-- 电影文件 -->
     <div class="mb-4">
       <label class="block text-sm font-medium text-gray-700 mb-2">
-        电影文件 <span class="text-red-500">*</span>
+        电影文件（本地上传，与 URL 二选一）
       </label>
       
       <!-- 自定义文件上传按钮 -->
@@ -86,7 +100,6 @@
           accept="video/mp4,video/*"
           class="hidden"
           @change="handleFileChange"
-          required
         />
         <div class="flex flex-col items-center gap-2">
           <svg class="w-10 h-10 text-blue-600 group-hover:text-blue-700 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -178,7 +191,8 @@ const emit = defineEmits<{
     name: string
     description?: string
     hint?: string
-    videoFile: File
+    videoUrl?: string
+    videoFile?: File
   }]
   cancel: []
 }>()
@@ -188,6 +202,7 @@ const formData = ref({
   name: '',
   description: '',
   hint: '',
+  videoUrl: '',
   videoFile: null as File | null
 })
 
@@ -195,11 +210,18 @@ const filePreview = ref<File | null>(null)
 const fileInputRef = ref<HTMLInputElement | null>(null)
 const fileError = ref<string | null>(null)
 
+const hasVideoSource = computed(() => {
+  const url = formData.value.videoUrl.trim()
+  const hasUrl = url.length > 0
+  const hasFile = formData.value.videoFile !== null
+  return hasUrl || hasFile
+})
+
 const isValid = computed(() => {
   return (
     formData.value.id.trim() !== '' &&
     formData.value.name.trim() !== '' &&
-    formData.value.videoFile !== null &&
+    hasVideoSource.value &&
     /^[a-zA-Z0-9_-]+$/.test(formData.value.id)
   )
 })
@@ -212,6 +234,7 @@ watch(() => props.movie, (movie) => {
       name: movie.name,
       description: movie.description || '',
       hint: movie.hint || '',
+      videoUrl: (movie as { videoUrl?: string }).videoUrl || '',
       videoFile: null // 编辑时不预填文件
     }
   } else {
@@ -220,6 +243,7 @@ watch(() => props.movie, (movie) => {
       name: '',
       description: '',
       hint: '',
+      videoUrl: '',
       videoFile: null
     }
   }
@@ -270,23 +294,29 @@ function formatFileSize(bytes: number): string {
 
 function handleSubmit() {
   if (!isValid.value) {
-    if (!formData.value.videoFile) {
-      fileError.value = '请选择视频文件'
+    if (!hasVideoSource.value) {
+      fileError.value = '请填写视频地址（URL）或上传视频文件'
     }
     return
   }
-  
-  if (!formData.value.videoFile) {
-    fileError.value = '请选择视频文件'
+
+  let url = formData.value.videoUrl.trim()
+  if (url && !url.startsWith('http://') && !url.startsWith('https://')) {
+    url = 'http://' + url
+  }
+  const useUrl = url.length > 0
+  if (!useUrl && !formData.value.videoFile) {
+    fileError.value = '请填写视频地址（URL）或上传视频文件'
     return
   }
-  
+
   emit('submit', {
     id: formData.value.id.trim(),
     name: formData.value.name.trim(),
     description: formData.value.description.trim() || undefined,
     hint: formData.value.hint.trim() || undefined,
-    videoFile: formData.value.videoFile
+    videoUrl: useUrl ? url : undefined,
+    videoFile: formData.value.videoFile ?? undefined
   })
 }
 </script>

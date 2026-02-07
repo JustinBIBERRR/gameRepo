@@ -10,9 +10,14 @@ const localVideoModules = import.meta.glob<string>('@/data/videos/*.mp4', {
 
 /**
  * 将路径或文件名解析为可播放的 URL（/、http、blob 等）
+ * 若已是完整 http(s) 地址（如本地演示用 http://127.0.0.1:8080/xxx.mp4），直接返回
  */
 export function getLocalVideoUrl(pathOrFilename: string): string {
   if (!pathOrFilename) return ''
+  const trimmed = pathOrFilename.trim()
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed
+  }
   const basename = pathOrFilename.replace(/^.*[/\\]/, '')
   const keys = Object.keys(localVideoModules)
   const key = keys.find(

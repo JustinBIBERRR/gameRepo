@@ -152,11 +152,15 @@ async function importDefaultSong(onProgress?: (current: number, total: number) =
     onProgress?.(i + 1, total)
     const item = defaultListenSongs[i]
     const { audioUrl, ...songItem } = item
-    const audioRes = await fetch(audioUrl)
-    const audioBlob = await audioRes.blob()
-    const ext = audioUrl.includes('.mp3') ? 'mp3' : 'mp3'
-    const audioFile = new File([audioBlob], `${songItem.id}.${ext}`, { type: 'audio/mpeg' })
-    await saveSong(songItem, audioFile)
+    if (audioUrl?.startsWith('http://') || audioUrl?.startsWith('https://')) {
+      await saveSong(songItem, null, audioUrl)
+    } else {
+      const audioRes = await fetch(audioUrl)
+      const audioBlob = await audioRes.blob()
+      const ext = audioUrl.includes('.mp3') ? 'mp3' : 'mp3'
+      const audioFile = new File([audioBlob], `${songItem.id}.${ext}`, { type: 'audio/mpeg' })
+      await saveSong(songItem, audioFile)
+    }
   }
 }
 
@@ -207,7 +211,8 @@ function handleEdit(song: ListenSongItem) {
     lyrics: song.lyrics,
     answer: song.answer,
     artist: song.artist ?? '',
-    hints: song.hints ?? []
+    hints: song.hints ?? [],
+    audioUrl: song.audioUrl ?? ''
   }
   showModal.value = true
 }
@@ -247,9 +252,15 @@ async function handleDelete(id: string) {
 
 async function handleSubmit(data: Record<string, unknown>) {
   const audioFile = data.audioClip instanceof File ? data.audioClip : null
+  const audioUrlRaw = typeof data.audioUrl === 'string' ? data.audioUrl.trim() : ''
+  const audioUrl =
+    audioUrlRaw && (audioUrlRaw.startsWith('http://') || audioUrlRaw.startsWith('https://'))
+      ? audioUrlRaw
+      : undefined
   const isNew = !editingItem.value
-  if (isNew && !audioFile) {
-    showError({ title: '保存失败', message: '新建歌曲时请上传 AI 生成歌（MP3）' })
+  const hasSource = Boolean(audioFile || audioUrl)
+  if (isNew && !hasSource) {
+    showError({ title: '保存失败', message: '请填写音频地址（URL）或上传 AI 生成歌（MP3）' })
     return
   }
   const item: Omit<ListenSongItem, 'createdAt'> = {
@@ -260,7 +271,7 @@ async function handleSubmit(data: Record<string, unknown>) {
     hints: Array.isArray(data.hints) ? (data.hints as string[]) : []
   }
   try {
-    await saveSong(item, audioFile instanceof File ? audioFile : undefined)
+    await saveSong(item, audioFile ?? undefined, audioUrl ?? undefined)
     await loadSongs()
     closeModal()
     showSuccess({ title: '保存成功', message: '歌曲已保存' })

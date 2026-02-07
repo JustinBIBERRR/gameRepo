@@ -12,10 +12,12 @@ export interface ListenSongItem {
   artist: string
   hints?: string[]
   createdAt: number
+  audioUrl?: string  // 有则按 URL 播放，不落 blob
 }
 
 interface StoredSong extends ListenSongItem {
   audioBlob?: Blob
+  audioUrl?: string  // 有则直接按 URL 播放，无需 blob
 }
 
 const DB_NAME = 'ListenSongDB'
@@ -60,7 +62,8 @@ export async function getAllSongs(): Promise<ListenSongItem[]> {
         answer: raw.answer,
         artist: raw.artist ?? '',
         hints: raw.hints,
-        createdAt: raw.createdAt
+        createdAt: raw.createdAt,
+        audioUrl: raw.audioUrl
       }))
       resolve(items)
     }
@@ -68,7 +71,11 @@ export async function getAllSongs(): Promise<ListenSongItem[]> {
   })
 }
 
-export async function getSongWithAudio(id: string): Promise<{ item: ListenSongItem; audioBlob: Blob | null }> {
+export async function getSongWithAudio(id: string): Promise<{
+  item: ListenSongItem
+  audioBlob: Blob | null
+  audioUrl?: string
+}> {
   const database = await initDB()
   const stored = await new Promise<StoredSong | undefined>((resolve, reject) => {
     const tx = database.transaction([STORE_NAME], 'readonly')
@@ -78,28 +85,25 @@ export async function getSongWithAudio(id: string): Promise<{ item: ListenSongIt
     request.onerror = () => reject(request.error)
   })
   if (stored) {
-    const { audioBlob, ...item } = stored
+    const { audioBlob, audioUrl, ...item } = stored
+    if (audioUrl) {
+      return { item, audioBlob: null, audioUrl }
+    }
     return { item, audioBlob: audioBlob ?? null }
   }
-  // 未入库时使用默认歌曲：从打包音频 URL 拉取并返回，便于直接开始游戏
+  // 未入库时使用默认歌曲：若有 audioUrl 直接返回 URL，不拉取 blob
   const defaultSong = defaultListenSongs.find((s) => s.id === id)
   if (defaultSong && 'audioUrl' in defaultSong && defaultSong.audioUrl) {
-    try {
-      const res = await fetch(defaultSong.audioUrl)
-      if (!res.ok) return { item: { ...defaultSong, createdAt: Date.now() }, audioBlob: null }
-      const audioBlob = await res.blob()
-      const item: ListenSongItem = { ...defaultSong, createdAt: Date.now() }
-      return { item, audioBlob }
-    } catch {
-      return { item: { ...defaultSong, createdAt: Date.now() }, audioBlob: null }
-    }
+    const item: ListenSongItem = { ...defaultSong, createdAt: Date.now() }
+    return { item, audioBlob: null, audioUrl: defaultSong.audioUrl }
   }
   return { item: {} as ListenSongItem, audioBlob: null }
 }
 
 export async function saveSong(
   item: Omit<ListenSongItem, 'createdAt'>,
-  audioFile?: File | null
+  audioFile?: File | null,
+  audioUrl?: string | null
 ): Promise<void> {
   const database = await initDB()
   const now = Date.now()
@@ -115,7 +119,6 @@ export async function saveSong(
   } catch {
     existing = undefined
   }
-  // 构造纯对象，避免 Vue 响应式代理导致 IndexedDB 克隆失败
   const hintsPlain = Array.isArray(item.hints)
     ? item.hints.map((h) => String(h))
     : []
@@ -127,13 +130,18 @@ export async function saveSong(
     hints: hintsPlain,
     createdAt: (item as ListenSongItem).createdAt ?? existing?.createdAt ?? now
   }
-  if (audioFile) {
+  const urlTrimmed = audioUrl?.trim()
+  if (urlTrimmed && (urlTrimmed.startsWith('http://') || urlTrimmed.startsWith('https://'))) {
+    toSave.audioUrl = urlTrimmed
+  } else if (audioFile) {
     if (audioFile.size > MAX_AUDIO_SIZE) {
       throw new Error(`音频文件不能超过 ${MAX_AUDIO_SIZE / 1024 / 1024}MB`)
     }
     toSave.audioBlob = new Blob([audioFile], { type: audioFile.type })
   } else if (existing?.audioBlob) {
     toSave.audioBlob = existing.audioBlob
+  } else if (existing?.audioUrl) {
+    toSave.audioUrl = existing.audioUrl
   }
   return new Promise((resolve, reject) => {
     const tx = database.transaction([STORE_NAME], 'readwrite')

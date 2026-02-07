@@ -117,6 +117,16 @@
                 默认资源
               </span>
               <span
+                v-else-if="movie.videoUrl && fileStatus[movie.id] === 'ready'"
+                class="inline-flex items-center gap-1 text-blue-600"
+                :title="movie.videoUrl"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.172-1.172a4 4 0 00-.5-6.086z" />
+                </svg>
+                视频地址（URL）
+              </span>
+              <span
                 v-else-if="fileStatus[movie.id] === 'error'"
                 class="inline-flex items-center gap-1 text-red-600"
               >
@@ -267,14 +277,21 @@ async function handleImportDefaults() {
         year: item.year,
         createdAt: Date.now()
       }
+      if (item.videoUrl) {
+        const trimmed = item.videoUrl.trim()
+        if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+          // URL 配置：只存地址，不拉取 blob，游戏内直接按 URL 加载
+          userMovie.videoUrl = trimmed
+          await saveUserMovie(userMovie)
+          continue
+        }
+      }
       await saveUserMovie(userMovie)
       if (item.videoUrl) {
-        // 使用与游戏一致的解析：打包视频在 @/data/videos，需通过 getLocalVideoUrl 得到可请求 URL
+        // 相对路径（如 videos/xx.mp4）：拉取并存入 IndexedDB，保持原有行为
         const url =
-          item.videoUrl.startsWith('http') || item.videoUrl.startsWith('blob:')
-            ? item.videoUrl
-            : getLocalVideoUrl(item.videoUrl) ||
-              `${window.location.origin}${item.videoUrl.startsWith('/') ? item.videoUrl : '/' + item.videoUrl}`
+          getLocalVideoUrl(item.videoUrl) ||
+          `${window.location.origin}${item.videoUrl.startsWith('/') ? item.videoUrl : '/' + item.videoUrl}`
         if (!url) {
           console.warn(`无法解析默认电影视频 URL: ${item.videoUrl}`)
           continue
@@ -321,21 +338,15 @@ async function preloadAllMovies() {
       }
       const files = await getMovieFiles(movie.id)
       if (files && files.sourceFile) {
-        // 设置加载状态
         fileStatus.value[movie.id] = 'loading'
         loadingMovies.value[movie.id] = true
-        
-        // 检查是否已预加载
         if (videoPreloader.isPreloaded(movie.id)) {
           fileStatus.value[movie.id] = 'ready'
           loadingMovies.value[movie.id] = false
           return
         }
-        
-        // 预加载视频文件（确保可以0延迟播放）
         try {
           await videoPreloader.preloadVideo(movie.id, files.sourceFile)
-          // 预加载完成后更新状态
           fileStatus.value[movie.id] = 'ready'
           loadingMovies.value[movie.id] = false
         } catch (error) {
@@ -343,8 +354,31 @@ async function preloadAllMovies() {
           fileStatus.value[movie.id] = 'error'
           loadingMovies.value[movie.id] = false
         }
+      } else if (movie.videoUrl) {
+        // URL 配置：按地址预加载，无需 blob
+        const url = getLocalVideoUrl(movie.videoUrl)
+        if (url) {
+          fileStatus.value[movie.id] = 'loading'
+          loadingMovies.value[movie.id] = true
+          if (videoPreloader.isPreloaded(movie.id)) {
+            fileStatus.value[movie.id] = 'ready'
+            loadingMovies.value[movie.id] = false
+            return
+          }
+          try {
+            await videoPreloader.preloadVideoByUrl(movie.id, url)
+            fileStatus.value[movie.id] = 'ready'
+            loadingMovies.value[movie.id] = false
+          } catch (error) {
+            console.error(`预加载电影 ${movie.id}（URL）失败:`, error)
+            fileStatus.value[movie.id] = 'error'
+            loadingMovies.value[movie.id] = false
+          }
+        } else {
+          fileStatus.value[movie.id] = 'error'
+          loadingMovies.value[movie.id] = false
+        }
       } else {
-        // 没有文件，标记为未上传
         fileStatus.value[movie.id] = 'loading'
         loadingMovies.value[movie.id] = false
       }
@@ -410,88 +444,98 @@ async function handleFormSubmit(formData: {
   name: string
   description?: string
   hint?: string
-  videoFile: File
+  videoUrl?: string
+  videoFile?: File
 }) {
   savingMovie.value = true
   const movieId = formData.id
-  
+  const useUrl = Boolean(formData.videoUrl?.trim() && (formData.videoUrl!.startsWith('http://') || formData.videoUrl!.startsWith('https://')))
+  const useFile = Boolean(formData.videoFile)
+
   try {
-    // 显示加载状态
     loadingMovies.value[movieId] = true
     fileStatus.value[movieId] = 'loading'
-    
-    // 获取视频时长
-    let videoDuration = 0
-    try {
-      videoDuration = await getVideoDuration(formData.videoFile)
-    } catch (error) {
-      console.warn('获取视频时长失败，将在预加载后更新:', error)
-    }
-    
-    // 如果正在编辑，先删除旧文件
+
     if (editingMovie.value) {
       await deleteMovieFiles(movieId)
       videoPreloader.unloadVideo(movieId)
     }
-    
-    // 保存电影文件到IndexedDB
-    await saveMovieFiles({
-      movieId: formData.id,
-      sourceFile: formData.videoFile,
-      selectedAt: Date.now()
-    })
-    
-    // 预加载视频文件（确保可以0延迟播放）
-    await videoPreloader.preloadVideo(movieId, formData.videoFile, (progress) => {
-      // 可以在这里显示进度，但为了简洁，我们只显示加载状态
-      if (progress === 100) {
-        fileStatus.value[movieId] = 'ready'
-        loadingMovies.value[movieId] = false
+
+    let videoDuration = 0
+
+    if (useUrl) {
+      const url = getLocalVideoUrl(formData.videoUrl!.trim()) || formData.videoUrl!.trim()
+      await videoPreloader.preloadVideoByUrl(movieId, url, (progress) => {
+        if (progress === 100) {
+          fileStatus.value[movieId] = 'ready'
+          loadingMovies.value[movieId] = false
+        }
+      })
+      if (videoPreloader.isPreloaded(movieId)) {
+        const d = videoPreloader.getVideoDuration(movieId)
+        if (d && d > 0) videoDuration = d
       }
-    })
-    
-    // 如果预加载完成，从预加载的视频中获取准确的时长
-    if (videoPreloader.isPreloaded(movieId)) {
-      const preloadedDuration = videoPreloader.getVideoDuration(movieId)
-      if (preloadedDuration && preloadedDuration > 0) {
-        videoDuration = preloadedDuration
+      const movieData: UserMovie = {
+        id: formData.id,
+        name: formData.name,
+        description: formData.description,
+        hint: formData.hint,
+        nameVariants: [],
+        duration: Math.floor(videoDuration),
+        videoUrl: formData.videoUrl!.trim(),
+        createdAt: (editingMovie.value && 'createdAt' in editingMovie.value)
+          ? editingMovie.value.createdAt
+          : Date.now()
       }
+      await saveUserMovie(movieData)
+    } else if (useFile) {
+      try {
+        videoDuration = await getVideoDuration(formData.videoFile!)
+      } catch (e) {
+        console.warn('获取视频时长失败，将在预加载后更新:', e)
+      }
+      await saveMovieFiles({
+        movieId: formData.id,
+        sourceFile: formData.videoFile!,
+        selectedAt: Date.now()
+      })
+      await videoPreloader.preloadVideo(movieId, formData.videoFile!, (progress) => {
+        if (progress === 100) {
+          fileStatus.value[movieId] = 'ready'
+          loadingMovies.value[movieId] = false
+        }
+      })
+      if (videoPreloader.isPreloaded(movieId)) {
+        const d = videoPreloader.getVideoDuration(movieId)
+        if (d && d > 0) videoDuration = d
+      }
+      const movieData: UserMovie = {
+        id: formData.id,
+        name: formData.name,
+        description: formData.description,
+        hint: formData.hint,
+        nameVariants: [],
+        duration: Math.floor(videoDuration),
+        createdAt: (editingMovie.value && 'createdAt' in editingMovie.value)
+          ? editingMovie.value.createdAt
+          : Date.now()
+      }
+      await saveUserMovie(movieData)
     }
-    
-    // 保存电影信息到IndexedDB（包含时长）
-    const movieData: UserMovie = {
-      id: formData.id,
-      name: formData.name,
-      description: formData.description,
-      hint: formData.hint,
-      nameVariants: [],
-      duration: Math.floor(videoDuration), // 保存为整数秒
-      createdAt: (editingMovie.value && 'createdAt' in editingMovie.value)
-        ? editingMovie.value.createdAt
-        : Date.now()
-    }
-    
-    // 保存电影信息
-    await saveUserMovie(movieData)
-    
-    // 确保预加载完成后更新状态
+
     if (videoPreloader.isPreloaded(movieId)) {
       fileStatus.value[movieId] = 'ready'
       loadingMovies.value[movieId] = false
     } else {
-      // 如果预加载失败，标记为错误
       fileStatus.value[movieId] = 'error'
       loadingMovies.value[movieId] = false
     }
-    
-    // 刷新列表
+
     await loadMovies()
-    
     showSuccess({
       title: editingMovie.value ? t('modal.updateSuccess') : t('modal.addSuccess'),
       message: editingMovie.value ? t('modal.updateSuccessMessage') : t('modal.addSuccessMessage')
     })
-    
     closeEditModal()
   } catch (error) {
     console.error('保存电影失败:', error)

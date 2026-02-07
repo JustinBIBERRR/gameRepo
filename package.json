@@ -21,6 +21,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite",
+    "serve-videos": "node scripts/serve-videos.cjs",
     "generate-types": "node scripts/generate-types.mjs",
     "prebuild": "npm run generate-types",
     "build": "vue-tsc --noEmit && vite build",

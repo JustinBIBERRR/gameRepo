@@ -698,6 +698,9 @@ function clearAndRestart() {
     cancelText: t('common.cancel')
   }).then((result) => {
     if (result) {
+      // 立即重置播放状态并停止音频，避免按钮仍显示「播放中」
+      isPlaying.value = false
+      videoPlayerRef.value?.pause?.()
       // 清除 sessionStorage
       sessionStorage.removeItem('movieGuessGame')
       // 清除倒计时状态
@@ -723,13 +726,17 @@ function clearAndRestart() {
 }
 
 async function restartGame() {
+  // 重置播放状态，避免上一局「播放中」残留
+  isPlaying.value = false
+  videoPlayerRef.value?.pause?.()
+
   // 重新读取配置（可能已更改）
   const config = getGameConfig('movie')
   enableTimer.value = config.enableTimer
   maxAttempts.value = config.maxAttempts
   showInitialHint.value = config.showInitialHint
   maxPlaybackPerSegment.value = config.maxPlaybackPerSegment || 1
-  
+
   // 检查是否有注册的电影
   const movies = await getAllMovies()
   if (movies.length === 0) {

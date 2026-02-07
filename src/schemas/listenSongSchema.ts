@@ -56,15 +56,23 @@ export const listenSongSchema: GameDataSchema = {
       }
     },
     {
+      key: 'audioUrl',
+      label: '音频地址（URL）',
+      type: 'string',
+      required: false,
+      placeholder: '例如：http://127.0.0.1:8080/xxx.mp3（与下方文件二选一）',
+      validation: { max: 2048, message: '音频地址过长' }
+    },
+    {
       key: 'audioClip',
-      label: 'AI 生成歌（MP3）',
+      label: 'AI 生成歌（MP3 本地上传）',
       type: 'file',
       required: false,
       accept: 'audio/mpeg,audio/mp3,audio/*',
-      placeholder: '游戏内播放的 AI 生成歌（MP3，不超过5MB）；新建时必传',
+      placeholder: '游戏内播放的 AI 生成歌（MP3，不超过5MB）；与 URL 二选一',
       validation: {
         maxSize: 5 * 1024 * 1024,
-        message: '请上传 MP3 音频文件（不超过5MB）'
+        message: '请上传 MP3 或填写音频地址'
       }
     },
     {

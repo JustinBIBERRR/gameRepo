@@ -279,15 +279,21 @@ function restoreState() {
   }
 }
 
+const isPlaybackBlobUrl = ref(false)
+
 async function setPlaybackAudio(song: ListenSongItem) {
-  if (playbackAudioUrl.value) {
+  if (playbackAudioUrl.value && isPlaybackBlobUrl.value) {
     URL.revokeObjectURL(playbackAudioUrl.value)
-    playbackAudioUrl.value = null
   }
+  playbackAudioUrl.value = null
+  isPlaybackBlobUrl.value = false
   try {
-    const { audioBlob } = await getSongWithAudio(song.id)
-    if (audioBlob) {
+    const { audioBlob, audioUrl } = await getSongWithAudio(song.id)
+    if (audioUrl) {
+      playbackAudioUrl.value = audioUrl
+    } else if (audioBlob) {
       playbackAudioUrl.value = URL.createObjectURL(audioBlob)
+      isPlaybackBlobUrl.value = true
     }
   } catch {
     playbackAudioUrl.value = null
@@ -310,8 +316,11 @@ function startNewRound() {
     if (avoidRepeatInSession) {
       usedSongIds.value.add(picked.id)
     }
-  } else if (playbackAudioUrl.value) {
+  } else if (playbackAudioUrl.value && isPlaybackBlobUrl.value) {
     URL.revokeObjectURL(playbackAudioUrl.value)
+    playbackAudioUrl.value = null
+    isPlaybackBlobUrl.value = false
+  } else if (playbackAudioUrl.value) {
     playbackAudioUrl.value = null
   }
   if (enableTimer) timer.reset(timerDuration)
@@ -320,10 +329,11 @@ function startNewRound() {
 }
 
 function restartGame() {
-  if (playbackAudioUrl.value) {
+  if (playbackAudioUrl.value && isPlaybackBlobUrl.value) {
     URL.revokeObjectURL(playbackAudioUrl.value)
-    playbackAudioUrl.value = null
   }
+  playbackAudioUrl.value = null
+  isPlaybackBlobUrl.value = false
   clearTimerState()
   sessionStorage.removeItem(SESSION_KEY)
   startNewRound()
@@ -331,7 +341,9 @@ function restartGame() {
 
 function clearAndRestart() {
   stopPlayback()
-  if (playbackAudioUrl.value) URL.revokeObjectURL(playbackAudioUrl.value)
+  if (playbackAudioUrl.value && isPlaybackBlobUrl.value) URL.revokeObjectURL(playbackAudioUrl.value)
+  playbackAudioUrl.value = null
+  isPlaybackBlobUrl.value = false
   clearTimerState()
   sessionStorage.removeItem(SESSION_KEY)
   usedSongIds.value = new Set()
@@ -351,6 +363,6 @@ onMounted(async () => {
 
 onUnmounted(() => {
   stopPlayback()
-  if (playbackAudioUrl.value) URL.revokeObjectURL(playbackAudioUrl.value)
+  if (playbackAudioUrl.value && isPlaybackBlobUrl.value) URL.revokeObjectURL(playbackAudioUrl.value)
 })
 </script>

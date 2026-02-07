@@ -19,6 +19,7 @@ export interface UserMovie {
   hint?: string           // 初始提示（可选，如"漫威"、"国产动画"）
   description?: string    // 电影描述（可选）
   year?: number           // 上映年份（可选）
+  videoUrl?: string       // 视频地址（有则直接按 URL 加载，无需 IndexedDB blob）
   createdAt: number       // 创建时间戳
 }
 
@@ -84,12 +85,13 @@ function initDB(): Promise<IDBDatabase> {
 export async function saveMovieFiles(movieFiles: LocalMovieFiles): Promise<void> {
   const database = await initDB()
   
-  // 如果有sourceFile但没有sourceBlob，将File转换为Blob进行持久化存储
+  // 持久化时只存 sourceBlob，不存 sourceFile（IndexedDB 对 File 的序列化不可靠，易导致 blob URL 失效）
   const filesToSave = { ...movieFiles }
   if (filesToSave.sourceFile && !filesToSave.sourceBlob) {
     filesToSave.sourceBlob = new Blob([filesToSave.sourceFile], { type: filesToSave.sourceFile.type })
   }
-  
+  delete (filesToSave as Record<string, unknown>).sourceFile
+
   return new Promise((resolve, reject) => {
     const transaction = database.transaction([STORE_NAME], 'readwrite')
     const store = transaction.objectStore(STORE_NAME)
@@ -120,12 +122,9 @@ export async function getMovieFiles(movieId: string): Promise<LocalMovieFiles | 
     
     request.onsuccess = () => {
       const result = request.result
-      if (result) {
-        // 如果有sourceBlob但没有sourceFile，从Blob恢复File对象
-        if (result.sourceBlob && !result.sourceFile) {
-          // 从Blob创建File对象（使用电影ID作为文件名）
-          result.sourceFile = new File([result.sourceBlob], `${movieId}.mp4`, { type: result.sourceBlob.type || 'video/mp4' })
-        }
+      if (result?.sourceBlob) {
+        // 始终从 sourceBlob 恢复 sourceFile，避免使用 IndexedDB 反序列化后的无效 File（会导致 blob URL ERR_FILE_NOT_FOUND）
+        result.sourceFile = new File([result.sourceBlob], `${movieId}.mp4`, { type: result.sourceBlob.type || 'video/mp4' })
       }
       resolve(result || null)
     }
