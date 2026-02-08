@@ -13,6 +13,7 @@ export interface FieldSchema {
   options?: string[]       // select 类型的选项
   placeholder?: string     // 占位提示
   accept?: string          // 文件类型时使用的 accept 属性，如 audio/*、video/mp4
+  rows?: number            // string 类型时作为 textarea 显示的行数（如 8），并带滚动
   validation?: {           // 验证规则
     min?: number
     max?: number

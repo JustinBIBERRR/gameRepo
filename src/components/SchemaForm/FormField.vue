@@ -42,6 +42,17 @@
       </div>
     </div>
 
+    <!-- 多行字符串（歌词等）：textarea，至少展示 rows 行，限制最大高度+滚动 -->
+    <textarea
+      v-else-if="field.type === 'string' && field.rows"
+      v-model="localValue"
+      :rows="field.rows"
+      :placeholder="field.placeholder"
+      :class="inputClass"
+      class="min-h-0 resize-y max-h-[320px] overflow-y-auto"
+      @blur="validate"
+    />
+
     <!-- 普通字符串类型 -->
     <input
       v-else-if="field.type === 'string'"
@@ -51,7 +62,7 @@
       :class="inputClass"
       @blur="validate"
     />
-    
+
     <!-- 数字类型 -->
     <input
       v-else-if="field.type === 'number'"

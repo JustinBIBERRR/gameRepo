@@ -24,7 +24,8 @@ export const listenSongSchema: GameDataSchema = {
       label: '歌词',
       type: 'string',
       required: true,
-      placeholder: '揭晓时展示的歌词文本',
+      placeholder: '揭晓时展示的歌词文本（多行）',
+      rows: 8,
       validation: {
         min: 1,
         max: 500,
