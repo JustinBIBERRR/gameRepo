@@ -27,6 +27,12 @@
           <span>{{ importProgressText }}</span>
         </div>
         <button
+          @click="showJsonImportModal = true"
+          class="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+        >
+          从 JSON 导入（URL 资源）
+        </button>
+        <button
           @click="handleAddMovie"
           class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex items-center gap-2"
         >
@@ -183,12 +189,54 @@
         />
       </template>
     </GlobalModal>
+
+    <!-- 从 JSON 导入（仅 URL 资源） -->
+    <GlobalModal :show="showJsonImportModal" @close="showJsonImportModal = false">
+      <template #header>
+        <h3 class="text-lg font-semibold text-gray-900">从 JSON 导入电影（URL 资源）</h3>
+      </template>
+      <template #body>
+        <p class="text-sm text-gray-700 mb-2">请在下方的 JSON 编辑器中粘贴或编辑数据，支持格式化与语法高亮。字段说明：</p>
+        <div class="text-xs text-gray-600 mb-2 rounded-lg border border-gray-200 bg-gray-50 p-3 space-y-1.5">
+          <p class="font-medium text-gray-700">movies 数组中每项的字段：</p>
+          <ul class="space-y-1 list-none pl-0">
+            <li><span class="font-mono bg-blue-100 text-blue-800 px-1 rounded">id</span> 唯一标识，必填</li>
+            <li><span class="font-mono bg-blue-100 text-blue-800 px-1 rounded">name</span> 电影名称，必填</li>
+            <li><span class="font-mono bg-blue-100 text-blue-800 px-1 rounded">videoUrl</span> 视频地址（需为 http(s) 链接，如本地资源服务地址），必填</li>
+            <li><span class="font-mono bg-gray-200 text-gray-700 px-1 rounded">nameVariants</span> 别名列表，选填</li>
+            <li><span class="font-mono bg-gray-200 text-gray-700 px-1 rounded">hint</span> 猜题时的提示文案，选填</li>
+          </ul>
+        </div>
+        <p class="text-sm text-gray-600 mb-1">格式示例：</p>
+        <pre class="text-xs text-left bg-gray-100 border border-gray-200 rounded-lg p-3 mb-3 overflow-x-auto max-h-28 overflow-y-auto font-mono">{{ movieJsonExample }}</pre>
+        <JsonEditor v-model="jsonImportText" theme="light" class="mb-2" />
+        <p v-if="jsonImportError" class="mt-2 text-sm text-red-600">{{ jsonImportError }}</p>
+        <div class="mt-4 flex justify-end gap-2">
+          <button
+            type="button"
+            class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg"
+            @click="showJsonImportModal = false"
+          >
+            取消
+          </button>
+          <button
+            type="button"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            :disabled="importingFromJson"
+            @click="handleImportFromJson"
+          >
+            {{ importingFromJson ? '导入中...' : '确认导入' }}
+          </button>
+        </div>
+      </template>
+    </GlobalModal>
   </div>
 </template>
 
 <script setup lang="ts">
 import GlobalModal from './GlobalModal.vue'
 import MovieForm from './MovieForm.vue'
+import JsonEditor from './JsonEditor.vue'
 import { getAllMovies, getDefaultMoviesData } from '../utils/movieUtils'
 import type { Movie } from '../utils/movieUtils'
 import {
@@ -220,6 +268,22 @@ const loadingMovies = ref<Record<string, boolean>>({})
 const fileStatus = ref<Record<string, 'ready' | 'error' | 'loading' | 'default'>>({})
 const importingDefaults = ref(false)
 const importProgress = ref({ current: 0, total: 0 })
+const showJsonImportModal = ref(false)
+const jsonImportText = ref('')
+const jsonImportError = ref('')
+const importingFromJson = ref(false)
+
+const movieJsonExample = `{
+  "movies": [
+    {
+      "id": "m1",
+      "name": "电影名",
+      "videoUrl": "http://127.0.0.1:8080/xxx.mp4",
+      "nameVariants": ["别名"],
+      "hint": "提示"
+    }
+  ]
+}`
 
 const importProgressText = computed(() => {
   const { current, total } = importProgress.value
@@ -241,6 +305,70 @@ const filteredMovies = computed(() => {
     )
   })
 })
+
+/** 电影 JSON 项（URL 资源导入用） */
+interface MovieJsonItem {
+  id: string
+  name: string
+  duration: number
+  videoUrl: string
+  nameVariants?: string[]
+  hint?: string
+  description?: string
+  year?: number
+}
+
+async function handleImportFromJson() {
+  jsonImportError.value = ''
+  const raw = jsonImportText.value.trim()
+  if (!raw) {
+    jsonImportError.value = '请粘贴 JSON 内容'
+    return
+  }
+  let data: { movies?: MovieJsonItem[] }
+  try {
+    data = JSON.parse(raw)
+  } catch (e) {
+    jsonImportError.value = 'JSON 格式错误，请检查'
+    return
+  }
+  const list = data.movies
+  if (!Array.isArray(list) || list.length === 0) {
+    jsonImportError.value = 'JSON 需包含 movies 数组且至少一项'
+    return
+  }
+  importingFromJson.value = true
+  try {
+    for (const item of list) {
+      const id = String(item.id ?? '').trim()
+      const name = String(item.name ?? '').trim()
+      const videoUrl = String(item.videoUrl ?? '').trim()
+      if (!id || !name || !videoUrl) continue
+      if (!videoUrl.startsWith('http://') && !videoUrl.startsWith('https://')) continue
+      const userMovie: UserMovie = {
+        id,
+        name,
+        nameVariants: Array.isArray(item.nameVariants) ? item.nameVariants : [],
+        duration: Number(item.duration) || 0,
+        hint: item.hint,
+        description: item.description,
+        year: item.year,
+        videoUrl,
+        createdAt: Date.now()
+      }
+      await saveUserMovie(userMovie)
+    }
+    showJsonImportModal.value = false
+    jsonImportText.value = ''
+    await loadMovies()
+    showSuccess({ title: '已导入', message: `已从 JSON 导入 ${list.length} 部电影（URL 资源）` })
+  } catch (e) {
+    console.error(e)
+    showError({ title: '导入失败', message: e instanceof Error ? e.message : '导入时出错' })
+  } finally {
+    importingFromJson.value = false
+  }
+}
 
 // 加载电影列表（仅用户数据，不再自动回退默认数据；默认通过「导入默认数据」加入）
 async function loadMovies() {

@@ -21,6 +21,12 @@
           <span>{{ importProgressText }}</span>
         </div>
         <button
+          @click="showJsonImportModal = true"
+          class="px-4 py-2 text-sm font-medium text-green-600 bg-green-50 hover:bg-green-100 rounded-lg transition-colors"
+        >
+          从 JSON 导入（URL 资源）
+        </button>
+        <button
           @click="handleAdd"
           class="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors flex items-center gap-2"
         >
@@ -94,12 +100,55 @@
         />
       </template>
     </GlobalModal>
+
+    <!-- 从 JSON 导入（仅 URL 资源） -->
+    <GlobalModal :show="showJsonImportModal" @close="showJsonImportModal = false">
+      <template #header>
+        <h3 class="text-lg font-semibold text-gray-900">从 JSON 导入歌曲（URL 资源）</h3>
+      </template>
+      <template #body>
+        <p class="text-sm text-gray-700 mb-2">请在下方的 JSON 编辑器中粘贴或编辑数据，支持格式化与语法高亮。字段说明：</p>
+        <div class="text-xs text-gray-600 mb-2 rounded-lg border border-gray-200 bg-gray-50 p-3 space-y-1.5">
+          <p class="font-medium text-gray-700">songs 数组中每项的字段：</p>
+          <ul class="space-y-1 list-none pl-0">
+            <li><span class="font-mono bg-green-100 text-green-800 px-1 rounded">id</span> 唯一标识，必填</li>
+            <li><span class="font-mono bg-green-100 text-green-800 px-1 rounded">lyrics</span> 歌词内容（用于 AI 听歌猜题），必填</li>
+            <li><span class="font-mono bg-green-100 text-green-800 px-1 rounded">answer</span> 歌曲名称（答案），必填</li>
+            <li><span class="font-mono bg-green-100 text-green-800 px-1 rounded">audioUrl</span> 音频地址（需为 http(s) 链接，如本地资源服务地址），必填</li>
+            <li><span class="font-mono bg-gray-200 text-gray-700 px-1 rounded">artist</span> 歌手，选填</li>
+            <li><span class="font-mono bg-gray-200 text-gray-700 px-1 rounded">hints</span> 提示词列表，选填</li>
+          </ul>
+        </div>
+        <p class="text-sm text-gray-600 mb-1">格式示例：</p>
+        <pre class="text-xs text-left bg-gray-100 border border-gray-200 rounded-lg p-3 mb-3 overflow-x-auto max-h-28 overflow-y-auto font-mono">{{ songJsonExample }}</pre>
+        <JsonEditor v-model="jsonImportText" theme="light" class="mb-2" />
+        <p v-if="jsonImportError" class="mt-2 text-sm text-red-600">{{ jsonImportError }}</p>
+        <div class="mt-4 flex justify-end gap-2">
+          <button
+            type="button"
+            class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg"
+            @click="showJsonImportModal = false"
+          >
+            取消
+          </button>
+          <button
+            type="button"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            :disabled="importingFromJson"
+            @click="handleImportFromJson"
+          >
+            {{ importingFromJson ? '导入中...' : '确认导入' }}
+          </button>
+        </div>
+      </template>
+    </GlobalModal>
   </div>
 </template>
 
 <script setup lang="ts">
 import GlobalModal from './GlobalModal.vue'
 import SchemaForm from './SchemaForm/SchemaForm.vue'
+import JsonEditor from './JsonEditor.vue'
 import { listenSongSchema } from '../schemas/listenSongSchema'
 import {
   getAllSongs,
@@ -119,7 +168,24 @@ const editingItem = ref<ListenSongItem | null>(null)
 const editingFormData = ref<Record<string, unknown> | undefined>(undefined)
 const importingDefaults = ref(false)
 const importProgress = ref({ current: 0, total: 0 })
+const showJsonImportModal = ref(false)
+const jsonImportText = ref('')
+const jsonImportError = ref('')
+const importingFromJson = ref(false)
 const STORAGE_KEY_HAD_DATA = 'listenSongHasHadDataOnce'
+
+const songJsonExample = `{
+  "songs": [
+    {
+      "id": "s1",
+      "lyrics": "歌词内容",
+      "answer": "歌名",
+      "artist": "歌手",
+      "audioUrl": "http://127.0.0.1:8080/xxx.mp3",
+      "hints": ["提示1"]
+    }
+  ]
+}`
 /** 仅「从未有过数据」时自动导入；用户删光后或之后再次进入均不再自动导入 */
 function hasHadDataBefore(): boolean {
   return localStorage.getItem(STORAGE_KEY_HAD_DATA) === '1'
@@ -161,6 +227,65 @@ async function importDefaultSong(onProgress?: (current: number, total: number) =
       const audioFile = new File([audioBlob], `${songItem.id}.${ext}`, { type: 'audio/mpeg' })
       await saveSong(songItem, audioFile)
     }
+  }
+}
+
+/** 歌曲 JSON 项（URL 资源导入用） */
+interface SongJsonItem {
+  id: string
+  lyrics: string
+  answer: string
+  artist?: string
+  hints?: string[]
+  audioUrl: string
+}
+
+async function handleImportFromJson() {
+  jsonImportError.value = ''
+  const raw = jsonImportText.value.trim()
+  if (!raw) {
+    jsonImportError.value = '请粘贴 JSON 内容'
+    return
+  }
+  let data: { songs?: SongJsonItem[] }
+  try {
+    data = JSON.parse(raw)
+  } catch (e) {
+    jsonImportError.value = 'JSON 格式错误，请检查'
+    return
+  }
+  const list = data.songs
+  if (!Array.isArray(list) || list.length === 0) {
+    jsonImportError.value = 'JSON 需包含 songs 数组且至少一项'
+    return
+  }
+  importingFromJson.value = true
+  try {
+    for (const item of list) {
+      const id = String(item.id ?? '').trim()
+      const lyrics = String(item.lyrics ?? '').trim()
+      const answer = String(item.answer ?? '').trim()
+      const audioUrl = String(item.audioUrl ?? '').trim()
+      if (!id || !lyrics || !answer || !audioUrl) continue
+      if (!audioUrl.startsWith('http://') && !audioUrl.startsWith('https://')) continue
+      const songItem: Omit<ListenSongItem, 'createdAt'> = {
+        id,
+        lyrics,
+        answer,
+        artist: String(item.artist ?? ''),
+        hints: Array.isArray(item.hints) ? item.hints : []
+      }
+      await saveSong(songItem, null, audioUrl)
+    }
+    showJsonImportModal.value = false
+    jsonImportText.value = ''
+    await loadSongs()
+    showSuccess({ title: '已导入', message: `已从 JSON 导入 ${list.length} 首歌曲（URL 资源）` })
+  } catch (e) {
+    console.error(e)
+    showError({ title: '导入失败', message: e instanceof Error ? e.message : '导入时出错' })
+  } finally {
+    importingFromJson.value = false
   }
 }
 
