@@ -262,13 +262,6 @@ function handleFileChange(event: Event) {
       return
     }
     
-    // 验证文件大小（例如限制为500MB）
-    const maxSize = 500 * 1024 * 1024 // 500MB
-    if (file.size > maxSize) {
-      fileError.value = '文件大小不能超过500MB'
-      return
-    }
-    
     filePreview.value = file
     formData.value.videoFile = file
     fileError.value = null

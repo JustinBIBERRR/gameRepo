@@ -1,31 +1,61 @@
 #!/usr/bin/env node
 /**
- * 本地视频静态服务器（带 CORS）
- * 用于在本机演示时提供视频资源，游戏可配置 videoUrl 为 http://127.0.0.1:8080/xxx.mp4
+ * 本地资源静态服务器（带 CORS）
+ * 用于在本机提供视频/音频资源，游戏可配置为 http://127.0.0.1:8080/xxx.mp4
  *
  * 用法：
- *   node scripts/serve-videos.cjs                    # 使用当前目录下的 videos 文件夹，端口 8080
- *   node scripts/serve-videos.cjs C:\Users\xxx\Videos   # 指定目录
- *   node scripts/serve-videos.cjs ./videos 3000      # 指定目录和端口
+ *   node scripts/serve-videos.cjs [--open]              # 使用配置文件或默认目录（见下）
+ *   node scripts/serve-videos.cjs <目录> [端口] [--open]
+ *
+ * 默认目录（无参数且无配置文件时）：
+ *   Windows: C:\Users\<当前用户名>\Videos
+ *   其他:    ~/Videos
+ * 配置文件：与本脚本同目录下的 resource-server.config.txt，第一行写资源目录路径。
  */
 
 const http = require('http')
 const fs = require('fs')
 const path = require('path')
 const url = require('url')
+const os = require('os')
+const { execSync } = require('child_process')
 
-const args = process.argv.slice(2)
-let dir = path.join(process.cwd(), 'videos')
+const args = process.argv.slice(2).filter((a) => a !== '--open')
+const doOpen = process.argv.includes('--open')
+
+function getDefaultDir() {
+  const home = os.homedir()
+  return path.join(home, 'Videos')
+}
+
+function readConfigDir() {
+  const scriptDir = path.dirname(__filename)
+  const configPath = path.join(scriptDir, 'resource-server.config.txt')
+  if (!fs.existsSync(configPath)) return null
+  const content = fs.readFileSync(configPath, 'utf8')
+  const line = content.split(/\r?\n/).find((l) => {
+    const t = l.split('#')[0].trim()
+    return t.length > 0
+  })
+  if (!line) return null
+  return line.split('#')[0].trim()
+}
+
+let dir
 let port = 8080
+
 if (args.length >= 2) {
   dir = path.resolve(args[0])
   port = parseInt(args[1], 10) || 8080
 } else if (args.length === 1) {
   if (/^\d+$/.test(args[0])) {
     port = parseInt(args[0], 10)
+    dir = readConfigDir() || getDefaultDir()
   } else {
     dir = path.resolve(args[0])
   }
+} else {
+  dir = readConfigDir() || getDefaultDir()
 }
 
 if (!fs.existsSync(dir)) {
@@ -67,9 +97,17 @@ const server = http.createServer((req, res) => {
 })
 
 server.listen(port, '0.0.0.0', () => {
-  console.log('视频服务器已启动（CORS 已开启）')
+  const baseUrl = 'http://127.0.0.1:' + port + '/'
+  console.log('资源服务器已启动（CORS 已开启）')
   console.log('  目录:', dir)
-  console.log('  地址: http://127.0.0.1:' + port + '/')
-  console.log('  示例: 视频文件 mry.mp4 -> http://127.0.0.1:' + port + '/mry.mp4')
-  console.log('在游戏配置中将电影 videoUrl 设为上述地址即可。按 Ctrl+C 停止。')
+  console.log('  地址:', baseUrl)
+  console.log('  示例: 文件 mry.mp4 -> ' + baseUrl + 'mry.mp4')
+  console.log('在游戏中将电影/歌曲资源地址设为上述 URL 即可。按 Ctrl+C 停止。')
+  if (doOpen && os.platform() === 'win32') {
+    try {
+      execSync('start "" "' + baseUrl + '"', { stdio: 'ignore' })
+    } catch (e) {
+      // ignore
+    }
+  }
 })

@@ -24,8 +24,6 @@ const DB_NAME = 'ListenSongDB'
 const DB_VERSION = 1
 const STORE_NAME = 'songs'
 
-const MAX_AUDIO_SIZE = 5 * 1024 * 1024 // 5MB
-
 let db: IDBDatabase | null = null
 
 function initDB(): Promise<IDBDatabase> {
@@ -134,9 +132,6 @@ export async function saveSong(
   if (urlTrimmed && (urlTrimmed.startsWith('http://') || urlTrimmed.startsWith('https://'))) {
     toSave.audioUrl = urlTrimmed
   } else if (audioFile) {
-    if (audioFile.size > MAX_AUDIO_SIZE) {
-      throw new Error(`音频文件不能超过 ${MAX_AUDIO_SIZE / 1024 / 1024}MB`)
-    }
     toSave.audioBlob = new Blob([audioFile], { type: audioFile.type })
   } else if (existing?.audioBlob) {
     toSave.audioBlob = existing.audioBlob

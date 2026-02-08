@@ -69,9 +69,8 @@ export const listenSongSchema: GameDataSchema = {
       type: 'file',
       required: false,
       accept: 'audio/mpeg,audio/mp3,audio/*',
-      placeholder: '游戏内播放的 AI 生成歌（MP3，不超过5MB）；与 URL 二选一',
+      placeholder: '游戏内播放的 AI 生成歌（MP3）；与 URL 二选一',
       validation: {
-        maxSize: 5 * 1024 * 1024,
         message: '请上传 MP3 或填写音频地址'
       }
     },
