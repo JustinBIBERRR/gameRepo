@@ -100,7 +100,7 @@
             </div>
           </div>
 
-          <!-- 揭晓：仅展示歌词与歌手 -->
+          <!-- 揭晓：展示答案、歌词、本曲播放器与再来一局 -->
           <Transition name="fade">
             <div v-if="gameOver || gameWon" class="text-center py-8">
               <div class="text-6xl mb-4">{{ gameWon ? '🎉' : '😢' }}</div>
@@ -112,6 +112,11 @@
               </p>
               <p v-if="targetSong?.artist" class="text-gray-600 mb-4">歌手：<span class="font-medium">{{ targetSong.artist }}</span></p>
               <div v-if="targetSong?.lyrics" class="text-left max-w-xl mx-auto mb-6 p-4 bg-gray-50 rounded-lg whitespace-pre-wrap text-gray-700">{{ targetSong.lyrics }}</div>
+              <!-- 揭晓后也可再听一遍本曲 AI 歌声 -->
+              <div v-if="playbackAudioUrl" class="max-w-xl mx-auto mb-6">
+                <p class="text-sm text-gray-500 mb-2">再听一遍本题 AI 歌声</p>
+                <audio :src="playbackAudioUrl" controls class="w-full max-w-full rounded-lg" />
+              </div>
               <button
                 @click="restartGame"
                 class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
