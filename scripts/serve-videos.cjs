@@ -82,9 +82,31 @@ const server = http.createServer((req, res) => {
     return
   }
   fs.stat(filePath, (err, stat) => {
-    if (err || !stat.isFile()) {
+    if (err) {
       res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' })
       res.end('Not Found')
+      return
+    }
+    if (stat.isDirectory()) {
+      fs.readdir(filePath, { withFileTypes: true }, (errDir, entries) => {
+        if (errDir) {
+          res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' })
+          res.end('Error listing directory')
+          return
+        }
+        const base = parsed.pathname === '/' ? '' : parsed.pathname.replace(/\/?$/, '') + '/'
+        const links = entries
+          .filter((e) => e.isFile())
+          .map((e) => {
+            const href = base + encodeURIComponent(e.name)
+            return '<li><a href="' + href + '">' + escapeHtml(e.name) + '</a></li>'
+          })
+          .join('')
+        const html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>资源列表</title></head><body><h1>资源列表</h1><p>复制下方链接到游戏中配置：</p><ul>' + links + '</ul></body></html>'
+        res.setHeader('Access-Control-Allow-Origin', '*')
+        res.setHeader('Content-Type', 'text/html; charset=utf-8')
+        res.end(html)
+      })
       return
     }
     const ext = path.extname(filePath)
@@ -95,6 +117,14 @@ const server = http.createServer((req, res) => {
     fs.createReadStream(filePath).pipe(res)
   })
 })
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
 
 server.listen(port, '0.0.0.0', () => {
   const baseUrl = 'http://127.0.0.1:' + port + '/'
